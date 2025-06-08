@@ -1,0 +1,55 @@
+name: Javadoc Generation and Publishing
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+
+      - name: Build with Gradle
+        run: ./gradlew clean build dokkaJavadoc
+
+      - name: Publish to Maven Central
+        run: ./gradlew publish
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.GPG_SIGNING_PASSWORD }}
+
+      - name: Verify Javadoc JAR
+        run: |
+          for module in jcachex-core jcachex-spring jcachex-testing; do
+            if [ ! -f "$module/build/libs/$module-${{ github.event.release.tag_name }}-javadoc.jar" ]; then
+              echo "Javadoc JAR not found for $module"
+              exit 1
+            fi
+          done
+
+      - name: Notify Javadoc.io
+        run: |
+          curl -X POST https://javadoc.io/webhook/github \
+            -H "Content-Type: application/json" \
+            -d '{
+              "repository": {
+                "full_name": "${{ github.repository }}"
+              },
+              "release": {
+                "tag_name": "${{ github.event.release.tag_name }}"
+              }
+            }'
