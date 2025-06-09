@@ -14,6 +14,30 @@ public class CacheStats {
     private final AtomicLong loadFailureCount;
     private final AtomicLong totalLoadTime;
 
+    public AtomicLong getHitCount() {
+        return hitCount;
+    }
+
+    public AtomicLong getMissCount() {
+        return missCount;
+    }
+
+    public AtomicLong getEvictionCount() {
+        return evictionCount;
+    }
+
+    public AtomicLong getLoadCount() {
+        return loadCount;
+    }
+
+    public AtomicLong getLoadFailureCount() {
+        return loadFailureCount;
+    }
+
+    public AtomicLong getTotalLoadTime() {
+        return totalLoadTime;
+    }
+
     public CacheStats() {
         this.hitCount = new AtomicLong(0);
         this.missCount = new AtomicLong(0);
@@ -104,7 +128,13 @@ public class CacheStats {
     }
 
     public CacheStats reset() {
-        return new CacheStats();
+        hitCount.set(0);
+        missCount.set(0);
+        evictionCount.set(0);
+        loadCount.set(0);
+        loadFailureCount.set(0);
+        totalLoadTime.set(0);
+        return this;
     }
 
     public static CacheStats empty() {

@@ -36,6 +36,7 @@ fun <K, V> Cache<K, V>.getOrDefault(
  *
  * @param action the action to perform on each entry
  */
+@Suppress("UnusedParameter")
 fun <K, V> Cache<K, V>.forEach(action: (K, V) -> Unit) {
     // Note: This is a placeholder implementation
     // Actual implementation would depend on how entries are stored in the cache

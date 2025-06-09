@@ -19,6 +19,7 @@ subprojects {
     apply(plugin = "java")
     apply(plugin = "jacoco")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    apply(plugin = "io.gitlab.arturbosch.detekt")
 
     repositories {
         mavenCentral()

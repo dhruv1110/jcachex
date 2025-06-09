@@ -24,7 +24,7 @@ public class DefaultCache<K, V> implements Cache<K, V> {
     private final CacheConfig<K, V> config;
     private final ConcurrentHashMap<K, CacheEntry<V>> entries;
     private final CacheStats stats;
-    private final EvictionStrategy evictionStrategy;
+    private final EvictionStrategy<K, V> evictionStrategy;
     private final ScheduledExecutorService scheduler;
 
     public DefaultCache(CacheConfig<K, V> config) {
@@ -32,18 +32,8 @@ public class DefaultCache<K, V> implements Cache<K, V> {
         this.entries = new ConcurrentHashMap<>();
         this.stats = new CacheStats();
         this.evictionStrategy = config.getEvictionStrategy() != null ? config.getEvictionStrategy()
-                : new LRUEvictionStrategy();
+                : new LRUEvictionStrategy<K, V>();
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
-
-        if (config.isPersistent()) {
-            if (config.getDirectory() == null) {
-                throw new IllegalArgumentException("Directory must be specified for persistent cache");
-            }
-            if (config.getSerializer() == null) {
-                throw new IllegalArgumentException("Serializer must be specified for persistent cache");
-            }
-            // TODO: Load persistent entries
-        }
 
         if (config.getRefreshAfterWrite() != null) {
             scheduleRefresh();
@@ -256,8 +246,5 @@ public class DefaultCache<K, V> implements Cache<K, V> {
 
     public void close() {
         scheduler.shutdown();
-        if (config.isPersistent()) {
-            // TODO: Save persistent entries
-        }
     }
 }

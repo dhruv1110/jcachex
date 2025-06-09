@@ -1,92 +1,22 @@
-build:
-  maxIssues: 0
-  weights:
-    complexity: 2
-    formatting: 1
-    LongParameterList: 1
-    comments: 1
-
 complexity:
+  ComplexCondition:
+    threshold: 3
+  ComplexInterface:
+    threshold: 8
+  ComplexMethod:
+    threshold: 10
+  LargeClass:
+    threshold: 400
+  LongMethod:
+    threshold: 40
+  LongParameterList:
+    functionThreshold: 4
+    constructorThreshold: 8
+  MethodOverloading:
+    threshold: 5
   TooManyFunctions:
-    thresholdInFiles: 20
-    thresholdInClasses: 15
+    thresholdInFiles: 10
+    thresholdInClasses: 10
     thresholdInInterfaces: 10
     thresholdInObjects: 10
-  LongParameterList:
-    functionThreshold: 8
-    constructorThreshold: 7
-    ignoreDefaultParameters: true
-  ComplexMethod:
-    threshold: 15
-  LargeClass:
-    threshold: 150
-  NestedBlockDepth:
-    threshold: 4
-
-formatting:
-  active: true
-  android: false
-  autoCorrect: true
-
-style:
-  MagicNumber:
-    active: true
-    ignoreNumbers: ['-1', '0', '1', '2']
-    ignoreHashCodeFunction: true
-    ignorePropertyDeclaration: true
-    ignoreAnnotation: true
-  MaxLineLength:
-    maxLineLength: 120
-  NewLineAtEndOfFile:
-    active: true
-  TrailingWhitespace:
-    active: true
-
-documentation:
-  active: true
-  EndOfSentenceFormat:
-    active: true
-  UndocumentedPublicClass:
-    active: true
-  UndocumentedPublicFunction:
-    active: true
-  UndocumentedPublicProperty:
-    active: true
-
-empty-blocks:
-  EmptyCatchBlock:
-    active: true
-  EmptyClassBlock:
-    active: true
-  EmptyDefaultConstructor:
-    active: true
-  EmptyDoWhileBlock:
-    active: true
-  EmptyElseBlock:
-    active: true
-  EmptyFinallyBlock:
-    active: true
-  EmptyForBlock:
-    active: true
-  EmptyFunctionBlock:
-    active: true
-  EmptyIfBlock:
-    active: true
-  EmptyInitBlock:
-    active: true
-  EmptyKotlinFile:
-    active: true
-  EmptySecondaryConstructor:
-    active: true
-  EmptyTryBlock:
-    active: true
-  EmptyWhenBlock:
-    active: true
-  EmptyWhileBlock:
-    active: true
-
-potential-bugs:
-  UnsafeCallOnNullableType:
-    active: true
-  UnsafeCast:
-    active: true
+    thresholdInEnums: 10

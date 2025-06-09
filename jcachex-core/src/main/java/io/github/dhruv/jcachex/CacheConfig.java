@@ -1,7 +1,6 @@
 package io.github.dhruv.jcachex;
 
 import io.github.dhruv.jcachex.eviction.EvictionStrategy;
-import io.github.dhruv.jcachex.serializers.CacheSerializer;
 
 import java.time.Duration;
 import java.util.HashSet;
@@ -33,9 +32,7 @@ public class CacheConfig<K, V> {
     private final boolean recordStats;
     private final int initialCapacity;
     private final int concurrencyLevel;
-    private final boolean persistent;
     private final String directory;
-    private final CacheSerializer<K, V> serializer;
     private final Set<CacheEventListener<K, V>> listeners;
 
     private CacheConfig(Builder<K, V> builder) {
@@ -54,9 +51,7 @@ public class CacheConfig<K, V> {
         this.recordStats = builder.recordStats;
         this.initialCapacity = builder.initialCapacity;
         this.concurrencyLevel = builder.concurrencyLevel;
-        this.persistent = builder.persistent;
         this.directory = builder.directory;
-        this.serializer = builder.serializer;
         this.listeners = new HashSet<>(builder.listeners);
     }
 
@@ -120,16 +115,8 @@ public class CacheConfig<K, V> {
         return concurrencyLevel;
     }
 
-    public boolean isPersistent() {
-        return persistent;
-    }
-
     public String getDirectory() {
         return directory;
-    }
-
-    public CacheSerializer<K, V> getSerializer() {
-        return serializer;
     }
 
     public Set<CacheEventListener<K, V>> getListeners() {
@@ -160,9 +147,7 @@ public class CacheConfig<K, V> {
         private boolean recordStats = true;
         private int initialCapacity = 16;
         private int concurrencyLevel = 16;
-        private boolean persistent;
         private String directory;
-        private CacheSerializer<K, V> serializer;
         private Set<CacheEventListener<K, V>> listeners = new HashSet<>();
 
         public Builder<K, V> maximumSize(Long maximumSize) {
@@ -250,18 +235,8 @@ public class CacheConfig<K, V> {
             return this;
         }
 
-        public Builder<K, V> persistent(boolean persistent) {
-            this.persistent = persistent;
-            return this;
-        }
-
         public Builder<K, V> directory(String directory) {
             this.directory = directory;
-            return this;
-        }
-
-        public Builder<K, V> serializer(CacheSerializer<K, V> serializer) {
-            this.serializer = serializer;
             return this;
         }
 
