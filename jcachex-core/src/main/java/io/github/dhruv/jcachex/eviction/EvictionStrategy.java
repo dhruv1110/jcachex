@@ -2,12 +2,7 @@ package io.github.dhruv.jcachex.eviction;
 
 import io.github.dhruv.jcachex.CacheEntry;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 /**
  * Interface for cache eviction strategies.
