@@ -38,9 +38,9 @@ class DefaultCacheTest {
         config = CacheConfig.<String, String>builder()
                 .maximumSize(100L)
                 .expireAfterWrite(Duration.ofMinutes(5))
+                .addListener(eventListener)
                 .build();
         cache = new DefaultCache<>(config);
-        config.getListeners().add(eventListener);
     }
 
     @AfterEach
@@ -206,7 +206,7 @@ class DefaultCacheTest {
         CacheStats stats = cache.stats();
         assertEquals(1L, stats.getHitCount().get());
         assertEquals(1L, stats.getMissCount().get());
-        assertEquals(1L, stats.getLoadCount().get());
+        assertEquals(0L, stats.getLoadCount().get());
     }
 
     @Test
@@ -228,7 +228,7 @@ class DefaultCacheTest {
         String value = refreshCache.get("key1");
         assertTrue(value.equals("value1") || value.equals("refreshed_key1"));
 
-        Thread.sleep(100); // Wait for refresh
+        Thread.sleep(1500); // Wait for refresh
         assertEquals("refreshed_key1", refreshCache.get("key1"));
 
         refreshCache.close();

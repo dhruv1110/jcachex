@@ -246,6 +246,15 @@ public class CacheConfig<K, V> {
         }
 
         public CacheConfig<K, V> build() {
+            if (maximumSize != null && maximumSize < 1){
+                throw new IllegalArgumentException("Maximum size must be greater than 0");
+            }
+            if (maximumWeight != null && maximumWeight < 1) {
+                throw new IllegalArgumentException("Maximum weight must be greater than 0");
+            }
+            if (expireAfterWrite != null && expireAfterWrite.isNegative()) {
+                throw new IllegalArgumentException("Expire after write duration must be non-negative");
+            }
             return new CacheConfig<>(this);
         }
     }
