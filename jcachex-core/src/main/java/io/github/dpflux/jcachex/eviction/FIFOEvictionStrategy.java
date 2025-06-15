@@ -21,8 +21,8 @@ public class FIFOEvictionStrategy<K, V> implements EvictionStrategy<K, V> {
     public K selectEvictionCandidate(Map<K, CacheEntry<V>> entries) {
         return entries.entrySet().stream()
                 .min((e1, e2) -> Long.compare(
-                        insertionOrder.getOrDefault(e1.getKey(), Long.MAX_VALUE),
-                        insertionOrder.getOrDefault(e2.getKey(), Long.MAX_VALUE)))
+                        insertionOrder.getOrDefault(e1.getKey(), 0L),
+                        insertionOrder.getOrDefault(e2.getKey(), 0L)))
                 .map(Map.Entry::getKey)
                 .orElse(null);
     }
