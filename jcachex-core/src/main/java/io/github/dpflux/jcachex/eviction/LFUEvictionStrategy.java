@@ -20,8 +20,8 @@ public class LFUEvictionStrategy<K, V> implements EvictionStrategy<K, V> {
     public K selectEvictionCandidate(Map<K, CacheEntry<V>> entries) {
         return entries.entrySet().stream()
                 .min((e1, e2) -> Long.compare(
-                        accessCounts.getOrDefault(e1.getKey(), new AtomicLong(Long.MAX_VALUE)).get(),
-                        accessCounts.getOrDefault(e2.getKey(), new AtomicLong(Long.MAX_VALUE)).get()))
+                        accessCounts.getOrDefault(e1.getKey(), new AtomicLong(Long.MIN_VALUE)).get(),
+                        accessCounts.getOrDefault(e2.getKey(), new AtomicLong(Long.MIN_VALUE)).get()))
                 .map(Map.Entry::getKey)
                 .orElse(null);
     }

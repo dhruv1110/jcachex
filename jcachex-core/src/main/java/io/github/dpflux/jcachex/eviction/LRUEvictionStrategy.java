@@ -30,14 +30,16 @@ public class LRUEvictionStrategy<K, V> implements EvictionStrategy<K, V> {
     @Override
     public void clear() {
         accessOrder.clear();
+        accessCounter.set(0); // Reset counter when clearing
     }
 
     @Override
     public K selectEvictionCandidate(Map<K, CacheEntry<V>> entries) {
         return entries.entrySet().stream()
                 .min((e1, e2) -> Long.compare(
-                        accessOrder.getOrDefault(e1.getKey(), Long.MAX_VALUE),
-                        accessOrder.getOrDefault(e2.getKey(), Long.MAX_VALUE)))
+                        accessOrder.getOrDefault(e1.getKey(), 0L), // Never-accessed entries get 0 (highest eviction
+                                                                   // priority)
+                        accessOrder.getOrDefault(e2.getKey(), 0L)))
                 .map(Map.Entry::getKey)
                 .orElse(null);
     }

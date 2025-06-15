@@ -45,7 +45,7 @@ public class DefaultCache<K, V> implements Cache<K, V>, AutoCloseable {
         this.entries = new ConcurrentHashMap<>();
         this.stats = new CacheStats();
         this.evictionStrategy = config.getEvictionStrategy() != null ? config.getEvictionStrategy()
-                : new LRUEvictionStrategy<K, V>();
+                : new LRUEvictionStrategy<>();
         this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread thread = new Thread(r, "jcachex-scheduler");
             thread.setDaemon(true);
@@ -251,6 +251,7 @@ public class DefaultCache<K, V> implements Cache<K, V>, AutoCloseable {
         if (candidate != null) {
             CacheEntry<V> entry = entries.remove(candidate);
             if (entry != null) {
+                evictionStrategy.remove(candidate);
                 stats.recordEviction();
                 notifyListeners(listener -> listener.onEvict(candidate, entry.getValue(), reason));
             }
