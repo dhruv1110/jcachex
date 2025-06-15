@@ -5,7 +5,7 @@ plugins {
     id("io.spring.dependency-management")
 }
 
-group = "io.github.dhruv.jcachex.example"
+group = "io.github.dpflux.jcachex.example"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -13,8 +13,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.dhruv:jcachex-core:1.0.0")
-    implementation("io.github.dhruv:jcachex-spring:1.0.0")
+    implementation("io.github.dpflux:jcachex-core:1.0.0")
+    implementation("io.github.dpflux:jcachex-spring:1.0.0")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-aop")

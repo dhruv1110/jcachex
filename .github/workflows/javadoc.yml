@@ -1,14 +1,32 @@
-name: Javadoc Generation and Publishing
+name: Documentation Publishing
 
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      publish_to_pages:
+        description: 'Publish to GitHub Pages'
+        required: false
+        default: 'true'
+        type: boolean
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
-  build-and-publish:
+  generate-docs:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -17,39 +35,161 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          server-id: ossrh
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
+          cache: gradle
 
-      - name: Build with Gradle
-        run: ./gradlew clean build dokkaJavadoc
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-      - name: Publish to Maven Central
-        run: ./gradlew publish
-        env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-          SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
-          SIGNING_PASSWORD: ${{ secrets.GPG_SIGNING_PASSWORD }}
+      - name: Generate documentation coverage reports
+        run: ./gradlew allDocumentationCoverage
 
-      - name: Verify Javadoc JAR
+      - name: Generate all documentation
+        run: ./gradlew generateAllDocs
+
+      - name: Create unified documentation structure
         run: |
-          for module in jcachex-core jcachex-spring jcachex-testing; do
-            if [ ! -f "$module/build/libs/$module-${{ github.event.release.tag_name }}-javadoc.jar" ]; then
-              echo "Javadoc JAR not found for $module"
-              exit 1
+          mkdir -p docs/api
+
+          # Copy Java documentation
+          for module in jcachex-core jcachex-kotlin jcachex-spring; do
+            if [ -d "$module/build/docs/javadoc" ]; then
+              mkdir -p "docs/api/$module"
+              cp -r "$module/build/docs/javadoc/"* "docs/api/$module/"
+            fi
+
+            # Copy Kotlin documentation if exists
+            if [ -d "$module/build/dokka/html" ]; then
+              mkdir -p "docs/api/$module-kotlin"
+              cp -r "$module/build/dokka/html/"* "docs/api/$module-kotlin/"
             fi
           done
 
-      - name: Notify Javadoc.io
+      - name: Create documentation index
         run: |
-          curl -X POST https://javadoc.io/webhook/github \
-            -H "Content-Type: application/json" \
-            -d '{
-              "repository": {
-                "full_name": "${{ github.repository }}"
-              },
-              "release": {
-                "tag_name": "${{ github.event.release.tag_name }}"
-              }
-            }'
+          cat > docs/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>JCacheX Documentation</title>
+              <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 40px; }
+                  .header { text-align: center; margin-bottom: 40px; }
+                  .modules { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+                  .module { border: 1px solid #ddd; border-radius: 8px; padding: 20px; }
+                  .module h3 { margin-top: 0; color: #2563eb; }
+                  .links a { display: inline-block; margin-right: 15px; padding: 8px 16px; background: #f3f4f6; border-radius: 4px; text-decoration: none; color: #374151; }
+                  .links a:hover { background: #e5e7eb; }
+                  .coverage { margin-top: 10px; font-size: 0.9em; color: #6b7280; }
+              </style>
+          </head>
+          <body>
+              <div class="header">
+                  <h1>JCacheX Documentation</h1>
+                  <p>High-performance caching library for Java and Kotlin applications</p>
+                  <p><strong>Version:</strong> ${{ github.event.release.tag_name || 'Latest' }}</p>
+              </div>
+
+              <div class="modules">
+                  <div class="module">
+                      <h3>jcachex-core</h3>
+                      <p>Core caching functionality and Java API</p>
+                      <div class="links">
+                          <a href="api/jcachex-core/index.html">Javadoc</a>
+                      </div>
+                  </div>
+
+                  <div class="module">
+                      <h3>jcachex-kotlin</h3>
+                      <p>Kotlin extensions and coroutine support</p>
+                      <div class="links">
+                          <a href="api/jcachex-kotlin/index.html">Javadoc</a>
+                          <a href="api/jcachex-kotlin-kotlin/index.html">KDoc</a>
+                      </div>
+                  </div>
+
+                  <div class="module">
+                      <h3>jcachex-spring</h3>
+                      <p>Spring Boot integration and annotations</p>
+                      <div class="links">
+                          <a href="api/jcachex-spring/index.html">Javadoc</a>
+                          <a href="api/jcachex-spring-kotlin/index.html">KDoc</a>
+                      </div>
+                  </div>
+              </div>
+
+              <div style="margin-top: 40px; text-align: center; color: #6b7280;">
+                  <p>Generated on $(date)</p>
+                  <p><a href="https://github.com/dpflux/JCacheX">View on GitHub</a> |
+                     <a href="https://central.sonatype.com/search?q=io.github.dpflux.jcachex">Maven Central</a></p>
+              </div>
+          </body>
+          </html>
+          EOF
+
+      - name: Upload documentation coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-coverage
+          path: "**/build/reports/documentation/"
+
+      - name: Setup Pages
+        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.publish_to_pages)
+        uses: actions/configure-pages@v4
+
+      - name: Upload to GitHub Pages
+        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.publish_to_pages)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+      - name: Deploy to GitHub Pages
+        if: github.event_name == 'release' || (github.event_name == 'workflow_dispatch' && inputs.publish_to_pages)
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Notify javadoc.io
+        if: github.event_name == 'release'
+        run: |
+          # Wait a bit for Maven Central to index the artifacts
+          sleep 30
+
+          # Notify javadoc.io for each module
+          for module in jcachex-core jcachex-kotlin jcachex-spring; do
+            echo "Notifying javadoc.io for $module..."
+            curl -X POST "https://javadoc.io/api/webhook" \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"groupId\": \"io.github.dpflux\",
+                \"artifactId\": \"$module\",
+                \"version\": \"${{ github.event.release.tag_name }}\"
+              }" || echo "Failed to notify javadoc.io for $module"
+
+            sleep 5
+          done
+
+      - name: Create documentation summary
+        run: |
+          echo "## 📚 Documentation Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🌐 Online Documentation" >> $GITHUB_STEP_SUMMARY
+          echo "- **GitHub Pages**: https://dpflux.github.io/JCacheX/" >> $GITHUB_STEP_SUMMARY
+          echo "- **javadoc.io**: https://javadoc.io/doc/io.github.dpflux/" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Documentation Coverage" >> $GITHUB_STEP_SUMMARY
+
+          for module in jcachex-core jcachex-kotlin jcachex-spring; do
+            if [ -f "$module/build/reports/documentation/coverage.txt" ]; then
+              coverage=$(grep "Coverage:" "$module/build/reports/documentation/coverage.txt" | grep -o "[0-9.]*%")
+              echo "- **$module**: $coverage" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`gradle" >> $GITHUB_STEP_SUMMARY
+          echo "implementation(\"io.github.dpflux:jcachex-core:${{ github.event.release.tag_name || 'x.y.z' }}\")" >> $GITHUB_STEP_SUMMARY
+          echo "implementation(\"io.github.dpflux:jcachex-kotlin:${{ github.event.release.tag_name || 'x.y.z' }}\")" >> $GITHUB_STEP_SUMMARY
+          echo "implementation(\"io.github.dpflux:jcachex-spring:${{ github.event.release.tag_name || 'x.y.z' }}\")" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

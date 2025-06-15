@@ -1,0 +1,166 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version increment type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+      release_notes:
+        description: 'Release notes (optional)'
+        required: false
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Set up JDK 8
+      uses: actions/setup-java@v4
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Configure Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+    - name: Get current version
+      id: current_version
+      run: |
+        CURRENT_VERSION=$(grep "version = " build.gradle.kts | sed 's/.*"\(.*\)".*/\1/' | sed 's/-SNAPSHOT//')
+        echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Calculate new version
+      id: new_version
+      run: |
+        CURRENT_VERSION="${{ steps.current_version.outputs.current_version }}"
+        IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+        MAJOR=${VERSION_PARTS[0]}
+        MINOR=${VERSION_PARTS[1]}
+        PATCH=${VERSION_PARTS[2]}
+
+        case "${{ github.event.inputs.version_type }}" in
+          major)
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+            ;;
+          minor)
+            MINOR=$((MINOR + 1))
+            PATCH=0
+            ;;
+          patch)
+            PATCH=$((PATCH + 1))
+            ;;
+        esac
+
+        NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Update version in build.gradle.kts
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        sed -i "s/version = \".*\"/version = \"$NEW_VERSION\"/" build.gradle.kts
+
+    - name: Run tests
+      run: ./gradlew test
+
+    - name: Build and publish to Maven Central
+      env:
+        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+      run: |
+        ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+
+    - name: Commit version bump
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        git add build.gradle.kts
+        git commit -m "chore: bump version to $NEW_VERSION"
+        git push origin main
+
+    - name: Create Git tag
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
+        git push origin "v$NEW_VERSION"
+
+    - name: Create GitHub Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.new_version.outputs.new_version }}
+        release_name: Release v${{ steps.new_version.outputs.new_version }}
+        body: |
+          ## Release v${{ steps.new_version.outputs.new_version }}
+
+          ${{ github.event.inputs.release_notes }}
+
+          ### 📚 Documentation
+          - **API Documentation**: https://dpflux.github.io/JCacheX/
+          - **javadoc.io**: https://javadoc.io/doc/io.github.dpflux/
+
+          ### 📦 Artifacts
+          The following artifacts are available on Maven Central:
+
+          ```gradle
+          implementation("io.github.dpflux:jcachex-core:${{ steps.new_version.outputs.new_version }}")
+          implementation("io.github.dpflux:jcachex-kotlin:${{ steps.new_version.outputs.new_version }}")
+          implementation("io.github.dpflux:jcachex-spring:${{ steps.new_version.outputs.new_version }}")
+          ```
+
+          ```xml
+          <dependency>
+              <groupId>io.github.dpflux</groupId>
+              <artifactId>jcachex-core</artifactId>
+              <version>${{ steps.new_version.outputs.new_version }}</version>
+          </dependency>
+          <dependency>
+              <groupId>io.github.dpflux</groupId>
+              <artifactId>jcachex-kotlin</artifactId>
+              <version>${{ steps.new_version.outputs.new_version }}</version>
+          </dependency>
+          <dependency>
+              <groupId>io.github.dpflux</groupId>
+              <artifactId>jcachex-spring</artifactId>
+              <version>${{ steps.new_version.outputs.new_version }}</version>
+          </dependency>
+          ```
+        draft: false
+        prerelease: false
+
+    - name: Update to next SNAPSHOT version
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        IFS='.' read -ra VERSION_PARTS <<< "$NEW_VERSION"
+        MAJOR=${VERSION_PARTS[0]}
+        MINOR=${VERSION_PARTS[1]}
+        PATCH=$((${VERSION_PARTS[2]} + 1))
+        NEXT_SNAPSHOT="$MAJOR.$MINOR.$PATCH-SNAPSHOT"
+
+        sed -i "s/version = \".*\"/version = \"$NEXT_SNAPSHOT\"/" build.gradle.kts
+        git add build.gradle.kts
+        git commit -m "chore: prepare next development iteration $NEXT_SNAPSHOT"
+        git push origin main

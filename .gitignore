@@ -109,6 +109,15 @@ yarn-error.log*
 .env.test.local
 .env.production.local
 
+# Gradle properties with sensitive information
+gradle.properties
+
+# GPG keys
+*.gpg
+*.asc
+secring.gpg
+pubring.gpg
+
 # Cache
 .cache/
 .parcel-cache/
@@ -116,4 +125,4 @@ yarn-error.log*
 # Misc
 *.swp
 *.swo
-*# 
+*#

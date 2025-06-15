@@ -1,5 +1,12 @@
 # JCacheX
 
+[![CI](https://github.com/dpflux/JCacheX/workflows/CI/badge.svg)](https://github.com/dpflux/JCacheX/actions)
+[![codecov](https://codecov.io/gh/dpflux/JCacheX/branch/main/graph/badge.svg)](https://codecov.io/gh/dpflux/JCacheX)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dpflux_JCacheX&metric=alert_status)](https://sonarcloud.io/dashboard?id=dpflux_JCacheX)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.dpflux/jcachex-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.dpflux/jcachex-core)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dpflux.github.io/JCacheX/)
+[![javadoc](https://javadoc.io/badge2/io.github.dpflux/jcachex-core/javadoc.svg)](https://javadoc.io/doc/io.github.dpflux/jcachex-core)
+
 A high-performance, lightweight caching library for Kotlin and Java applications.
 
 ## Features
@@ -17,64 +24,67 @@ A high-performance, lightweight caching library for Kotlin and Java applications
 - Comprehensive test coverage
 - Fake cache support for testing
 
-## Installation
+## 📚 Documentation
 
-### Gradle (Kotlin DSL)
+- **📖 API Documentation**: [GitHub Pages](https://dpflux.github.io/JCacheX/)
+- **📋 Javadoc**: [javadoc.io](https://javadoc.io/doc/io.github.dpflux/)
+- **📊 Documentation Coverage**: Run `./gradlew allDocumentationCoverage`
 
+## 📦 Installation
+
+### Gradle
 ```kotlin
 dependencies {
     // Core functionality
-    implementation("io.github.dhruv:jcachex-core:1.0.0")
+    implementation("io.github.dpflux:jcachex-core:x.y.z")
 
     // Java-specific extensions
-    implementation("io.github.dhruv:jcachex-java:1.0.0")
+    implementation("io.github.dpflux:jcachex-java:x.y.z")
 
     // Kotlin-specific extensions
-    implementation("io.github.dhruv:jcachex-kotlin:1.0.0")
+    implementation("io.github.dpflux:jcachex-kotlin:x.y.z")
 
     // Spring Boot integration
-    implementation("io.github.dhruv:jcachex-spring:1.0.0")
+    implementation("io.github.dpflux:jcachex-spring:x.y.z")
 }
 ```
 
 ### Maven
-
 ```xml
 <dependencies>
     <!-- Core functionality -->
     <dependency>
-        <groupId>io.github.dhruv</groupId>
+        <groupId>io.github.dpflux</groupId>
         <artifactId>jcachex-core</artifactId>
-        <version>1.0.0</version>
+        <version>x.y.z</version>
     </dependency>
 
     <!-- Java-specific extensions -->
     <dependency>
-        <groupId>io.github.dhruv</groupId>
+        <groupId>io.github.dpflux</groupId>
         <artifactId>jcachex-java</artifactId>
-        <version>1.0.0</version>
+        <version>x.y.z</version>
     </dependency>
 
     <!-- Kotlin-specific extensions -->
     <dependency>
-        <groupId>io.github.dhruv</groupId>
+        <groupId>io.github.dpflux</groupId>
         <artifactId>jcachex-kotlin</artifactId>
-        <version>1.0.0</version>
+        <version>x.y.z</version>
     </dependency>
 
     <!-- Spring Boot integration -->
     <dependency>
-        <groupId>io.github.dhruv</groupId>
+        <groupId>io.github.dpflux</groupId>
         <artifactId>jcachex-spring</artifactId>
-        <version>1.0.0</version>
+        <version>x.y.z</version>
     </dependency>
 </dependencies>
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
-### Java
-
+### Basic Usage (Java)
 ```java
 // Create a cache
 Cache<String, String> cache = CacheBuilder.<String, String>newBuilder()
@@ -91,8 +101,7 @@ String value = cache.get("key");
 CompletableFuture<String> future = cache.getAsync("key", executor);
 ```
 
-### Kotlin
-
+### Kotlin Extensions
 ```kotlin
 // Create a cache
 val cache = CacheBuilder<String, String>()
@@ -109,8 +118,7 @@ val value = cache.get("key")
 val asyncValue = cache.getSuspend("key")
 ```
 
-### Spring Boot
-
+### Spring Boot Integration
 ```kotlin
 @SpringBootApplication
 @EnableJCacheX
@@ -128,64 +136,58 @@ class UserController {
 }
 ```
 
-## Advanced Usage
+## 🔧 Development
 
-### Custom Eviction Strategy
+### Documentation Tasks
+```bash
+# Check documentation coverage
+./gradlew allDocumentationCoverage
 
-```kotlin
-class CustomEvictionStrategy<K, V> : EvictionStrategy<K, V> {
-    override fun evict(entries: MutableMap<K, CacheEntry<V>>, count: Int) {
-        // Custom eviction logic
-    }
-}
+# Generate all documentation
+./gradlew generateAllDocs
+
+# Generate specific documentation
+./gradlew javadoc
+./gradlew dokkaHtml
 ```
 
-### Cache Event Listeners
+### Testing
+```bash
+# Run all tests
+./gradlew test
 
-```kotlin
-cache.addListener(object : CacheEventListener<String, String> {
-    override fun onPut(key: String, value: String) {
-        println("Put: $key = $value")
-    }
+# Run with coverage
+./gradlew test jacocoTestReport
 
-    override fun onRemove(key: String, value: String) {
-        println("Remove: $key = $value")
-    }
-
-    override fun onEvict(key: String, value: String, reason: EvictionReason) {
-        println("Evict: $key = $value ($reason)")
-    }
-})
+# Check code quality
+./gradlew detekt ktlintCheck
 ```
 
-### Testing with Fake Cache
+## 📈 Quality Metrics
 
-```kotlin
-@Test
-fun testWithFakeCache() {
-    val cache = FakeCache<String, String>()
+- **Test Coverage**: 60%+ (tracked by Codecov)
+- **Documentation Coverage**: 100% (tracked automatically)
+- **Code Quality**: SonarQube quality gate
+- **Code Style**: Detekt + KtLint
 
-    cache.put("key", "value")
-    assertEquals("value", cache.get("key"))
-
-    cache.simulateEviction("key", EvictionReason.SIZE)
-    assertNull(cache.get("key"))
-}
-```
-
-## Documentation
-
-- [API Reference](https://javadoc.io/doc/io.github.dhruv/jcachex-core)
-- [Wiki](https://github.com/dhruv/JCacheX/wiki)
-- [GitHub Pages](https://dhruv.github.io/JCacheX)
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
-## License
+## 📄 License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## 📊 CI/CD
+
+For detailed CI/CD setup instructions, see [CICD_SETUP.md](CICD_SETUP.md).
+
+The project uses:
+- **GitHub Actions** for CI/CD
+- **SonarCloud** for code quality
+- **Codecov** for test coverage
+- **Maven Central** for artifact publishing
+- **GitHub Pages** for documentation hosting
 
 ## Sample Projects
 

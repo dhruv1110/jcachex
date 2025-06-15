@@ -3,7 +3,7 @@ plugins {
     id("application")
 }
 
-group = "io.github.dhruv.jcachex.example"
+group = "io.github.dpflux.jcachex.example"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -11,8 +11,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.dhruv:jcachex-core:1.0.0")
-    implementation("io.github.dhruv:jcachex-kotlin:1.0.0")
+    implementation("io.github.dpflux:jcachex-core:1.0.0")
+    implementation("io.github.dpflux:jcachex-kotlin:1.0.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.slf4j:slf4j-api:2.0.9")
@@ -23,7 +23,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("io.github.dhruv.jcachex.example.kotlin.MainKt")
+    mainClass.set("io.github.dpflux.jcachex.example.kotlin.MainKt")
 }
 
 tasks.test {

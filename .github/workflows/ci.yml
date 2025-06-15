@@ -1,60 +1,73 @@
-name: CI/CD
+name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
 
 jobs:
-  build:
+  tests:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up JDK 17
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Shallow clones should be disabled for better analysis
+
+    - name: Set up JDK 8
       uses: actions/setup-java@v4
       with:
-        java-version: '17'
+        java-version: '8'
         distribution: 'temurin'
         cache: gradle
-    
+
+
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    
-    - name: Build with Gradle
-      run: ./gradlew build
-    
-    - name: Run tests
-      run: ./gradlew test
-    
-    - name: Run detekt
-      run: ./gradlew detekt
-    
-    - name: Generate documentation
-      run: ./gradlew dokkaHtml
-    
+
+    - name: Run tests and generate coverage
+      run: ./gradlew test jacocoTestReport
+
+    - name: Run code quality checks
+      run: |
+        ./gradlew detekt
+        ./gradlew ktlintCheck
+
+    - name: Generate documentation coverage
+      run: ./gradlew allDocumentationCoverage
+
+    - name: Build project
+      run: ./gradlew build -x test
+
+
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: "**/build/reports/jacoco/test/jacocoTestReport.xml"
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
     - name: Upload test results
       uses: actions/upload-artifact@v4
       if: always()
       with:
         name: test-results
-        path: build/reports/tests/
-    
-    - name: Upload documentation
-      uses: actions/upload-artifact@v4
-      if: always()
+        path: |
+          **/build/reports/tests/
+          **/build/reports/jacoco/
+          **/build/reports/detekt/
+          **/build/reports/documentation/
+
+    - name: Comment PR with coverage
+      if: github.event_name == 'pull_request'
+      uses: codecov/codecov-action@v3
       with:
-        name: documentation
-        path: build/dokka/
-    
-    - name: Publish to Maven Central
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-      run: ./gradlew publish
-      env:
-        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-        GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-        GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
-        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }} 
+        token: ${{ secrets.CODECOV_TOKEN }}
+        flags: unittests
+        name: codecov-umbrella

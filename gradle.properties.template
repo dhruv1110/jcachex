@@ -1,0 +1,22 @@
+# Maven Central Publishing Configuration
+# Copy this file to gradle.properties and fill in your credentials
+# Never commit gradle.properties to version control!
+
+# OSSRH Credentials (from https://issues.sonatype.org/)
+ossrhUsername=your-username
+ossrhPassword=your-password
+
+# GPG Signing (for artifact signing)
+signing.keyId=your-key-id
+signing.password=your-gpg-password
+signing.secretKeyRingFile=/path/to/your/secring.gpg
+
+# Alternative: Use in-memory signing with base64 encoded key
+# signing.key=your-base64-encoded-private-key
+# signing.password=your-gpg-password
+
+# Gradle Configuration
+org.gradle.parallel=true
+org.gradle.caching=true
+org.gradle.daemon=true
+org.gradle.jvmargs=-Xmx2g -XX:MaxMetaspaceSize=512m
