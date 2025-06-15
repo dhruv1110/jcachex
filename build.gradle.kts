@@ -76,7 +76,7 @@ subprojects {
                         developer {
                             id.set("dpflux")
                             name.set("DPFlux")
-                            email.set("your-email@example.com") // Update with your email
+                            email.set("dpflux@users.noreply.github.com") // Update with your email
                         }
                     }
 
