@@ -84,72 +84,24 @@ jobs:
     - name: Run tests
       run: ./gradlew test
 
-    - name: Build and publish to Maven Central
-      env:
-        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-        GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
-      run: |
-        ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
+    - name: Stage artifacts locally
+      run: ./gradlew publish
 
-    - name: Commit version bump
-      run: |
-        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
-        git add build.gradle.kts
-        git commit -m "chore: bump version to $NEW_VERSION"
-        git push origin main
-
-    - name: Create Git tag
-      run: |
-        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
-        git tag -a "v$NEW_VERSION" -m "Release version $NEW_VERSION"
-        git push origin "v$NEW_VERSION"
-
-    - name: Create GitHub Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Import GPG key
+      uses: crazy-max/ghaction-import-gpg@v6
       with:
-        tag_name: v${{ steps.new_version.outputs.new_version }}
-        release_name: Release v${{ steps.new_version.outputs.new_version }}
-        body: |
-          ## Release v${{ steps.new_version.outputs.new_version }}
+        gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+        passphrase: ${{ secrets.GPG_PASSWORD }}
 
-          ${{ github.event.inputs.release_notes }}
-
-          ### 📚 Documentation
-          - **API Documentation**: https://dpflux.github.io/JCacheX/
-          - **javadoc.io**: https://javadoc.io/doc/io.github.dpflux/
-
-          ### 📦 Artifacts
-          The following artifacts are available on Maven Central:
-
-          ```gradle
-          implementation("io.github.dpflux:jcachex-core:${{ steps.new_version.outputs.new_version }}")
-          implementation("io.github.dpflux:jcachex-kotlin:${{ steps.new_version.outputs.new_version }}")
-          implementation("io.github.dpflux:jcachex-spring:${{ steps.new_version.outputs.new_version }}")
-          ```
-
-          ```xml
-          <dependency>
-              <groupId>io.github.dpflux</groupId>
-              <artifactId>jcachex-core</artifactId>
-              <version>${{ steps.new_version.outputs.new_version }}</version>
-          </dependency>
-          <dependency>
-              <groupId>io.github.dpflux</groupId>
-              <artifactId>jcachex-kotlin</artifactId>
-              <version>${{ steps.new_version.outputs.new_version }}</version>
-          </dependency>
-          <dependency>
-              <groupId>io.github.dpflux</groupId>
-              <artifactId>jcachex-spring</artifactId>
-              <version>${{ steps.new_version.outputs.new_version }}</version>
-          </dependency>
-          ```
-        draft: false
-        prerelease: false
+    - name: Run JReleaser
+      env:
+        JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.MAVENCENTRAL_USERNAME }}
+        JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.MAVENCENTRAL_PASSWORD }}
+        JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSWORD }}
+        JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
+        JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      run: ./gradlew jreleaserFullRelease
 
     - name: Update to next SNAPSHOT version
       run: |
@@ -164,3 +116,12 @@ jobs:
         git add build.gradle.kts
         git commit -m "chore: prepare next development iteration $NEXT_SNAPSHOT"
         git push origin main
+
+    - name: JReleaser output
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: jreleaser-logs
+        path: |
+          build/jreleaser/trace.log
+          build/jreleaser/output.properties

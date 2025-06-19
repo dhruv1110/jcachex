@@ -1,6 +1,6 @@
-package io.github.dpflux.jcachex.example.kotlin
+package io.github.dhruv1110.jcachex.example.kotlin
 
-import io.github.dpflux.jcachex.*
+import io.github.dhruv1110.jcachex.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
