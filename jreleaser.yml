@@ -84,6 +84,7 @@ signing:
 
 deploy:
   maven:
+    active: ALWAYS
     mavenCentral:
       sonatype:
         active: ALWAYS
