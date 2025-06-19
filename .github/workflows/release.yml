@@ -84,14 +84,14 @@ jobs:
     - name: Run tests
       run: ./gradlew test
 
-    - name: Stage artifacts locally
-      run: ./gradlew publish
-
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v6
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSWORD }}
+
+    - name: Stage artifacts locally
+      run: ./gradlew publish
 
     - name: Run JReleaser
       env:
