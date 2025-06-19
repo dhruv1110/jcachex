@@ -329,7 +329,7 @@ project(":jcachex-kotlin") {
         implementation(project(":jcachex-core"))
         implementation("org.jetbrains.kotlin:kotlin-stdlib")
         implementation("org.jetbrains.kotlin:kotlin-reflect")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
         // Testing
         testImplementation("org.jetbrains.kotlin:kotlin-test")
