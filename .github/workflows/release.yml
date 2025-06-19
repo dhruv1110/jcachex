@@ -48,11 +48,37 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-    - name: Get current version
+    - name: Get current version from latest Git tag
       id: current_version
       run: |
-        CURRENT_VERSION=$(grep "version = " build.gradle.kts | sed 's/.*"\(.*\)".*/\1/' | sed 's/-SNAPSHOT//')
+        # Get the latest tag, or default to 0.0.0 if no tags exist
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        # Remove 'v' prefix if present
+        CURRENT_VERSION=${LATEST_TAG#v}
+
+        echo "Latest tag: $LATEST_TAG"
+        echo "Current version: $CURRENT_VERSION"
+
+        # Validate version format (semantic versioning)
+        if ! [[ $CURRENT_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "❌ Error: Invalid version format '$CURRENT_VERSION'. Expected: X.Y.Z"
+          exit 1
+        fi
+
+        # Check if tag was created by this workflow (has corresponding release)
+        if [ "$LATEST_TAG" != "v0.0.0" ]; then
+          RELEASE_EXISTS=$(gh api repos/${{ github.repository }}/releases/tags/$LATEST_TAG --jq '.tag_name' 2>/dev/null || echo "")
+          if [ -z "$RELEASE_EXISTS" ]; then
+            echo "⚠️  Warning: Tag $LATEST_TAG exists but no corresponding release found"
+            echo "This might indicate a manually created tag"
+          else
+            echo "✅ Tag $LATEST_TAG has corresponding release"
+          fi
+        fi
+
         echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Calculate new version
       id: new_version
@@ -79,6 +105,25 @@ jobs:
         esac
 
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+
+        echo "🔄 Version increment:"
+        echo "  Current: $CURRENT_VERSION"
+        echo "  New:     $NEW_VERSION"
+        echo "  Type:    ${{ github.event.inputs.version_type }}"
+
+        # Validate that new version is actually newer
+        if [ "$NEW_VERSION" = "$CURRENT_VERSION" ]; then
+          echo "❌ Error: New version ($NEW_VERSION) is same as current version"
+          exit 1
+        fi
+
+        # Check if this version already exists as a tag
+        if git tag -l "v$NEW_VERSION" | grep -q "v$NEW_VERSION"; then
+          echo "❌ Error: Tag v$NEW_VERSION already exists"
+          exit 1
+        fi
+
+        echo "✅ Version validation passed"
         echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
     - name: Update version in build.gradle.kts
@@ -107,20 +152,6 @@ jobs:
         JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
         JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       run: ./gradlew jreleaserFullRelease
-
-    - name: Update to next SNAPSHOT version
-      run: |
-        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
-        IFS='.' read -ra VERSION_PARTS <<< "$NEW_VERSION"
-        MAJOR=${VERSION_PARTS[0]}
-        MINOR=${VERSION_PARTS[1]}
-        PATCH=$((${VERSION_PARTS[2]} + 1))
-        NEXT_SNAPSHOT="$MAJOR.$MINOR.$PATCH-SNAPSHOT"
-
-        sed -i "s/version = \".*\"/version = \"$NEXT_SNAPSHOT\"/" build.gradle.kts
-        git add build.gradle.kts
-        git commit -m "chore: prepare next development iteration $NEXT_SNAPSHOT"
-        git push origin main
 
     - name: JReleaser output
       if: always()
