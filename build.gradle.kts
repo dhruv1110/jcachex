@@ -91,7 +91,7 @@ subprojects {
         }
     }
 
-        // Signing configuration - JReleaser will handle signing, but we need this for local staging
+    // Signing configuration - JReleaser will handle signing, but we need this for local staging
     signing {
         useGpgCmd()
         // Only sign when running in CI or when explicitly requested
