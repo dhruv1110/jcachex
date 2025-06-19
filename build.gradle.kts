@@ -22,25 +22,7 @@ allprojects {
     }
 }
 
-// JReleaser configuration for Maven Central publishing
-jreleaser {
-    signing {
-        active.set(Active.ALWAYS)
-        armored.set(true)
-    }
-    deploy {
-        maven {
-            mavenCentral {
-
-//                sonatype {
-//                    active.set("ALWAYS")
-//                    url.set("https://central.sonatype.com/api/v1/publisher")
-//                    stagingRepository("build/staging-deploy")
-//                }
-            }
-        }
-    }
-}
+// JReleaser configuration is in jreleaser.yml
 
 subprojects {
     apply(plugin = "java")
@@ -102,14 +84,14 @@ subprojects {
             }
         }
 
-//        repositories {
-//            maven {
-//                url = layout.buildDirectory.dir("staging-deploy")
-//            }
-//        }
+        repositories {
+            maven {
+                url = layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
+            }
+        }
     }
 
-    // Signing configuration - JReleaser will handle signing
+    // Signing configuration - JReleaser will handle signing, but we need this for local staging
     signing {
         useGpgCmd()
         sign(publishing.publications["maven"])
