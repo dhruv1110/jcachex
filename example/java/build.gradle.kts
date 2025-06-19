@@ -3,7 +3,7 @@ plugins {
     id("application")
 }
 
-group = "io.github.dpflux.jcachex.example"
+group = "io.github.dhruv1110.jcachex.example"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -19,7 +19,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("io.github.dpflux.jcachex.example.java.Main")
+    mainClass.set("io.github.dhruv1110.jcachex.example.java.Main")
 }
 
 tasks.test {

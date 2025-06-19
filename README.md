@@ -1,11 +1,11 @@
 # JCacheX
 
-[![CI](https://github.com/dpflux/JCacheX/workflows/CI/badge.svg)](https://github.com/dpflux/JCacheX/actions)
-[![codecov](https://codecov.io/gh/dpflux/JCacheX/branch/main/graph/badge.svg)](https://codecov.io/gh/dpflux/JCacheX)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dpflux_JCacheX&metric=alert_status)](https://sonarcloud.io/dashboard?id=dpflux_JCacheX)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.dpflux/jcachex-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.dpflux/jcachex-core)
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dpflux.github.io/JCacheX/)
-[![javadoc](https://javadoc.io/badge2/io.github.dpflux/jcachex-core/javadoc.svg)](https://javadoc.io/doc/io.github.dpflux/jcachex-core)
+[![CI](https://github.com/dhruv1110/JCacheX/workflows/CI/badge.svg)](https://github.com/dhruv1110/JCacheX/actions)
+[![codecov](https://codecov.io/gh/dhruv1110/JCacheX/branch/main/graph/badge.svg)](https://codecov.io/gh/dhruv1110/JCacheX)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dhruv1110_JCacheX&metric=alert_status)](https://sonarcloud.io/dashboard?id=dhruv1110_JCacheX)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.dhruv1110/jcachex-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.dhruv1110/jcachex-core)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dhruv1110.github.io/JCacheX/)
+[![javadoc](https://javadoc.io/badge2/io.github.dhruv1110/jcachex-core/javadoc.svg)](https://javadoc.io/doc/io.github.dhruv1110/jcachex-core)
 
 A high-performance, lightweight caching library for Kotlin and Java applications.
 
@@ -26,8 +26,8 @@ A high-performance, lightweight caching library for Kotlin and Java applications
 
 ## 📚 Documentation
 
-- **📖 API Documentation**: [GitHub Pages](https://dpflux.github.io/JCacheX/)
-- **📋 Javadoc**: [javadoc.io](https://javadoc.io/doc/io.github.dpflux/)
+- **📖 API Documentation**: [GitHub Pages](https://dhruv1110.github.io/JCacheX/)
+- **📋 Javadoc**: [javadoc.io](https://javadoc.io/doc/io.github.dhruv1110/)
 - **📊 Documentation Coverage**: Run `./gradlew allDocumentationCoverage`
 
 ## 📦 Installation
@@ -36,16 +36,16 @@ A high-performance, lightweight caching library for Kotlin and Java applications
 ```kotlin
 dependencies {
     // Core functionality
-    implementation("io.github.dpflux:jcachex-core:x.y.z")
+    implementation("io.github.dhruv1110:jcachex-core:x.y.z")
 
     // Java-specific extensions
-    implementation("io.github.dpflux:jcachex-java:x.y.z")
+    implementation("io.github.dhruv1110:jcachex-java:x.y.z")
 
     // Kotlin-specific extensions
-    implementation("io.github.dpflux:jcachex-kotlin:x.y.z")
+    implementation("io.github.dhruv1110:jcachex-kotlin:x.y.z")
 
     // Spring Boot integration
-    implementation("io.github.dpflux:jcachex-spring:x.y.z")
+    implementation("io.github.dhruv1110:jcachex-spring:x.y.z")
 }
 ```
 
@@ -54,28 +54,28 @@ dependencies {
 <dependencies>
     <!-- Core functionality -->
     <dependency>
-        <groupId>io.github.dpflux</groupId>
+        <groupId>io.github.dhruv1110</groupId>
         <artifactId>jcachex-core</artifactId>
         <version>x.y.z</version>
     </dependency>
 
     <!-- Java-specific extensions -->
     <dependency>
-        <groupId>io.github.dpflux</groupId>
+        <groupId>io.github.dhruv1110</groupId>
         <artifactId>jcachex-java</artifactId>
         <version>x.y.z</version>
     </dependency>
 
     <!-- Kotlin-specific extensions -->
     <dependency>
-        <groupId>io.github.dpflux</groupId>
+        <groupId>io.github.dhruv1110</groupId>
         <artifactId>jcachex-kotlin</artifactId>
         <version>x.y.z</version>
     </dependency>
 
     <!-- Spring Boot integration -->
     <dependency>
-        <groupId>io.github.dpflux</groupId>
+        <groupId>io.github.dhruv1110</groupId>
         <artifactId>jcachex-spring</artifactId>
         <version>x.y.z</version>
     </dependency>

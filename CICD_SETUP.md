@@ -31,7 +31,7 @@ The CI/CD pipeline includes:
 ### 3. Maven Central Setup
 
 1. Create a Sonatype JIRA account at [issues.sonatype.org](https://issues.sonatype.org)
-2. Create a new project ticket for `io.github.dpflux` groupId
+2. Create a new project ticket for `io.github.dhruv1110` groupId
 3. Wait for approval (usually takes 1-2 business days)
 4. Generate GPG keys for artifact signing:
 
@@ -77,7 +77,7 @@ gpg --export-secret-keys --armor YOUR_KEY_ID | base64 | tr -d '\n'
 
 ```bash
 # Copy template
-cp gradle.properties.template gradle.properties
+cp gradle.properties gradle.properties
 
 # Edit with your credentials
 nano gradle.properties
@@ -142,9 +142,9 @@ After successful release, artifacts are available on Maven Central:
 ### Gradle
 ```kotlin
 dependencies {
-    implementation("io.github.dpflux:jcachex-core:x.y.z")
-    implementation("io.github.dpflux:jcachex-kotlin:x.y.z")
-    implementation("io.github.dpflux:jcachex-spring:x.y.z")
+    implementation("io.github.dhruv1110:jcachex-core:x.y.z")
+    implementation("io.github.dhruv1110:jcachex-kotlin:x.y.z")
+    implementation("io.github.dhruv1110:jcachex-spring:x.y.z")
 }
 ```
 
@@ -152,17 +152,17 @@ dependencies {
 ```xml
 <dependencies>
     <dependency>
-        <groupId>io.github.dpflux</groupId>
+        <groupId>io.github.dhruv1110</groupId>
         <artifactId>jcachex-core</artifactId>
         <version>x.y.z</version>
     </dependency>
     <dependency>
-        <groupId>io.github.dpflux</groupId>
+        <groupId>io.github.dhruv1110</groupId>
         <artifactId>jcachex-kotlin</artifactId>
         <version>x.y.z</version>
     </dependency>
     <dependency>
-        <groupId>io.github.dpflux</groupId>
+        <groupId>io.github.dhruv1110</groupId>
         <artifactId>jcachex-spring</artifactId>
         <version>x.y.z</version>
     </dependency>
@@ -194,8 +194,8 @@ dependencies {
 ## Documentation Features
 
 ### 📚 **Automatic Documentation Publishing**
-- **GitHub Pages**: https://dpflux.github.io/JCacheX/
-- **javadoc.io**: https://javadoc.io/doc/io.github.dpflux/
+- **GitHub Pages**: https://dhruv1110.github.io/JCacheX/
+- **javadoc.io**: https://javadoc.io/doc/io.github.dhruv1110/
 
 ### 📊 **Documentation Coverage**
 Track documentation coverage for your codebase:
@@ -219,12 +219,12 @@ Track documentation coverage for your codebase:
 Add these badges to your README.md:
 
 ```markdown
-[![CI](https://github.com/dpflux/JCacheX/workflows/CI/badge.svg)](https://github.com/dpflux/JCacheX/actions)
-[![codecov](https://codecov.io/gh/dpflux/JCacheX/branch/main/graph/badge.svg)](https://codecov.io/gh/dpflux/JCacheX)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dpflux_JCacheX&metric=alert_status)](https://sonarcloud.io/dashboard?id=dpflux_JCacheX)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.dpflux/jcachex-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.dpflux/jcachex-core)
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dpflux.github.io/JCacheX/)
-[![javadoc](https://javadoc.io/badge2/io.github.dpflux/jcachex-core/javadoc.svg)](https://javadoc.io/doc/io.github.dpflux/jcachex-core)
+[![CI](https://github.com/dhruv1110/JCacheX/workflows/CI/badge.svg)](https://github.com/dhruv1110/JCacheX/actions)
+[![codecov](https://codecov.io/gh/dhruv1110/JCacheX/branch/main/graph/badge.svg)](https://codecov.io/gh/dhruv1110/JCacheX)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dhruv1110_JCacheX&metric=alert_status)](https://sonarcloud.io/dashboard?id=dhruv1110_JCacheX)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.dhruv1110/jcachex-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.dhruv1110/jcachex-core)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dhruv1110.github.io/JCacheX/)
+[![javadoc](https://javadoc.io/badge2/io.github.dhruv1110/jcachex-core/javadoc.svg)](https://javadoc.io/doc/io.github.dhruv1110/jcachex-core)
 ```
 
 ## Troubleshooting

@@ -121,8 +121,8 @@ jobs:
 
               <div style="margin-top: 40px; text-align: center; color: #6b7280;">
                   <p>Generated on $(date)</p>
-                  <p><a href="https://github.com/dpflux/JCacheX">View on GitHub</a> |
-                     <a href="https://central.sonatype.com/search?q=io.github.dpflux.jcachex">Maven Central</a></p>
+                  <p><a href="https://github.com/dhruv1110/JCacheX">View on GitHub</a> |
+                     <a href="https://central.sonatype.com/search?q=io.github.dhruv1110.jcachex">Maven Central</a></p>
               </div>
           </body>
           </html>
@@ -161,7 +161,7 @@ jobs:
             curl -X POST "https://javadoc.io/api/webhook" \
               -H "Content-Type: application/json" \
               -d "{
-                \"groupId\": \"io.github.dpflux\",
+                \"groupId\": \"io.github.dhruv1110\",
                 \"artifactId\": \"$module\",
                 \"version\": \"${{ github.event.release.tag_name }}\"
               }" || echo "Failed to notify javadoc.io for $module"
@@ -174,8 +174,8 @@ jobs:
           echo "## 📚 Documentation Published" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🌐 Online Documentation" >> $GITHUB_STEP_SUMMARY
-          echo "- **GitHub Pages**: https://dpflux.github.io/JCacheX/" >> $GITHUB_STEP_SUMMARY
-          echo "- **javadoc.io**: https://javadoc.io/doc/io.github.dpflux/" >> $GITHUB_STEP_SUMMARY
+          echo "- **GitHub Pages**: https://dhruv1110.github.io/JCacheX/" >> $GITHUB_STEP_SUMMARY
+          echo "- **javadoc.io**: https://javadoc.io/doc/io.github.dhruv1110/" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📊 Documentation Coverage" >> $GITHUB_STEP_SUMMARY
 
@@ -189,7 +189,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`gradle" >> $GITHUB_STEP_SUMMARY
-          echo "implementation(\"io.github.dpflux:jcachex-core:${{ github.event.release.tag_name || 'x.y.z' }}\")" >> $GITHUB_STEP_SUMMARY
-          echo "implementation(\"io.github.dpflux:jcachex-kotlin:${{ github.event.release.tag_name || 'x.y.z' }}\")" >> $GITHUB_STEP_SUMMARY
-          echo "implementation(\"io.github.dpflux:jcachex-spring:${{ github.event.release.tag_name || 'x.y.z' }}\")" >> $GITHUB_STEP_SUMMARY
+          echo "implementation(\"io.github.dhruv1110:jcachex-core:${{ github.event.release.tag_name || 'x.y.z' }}\")" >> $GITHUB_STEP_SUMMARY
+          echo "implementation(\"io.github.dhruv1110:jcachex-kotlin:${{ github.event.release.tag_name || 'x.y.z' }}\")" >> $GITHUB_STEP_SUMMARY
+          echo "implementation(\"io.github.dhruv1110:jcachex-spring:${{ github.event.release.tag_name || 'x.y.z' }}\")" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

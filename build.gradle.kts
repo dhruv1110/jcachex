@@ -1,3 +1,5 @@
+import org.jreleaser.model.Active
+
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.22" apply false
@@ -7,11 +9,11 @@ plugins {
     id("maven-publish")
     id("signing")
 
-    id("io.github.gradle-nexus.publish-plugin") version "1.3.0"
+    id("org.jreleaser") version "1.18.0"
     id("org.jetbrains.dokka") version "1.9.10" apply false
 }
 
-group = "io.github.dpflux"
+group = "io.github.dhruv1110"
 version = "0.1.0-SNAPSHOT"
 
 allprojects {
@@ -20,19 +22,25 @@ allprojects {
     }
 }
 
-// Nexus publishing configuration
-nexusPublishing {
-    repositories {
-        sonatype {
-            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
-            username.set(project.findProperty("ossrhUsername") as String? ?: System.getenv("OSSRH_USERNAME"))
-            password.set(project.findProperty("ossrhPassword") as String? ?: System.getenv("OSSRH_PASSWORD"))
+// JReleaser configuration for Maven Central publishing
+jreleaser {
+    signing {
+        active.set(Active.ALWAYS)
+        armored.set(true)
+    }
+    deploy {
+        maven {
+            mavenCentral {
+
+//                sonatype {
+//                    active.set("ALWAYS")
+//                    url.set("https://central.sonatype.com/api/v1/publisher")
+//                    stagingRepository("build/staging-deploy")
+//                }
+            }
         }
     }
 }
-
-
 
 subprojects {
     apply(plugin = "java")
@@ -63,7 +71,7 @@ subprojects {
                 pom {
                     name.set("JCacheX - ${project.name}")
                     description.set("High-performance caching library for Java and Kotlin applications")
-                    url.set("https://github.com/dpflux/JCacheX")
+                    url.set("https://github.com/dhruv1110/JCacheX")
 
                     licenses {
                         license {
@@ -74,38 +82,37 @@ subprojects {
 
                     developers {
                         developer {
-                            id.set("dpflux")
-                            name.set("DPFlux")
-                            email.set("your-email@example.com") // Update with your email
+                            id.set("dhruv1110")
+                            name.set("dhruv1110")
+                            email.set("dhruv1110@users.noreply.github.com") // Update with your email
                         }
                     }
 
                     scm {
-                        connection.set("scm:git:git://github.com/dpflux/JCacheX.git")
-                        developerConnection.set("scm:git:ssh://github.com/dpflux/JCacheX.git")
-                        url.set("https://github.com/dpflux/JCacheX")
+                        connection.set("scm:git:git://github.com/dhruv1110/JCacheX.git")
+                        developerConnection.set("scm:git:ssh://github.com/dhruv1110/JCacheX.git")
+                        url.set("https://github.com/dhruv1110/JCacheX")
                     }
 
                     issueManagement {
                         system.set("GitHub")
-                        url.set("https://github.com/dpflux/JCacheX/issues")
+                        url.set("https://github.com/dhruv1110/JCacheX/issues")
                     }
                 }
             }
         }
 
-                // Repository configuration is handled by nexus-publish plugin
+//        repositories {
+//            maven {
+//                url = layout.buildDirectory.dir("staging-deploy")
+//            }
+//        }
     }
 
-    // Signing configuration
+    // Signing configuration - JReleaser will handle signing
     signing {
-        val signingKey = project.findProperty("signing.key") as String? ?: System.getenv("GPG_PRIVATE_KEY")
-        val signingPassword = project.findProperty("signing.password") as String? ?: System.getenv("GPG_PASSWORD")
-
-        if (signingKey != null && signingPassword != null) {
-            useInMemoryPgpKeys(signingKey, signingPassword)
-            sign(publishing.publications["maven"])
-        }
+        useGpgCmd()
+        sign(publishing.publications["maven"])
     }
 
     tasks.withType<Test> {
@@ -177,7 +184,7 @@ subprojects {
                 windowTitle = "JCacheX ${project.name} API"
                 docTitle = "JCacheX ${project.name} API"
                 header = "<b>JCacheX ${project.name}</b>"
-                bottom = "Copyright © 2024 DPFlux. All rights reserved."
+                bottom = "Copyright © 2024 dhruv1110. All rights reserved."
             }
         }
         isFailOnError = false
