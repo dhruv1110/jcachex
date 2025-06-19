@@ -94,7 +94,13 @@ subprojects {
     // Signing configuration - JReleaser will handle signing, but we need this for local staging
     signing {
         useGpgCmd()
-        sign(publishing.publications["maven"])
+        // Only sign when running in CI or when explicitly requested
+        isRequired = false
+
+        // Check if we're in CI environment or signing is explicitly requested
+        if (System.getenv("GITHUB_ACTIONS") != null || project.hasProperty("sign")) {
+            sign(publishing.publications["maven"])
+        }
     }
 
     tasks.withType<Test> {
