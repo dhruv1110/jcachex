@@ -90,17 +90,3 @@ deploy:
         url: https://central.sonatype.com/api/v1/publisher
         stagingRepositories:
           - build/staging-deploy
-
-distributions:
-  JCacheX:
-    type: JAVA_BINARY
-    artifacts:
-      - path: jcachex-core/build/libs/jcachex-core-{{projectVersion}}.jar
-      - path: jcachex-core/build/libs/jcachex-core-{{projectVersion}}-sources.jar
-      - path: jcachex-core/build/libs/jcachex-core-{{projectVersion}}-javadoc.jar
-      - path: jcachex-kotlin/build/libs/jcachex-kotlin-{{projectVersion}}.jar
-      - path: jcachex-kotlin/build/libs/jcachex-kotlin-{{projectVersion}}-sources.jar
-      - path: jcachex-kotlin/build/libs/jcachex-kotlin-{{projectVersion}}-javadoc.jar
-      - path: jcachex-spring/build/libs/jcachex-spring-{{projectVersion}}.jar
-      - path: jcachex-spring/build/libs/jcachex-spring-{{projectVersion}}-sources.jar
-      - path: jcachex-spring/build/libs/jcachex-spring-{{projectVersion}}-javadoc.jar
