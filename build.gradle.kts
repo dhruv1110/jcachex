@@ -294,7 +294,7 @@ project(":jcachex-core") {
 
         // Testing
         testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
-        testImplementation("org.mockito:mockito-core:4.11.0") {
+        testImplementation("org.mockito:mockito-core:5.18.0") {
             // Force version to maintain Java 8 compatibility
             version {
                 strictly("4.11.0")
@@ -305,8 +305,8 @@ project(":jcachex-core") {
     // Force Mockito version for Java 8 compatibility
     configurations.all {
         resolutionStrategy {
-            force("org.mockito:mockito-core:4.11.0")
-            force("org.mockito:mockito-junit-jupiter:4.11.0")
+            force("org.mockito:mockito-core:5.18.0")
+            force("org.mockito:mockito-junit-jupiter:5.18.0")
         }
     }
 }
@@ -323,7 +323,7 @@ project(":jcachex-kotlin") {
         // Testing
         testImplementation("org.jetbrains.kotlin:kotlin-test")
         testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
-        testImplementation("org.mockito:mockito-core:4.11.0") {
+        testImplementation("org.mockito:mockito-core:5.18.0") {
             version {
                 strictly("4.11.0")
             }
@@ -334,8 +334,8 @@ project(":jcachex-kotlin") {
     // Force Mockito version for Java 8 compatibility
     configurations.all {
         resolutionStrategy {
-            force("org.mockito:mockito-core:4.11.0")
-            force("org.mockito:mockito-junit-jupiter:4.11.0")
+            force("org.mockito:mockito-core:5.18.0")
+            force("org.mockito:mockito-junit-jupiter:5.18.0")
         }
     }
 }
@@ -354,7 +354,7 @@ project(":jcachex-spring") {
         testImplementation("org.jetbrains.kotlin:kotlin-test")
         testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
         testImplementation("org.springframework.boot:spring-boot-starter-test:2.7.18")
-        testImplementation("org.mockito:mockito-core:4.11.0") {
+        testImplementation("org.mockito:mockito-core:5.18.0") {
             version {
                 strictly("4.11.0")
             }
@@ -365,8 +365,8 @@ project(":jcachex-spring") {
     // Force Mockito version for Java 8 compatibility
     configurations.all {
         resolutionStrategy {
-            force("org.mockito:mockito-core:4.11.0")
-            force("org.mockito:mockito-junit-jupiter:4.11.0")
+            force("org.mockito:mockito-core:5.18.0")
+            force("org.mockito:mockito-junit-jupiter:5.18.0")
         }
     }
 }
