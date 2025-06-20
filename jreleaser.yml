@@ -4,8 +4,9 @@ project:
   longDescription: |
     JCacheX is a high-performance, feature-rich caching library designed for Java and Kotlin applications.
     It provides advanced caching strategies, expiration policies, and seamless integration with popular frameworks.
-  website: https://github.com/dhruv1110/JCacheX
-  docsUrl: https://dhruv1110.github.io/JCacheX/
+  links:
+    homepage: https://github.com/dhruv1110/JCacheX
+    documentation: https://dhruv1110.github.io/JCacheX/
   license: MIT
   inceptionYear: 2025
   authors:
@@ -76,7 +77,7 @@ release:
         contributors:
           - 'GitHub'
     milestone:
-      enabled: false
+      close: false
 
 signing:
   active: ALWAYS

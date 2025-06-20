@@ -16,14 +16,73 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 8
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '8'
           distribution: 'temurin'
 
-      - name: Build Documentation
-        run: ./gradlew dokkaHtml
+      - name: Build All Documentation
+        run: ./gradlew generateAllDocs
+
+      - name: Create Combined Documentation Site
+        run: |
+          mkdir -p build/docs/site
+
+          # Create main index page
+          cat > build/docs/site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>JCacheX Documentation</title>
+              <style>
+                  body { font-family: Arial, sans-serif; margin: 40px; }
+                  h1 { color: #333; }
+                  .module { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+                  .module h2 { color: #666; margin-top: 0; }
+                  a { color: #0366d6; text-decoration: none; }
+                  a:hover { text-decoration: underline; }
+              </style>
+          </head>
+          <body>
+              <h1>JCacheX Documentation</h1>
+              <p>High-performance caching library for Java and Kotlin applications.</p>
+
+              <div class="module">
+                  <h2>JCacheX Core (Java)</h2>
+                  <p>Core caching functionality and API documentation.</p>
+                  <a href="jcachex-core/">View Javadoc →</a>
+              </div>
+
+              <div class="module">
+                  <h2>JCacheX Kotlin Extensions</h2>
+                  <p>Kotlin extension functions and utilities.</p>
+                  <a href="jcachex-kotlin/">View Kotlin Docs →</a>
+              </div>
+
+              <div class="module">
+                  <h2>JCacheX Spring Integration</h2>
+                  <p>Spring Boot integration and configuration.</p>
+                  <a href="jcachex-spring/">View Spring Docs →</a>
+              </div>
+          </body>
+          </html>
+          EOF
+
+          # Copy documentation from each module
+          if [ -d "jcachex-core/build/docs/javadoc" ]; then
+            cp -r jcachex-core/build/docs/javadoc build/docs/site/jcachex-core
+          fi
+
+          if [ -d "jcachex-kotlin/build/dokka/html" ]; then
+            mkdir -p build/docs/site/jcachex-kotlin
+            cp -r jcachex-kotlin/build/dokka/html/* build/docs/site/jcachex-kotlin/
+          fi
+
+          if [ -d "jcachex-spring/build/dokka/html" ]; then
+            mkdir -p build/docs/site/jcachex-spring
+            cp -r jcachex-spring/build/dokka/html/* build/docs/site/jcachex-spring/
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -31,7 +90,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build/dokka/html/
+          path: build/docs/site/
 
   deploy:
     environment:

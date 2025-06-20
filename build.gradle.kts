@@ -22,7 +22,10 @@ allprojects {
     }
 }
 
-// JReleaser configuration is in jreleaser.yml
+// JReleaser configuration - use external jreleaser.yml file
+jreleaser {
+    configFile = file("jreleaser.yml")
+}
 
 subprojects {
     apply(plugin = "java")
