@@ -21,7 +21,7 @@ release:
   github:
     enabled: true
     owner: dhruv1110
-    name: JCacheX
+    name: jcachex
     branch: main
     tagName: v{{projectVersion}}
     releaseName: Release v{{projectVersion}}
