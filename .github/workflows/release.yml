@@ -130,9 +130,13 @@ jobs:
       run: |
         NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
         sed -i "s/version = \".*\"/version = \"$NEW_VERSION\"/" build.gradle.kts
+        echo "Updated version to: $NEW_VERSION"
+        grep "version = " build.gradle.kts
 
-    - name: Run tests
-      run: ./gradlew test
+    - name: Clean and run tests
+      run: |
+        ./gradlew clean
+        ./gradlew test
 
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v6
@@ -140,8 +144,12 @@ jobs:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSWORD }}
 
-    - name: Stage artifacts locally
-      run: ./gradlew publish
+    - name: Clean and stage artifacts locally
+      run: |
+        ./gradlew clean
+        ./gradlew publish
+        echo "Staged artifacts:"
+        find build/staging-deploy -name "*.pom" | head -5
 
     - name: Run JReleaser
       env:

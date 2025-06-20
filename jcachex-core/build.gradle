@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'io.github.dhruv1110'
-version = '0.1.0-SNAPSHOT'
+// version inherited from root project
 
 repositories {
     mavenCentral()
