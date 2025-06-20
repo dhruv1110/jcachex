@@ -43,7 +43,7 @@ jobs:
 
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: "**/build/reports/jacoco/test/jacocoTestReport.xml"
@@ -64,7 +64,7 @@ jobs:
 
     - name: Comment PR with coverage
       if: github.event_name == 'pull_request'
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         flags: unittests
