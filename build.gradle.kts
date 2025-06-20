@@ -97,15 +97,11 @@ subprojects {
         }
     }
 
-            // Signing configuration - JReleaser will handle all signing
+    // Signing configuration - JReleaser will handle all signing
     signing {
-        useGpgCmd()
-        // Only sign when explicitly requested with -Psign
+        // Disable Gradle signing - JReleaser will handle all signing
         isRequired = false
-
-        if (project.hasProperty("sign")) {
-            sign(publishing.publications["maven"])
-        }
+        // Do not sign publications - JReleaser will sign them
     }
 
     tasks.withType<Test> {
