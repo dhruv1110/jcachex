@@ -28,6 +28,9 @@ jreleaser {
 }
 
 subprojects {
+    group = rootProject.group
+    version = rootProject.version
+
     apply(plugin = "java")
     apply(plugin = "jacoco")
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
@@ -89,7 +92,7 @@ subprojects {
 
         repositories {
             maven {
-                url = layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
+                url = rootProject.layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
             }
         }
     }
