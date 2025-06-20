@@ -144,9 +144,15 @@ jobs:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSWORD }}
 
-    - name: Clean and stage artifacts locally
+    - name: Verify GPG key import
       run: |
-        ./gradlew clean
+        echo "GPG keys available:"
+        gpg --list-keys
+        echo "GPG secret keys available:"
+        gpg --list-secret-keys
+
+    - name: Stage artifacts locally
+      run: |
         ./gradlew publish
         echo "Staged artifacts:"
         find build/staging-deploy -name "*.pom" | head -5
