@@ -255,7 +255,7 @@ jobs:
         echo "- **📦 Maven Central**: https://central.sonatype.com/search?q=io.github.dhruv1110+AND+v:$NEW_VERSION" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 📚 Documentation:" >> $GITHUB_STEP_SUMMARY
-        echo "- **📖 API Docs**: https://dhruv1110.github.io/JCacheX/" >> $GITHUB_STEP_SUMMARY
+        echo "- **📖 API Docs**: https://dhruv1110.github.io/jcachex/" >> $GITHUB_STEP_SUMMARY
         echo "- **📄 Javadoc.io**: https://javadoc.io/doc/io.github.dhruv1110/" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 🚀 Usage:" >> $GITHUB_STEP_SUMMARY
@@ -316,7 +316,7 @@ jobs:
                     `- \`io.github.dhruv1110:jcachex-spring:${newVersion}\`\n\n` +
                     `### 🔗 Links:\n` +
                     `- [Maven Central Search](https://central.sonatype.com/search?q=io.github.dhruv1110+AND+v:${newVersion})\n` +
-                    `- [Documentation](https://dhruv1110.github.io/JCacheX/)\n` +
+                    `- [Documentation](https://dhruv1110.github.io/jcachex/)\n` +
                     `- [Compare Changes](https://github.com/${context.repo.owner}/${context.repo.repo}/compare/v${{ steps.current_version.outputs.current_version }}...${tagName})\n\n` +
                     `*Artifacts should be available on Maven Central within 10-30 minutes.*`,
               labels: ['release', 'published']
@@ -364,7 +364,7 @@ jobs:
         echo "## 📚 Documentation Updated" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 🌐 Live Documentation" >> $GITHUB_STEP_SUMMARY
-        echo "- **Homepage**: https://dhruv1110.github.io/JCacheX/" >> $GITHUB_STEP_SUMMARY
+        echo "- **Homepage**: https://dhruv1110.github.io/jcachex/" >> $GITHUB_STEP_SUMMARY
         echo "- **API Documentation**: https://javadoc.io/doc/io.github.dhruv1110/" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### 📦 Latest Version" >> $GITHUB_STEP_SUMMARY

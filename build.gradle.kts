@@ -207,11 +207,20 @@ subprojects {
         isFailOnError = false
     }
 
-    // Simple Dokka configuration for Kotlin projects
+    // Dokka configuration for Kotlin projects
     afterEvaluate {
         if (plugins.hasPlugin("org.jetbrains.kotlin.jvm") && plugins.hasPlugin("org.jetbrains.dokka")) {
-            tasks.findByName("dokkaHtml")?.apply {
-                // Basic dokka configuration - can be expanded later
+            // Configure Dokka to generate javadoc-style documentation
+            tasks.findByName("dokkaJavadoc")?.apply {
+                // Dokka javadoc task configuration
+            }
+
+            // Configure javadoc jar to use Dokka output for Kotlin modules
+            tasks.withType<Jar>().matching { it.name == "javadocJar" }.configureEach {
+                dependsOn("dokkaJavadoc")
+                if (project.file("src/main/kotlin").exists()) {
+                    from(project.tasks.findByName("dokkaJavadoc"))
+                }
             }
         }
     }

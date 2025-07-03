@@ -6,7 +6,7 @@ project:
     It provides advanced caching strategies, expiration policies, and seamless integration with popular frameworks.
   links:
     homepage: https://github.com/dhruv1110/JCacheX
-    documentation: https://dhruv1110.github.io/JCacheX/
+    documentation: https://dhruv1110.github.io/jcachex/
   license: MIT
   inceptionYear: 2025
   authors:
