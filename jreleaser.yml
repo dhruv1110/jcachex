@@ -4,10 +4,11 @@ project:
   longDescription: |
     JCacheX is a high-performance, feature-rich caching library designed for Java and Kotlin applications.
     It provides advanced caching strategies, expiration policies, and seamless integration with popular frameworks.
-  website: https://github.com/dhruv1110/JCacheX
-  docsUrl: https://dhruv1110.github.io/JCacheX/
+  links:
+    homepage: https://github.com/dhruv1110/JCacheX
+    documentation: https://dhruv1110.github.io/JCacheX/
   license: MIT
-  inceptionYear: 2024
+  inceptionYear: 2025
   authors:
     - dhruv1110
   tags:
@@ -21,7 +22,7 @@ release:
   github:
     enabled: true
     owner: dhruv1110
-    name: JCacheX
+    name: jcachex
     branch: main
     tagName: v{{projectVersion}}
     releaseName: Release v{{projectVersion}}
@@ -76,31 +77,20 @@ release:
         contributors:
           - 'GitHub'
     milestone:
-      enabled: false
+      close: false
 
 signing:
   active: ALWAYS
   armored: true
 
 deploy:
+  active: ALWAYS
   maven:
+    active: ALWAYS
     mavenCentral:
       sonatype:
         active: ALWAYS
         url: https://central.sonatype.com/api/v1/publisher
+        applyMavenCentralRules: true
         stagingRepositories:
           - build/staging-deploy
-
-distributions:
-  JCacheX:
-    type: JAVA_BINARY
-    artifacts:
-      - path: jcachex-core/build/libs/jcachex-core-{{projectVersion}}.jar
-      - path: jcachex-core/build/libs/jcachex-core-{{projectVersion}}-sources.jar
-      - path: jcachex-core/build/libs/jcachex-core-{{projectVersion}}-javadoc.jar
-      - path: jcachex-kotlin/build/libs/jcachex-kotlin-{{projectVersion}}.jar
-      - path: jcachex-kotlin/build/libs/jcachex-kotlin-{{projectVersion}}-sources.jar
-      - path: jcachex-kotlin/build/libs/jcachex-kotlin-{{projectVersion}}-javadoc.jar
-      - path: jcachex-spring/build/libs/jcachex-spring-{{projectVersion}}.jar
-      - path: jcachex-spring/build/libs/jcachex-spring-{{projectVersion}}-sources.jar
-      - path: jcachex-spring/build/libs/jcachex-spring-{{projectVersion}}-javadoc.jar

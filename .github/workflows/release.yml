@@ -20,6 +20,11 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      issues: write
+      pull-requests: write
 
     steps:
     - name: Checkout code
@@ -43,11 +48,37 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-    - name: Get current version
+    - name: Get current version from latest Git tag
       id: current_version
       run: |
-        CURRENT_VERSION=$(grep "version = " build.gradle.kts | sed 's/.*"\(.*\)".*/\1/' | sed 's/-SNAPSHOT//')
+        # Get the latest tag, or default to 0.0.0 if no tags exist
+        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        # Remove 'v' prefix if present
+        CURRENT_VERSION=${LATEST_TAG#v}
+
+        echo "Latest tag: $LATEST_TAG"
+        echo "Current version: $CURRENT_VERSION"
+
+        # Validate version format (semantic versioning)
+        if ! [[ $CURRENT_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "❌ Error: Invalid version format '$CURRENT_VERSION'. Expected: X.Y.Z"
+          exit 1
+        fi
+
+        # Check if tag was created by this workflow (has corresponding release)
+        if [ "$LATEST_TAG" != "v0.0.0" ]; then
+          RELEASE_EXISTS=$(gh api repos/${{ github.repository }}/releases/tags/$LATEST_TAG --jq '.tag_name' 2>/dev/null || echo "")
+          if [ -z "$RELEASE_EXISTS" ]; then
+            echo "⚠️  Warning: Tag $LATEST_TAG exists but no corresponding release found"
+            echo "This might indicate a manually created tag"
+          else
+            echo "✅ Tag $LATEST_TAG has corresponding release"
+          fi
+        fi
+
         echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Calculate new version
       id: new_version
@@ -74,18 +105,38 @@ jobs:
         esac
 
         NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+
+        echo "🔄 Version increment:"
+        echo "  Current: $CURRENT_VERSION"
+        echo "  New:     $NEW_VERSION"
+        echo "  Type:    ${{ github.event.inputs.version_type }}"
+
+        # Validate that new version is actually newer
+        if [ "$NEW_VERSION" = "$CURRENT_VERSION" ]; then
+          echo "❌ Error: New version ($NEW_VERSION) is same as current version"
+          exit 1
+        fi
+
+        # Check if this version already exists as a tag
+        if git tag -l "v$NEW_VERSION" | grep -q "v$NEW_VERSION"; then
+          echo "❌ Error: Tag v$NEW_VERSION already exists"
+          exit 1
+        fi
+
+        echo "✅ Version validation passed"
         echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
     - name: Update version in build.gradle.kts
       run: |
         NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
         sed -i "s/version = \".*\"/version = \"$NEW_VERSION\"/" build.gradle.kts
+        echo "Updated version to: $NEW_VERSION"
+        grep "version = " build.gradle.kts
 
-    - name: Run tests
-      run: ./gradlew test
-
-    - name: Stage artifacts locally
-      run: ./gradlew publish
+    - name: Clean and run tests
+      run: |
+        ./gradlew clean
+        ./gradlew test
 
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v6
@@ -93,29 +144,92 @@ jobs:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSWORD }}
 
+    - name: Verify GPG key import
+      run: |
+        echo "GPG keys available:"
+        gpg --list-keys
+        echo "GPG secret keys available:"
+        gpg --list-secret-keys
+
+    - name: Stage artifacts locally
+      run: |
+        ./gradlew publish
+        echo "Staged artifacts:"
+        find build/staging-deploy -name "*.pom" | head -5
+
+    - name: Create release summary
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        echo "## 🚀 Release Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Version**: \`v$NEW_VERSION\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Release Type**: ${{ github.event.inputs.version_type }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Branch**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+        echo "**Commit**: [\`${GITHUB_SHA:0:7}\`](https://github.com/${{ github.repository }}/commit/${{ github.sha }})" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📦 Artifacts to be released:" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        find build/staging-deploy -name "*.jar" -o -name "*.pom" | head -10 >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔗 Links:" >> $GITHUB_STEP_SUMMARY
+        echo "- **Repository**: https://github.com/${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Compare Changes**: https://github.com/${{ github.repository }}/compare/v${{ steps.current_version.outputs.current_version }}...main" >> $GITHUB_STEP_SUMMARY
+        echo "- **Maven Central**: https://central.sonatype.com/search?q=io.github.dhruv1110" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "⚠️ **Manual approval required before proceeding with release!**" >> $GITHUB_STEP_SUMMARY
+
+    - name: 🛑 Manual Approval Required
+      uses: trstringer/manual-approval@v1
+      with:
+        secret: ${{ github.TOKEN }}
+        approvers: dhruv1110
+        minimum-approvals: 1
+        issue-title: "🚀 Release Approval Required: v${{ steps.new_version.outputs.new_version }}"
+        issue-body: |
+          ## Release Approval Required 🚀
+
+          **Version**: `v${{ steps.new_version.outputs.new_version }}`
+          **Release Type**: ${{ github.event.inputs.version_type }}
+          **Triggered by**: @${{ github.actor }}
+
+          ### 📋 Pre-release Checklist
+          - [ ] Version number is correct
+          - [ ] All tests are passing
+          - [ ] Artifacts are properly staged
+          - [ ] GPG signing is working
+          - [ ] Ready for Maven Central publication
+
+          ### 🔗 Useful Links
+          - **Workflow Run**: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          - **Compare Changes**: https://github.com/${{ github.repository }}/compare/v${{ steps.current_version.outputs.current_version }}...main
+          - **Repository**: https://github.com/${{ github.repository }}
+
+          ### ⚠️ Important Notes
+          - Once approved, this will create a **permanent release** on Maven Central
+          - Maven Central artifacts **cannot be deleted** after publication
+          - The release will create a Git tag `v${{ steps.new_version.outputs.new_version }}`
+
+          **Please review everything carefully before approving!**
+
+          ---
+
+          **To approve**: Comment `approved`, `approve`, `lgtm`, or `yes`
+          **To reject**: Comment `denied`, `deny`, `rejected`, or `no`
+        exclude-workflow-initiator-as-approver: false
+
     - name: Run JReleaser
       env:
         JRELEASER_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        JRELEASER_MAVENCENTRAL_USERNAME: ${{ secrets.MAVENCENTRAL_USERNAME }}
-        JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.MAVENCENTRAL_PASSWORD }}
+        JRELEASER_MAVENCENTRAL_SONATYPE_USERNAME: ${{ secrets.MAVENCENTRAL_USERNAME }}
+        JRELEASER_MAVENCENTRAL_SONATYPE_PASSWORD: ${{ secrets.MAVENCENTRAL_PASSWORD }}
         JRELEASER_GPG_PASSPHRASE: ${{ secrets.GPG_PASSWORD }}
         JRELEASER_GPG_PUBLIC_KEY: ${{ secrets.GPG_PUBLIC_KEY }}
         JRELEASER_GPG_SECRET_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        JRELEASER_DEPLOY_ACTIVE: ALWAYS
+        JRELEASER_DEPLOY_MAVEN_ACTIVE: ALWAYS
+        JRELEASER_DEPLOY_MAVEN_MAVENCENTRAL_ACTIVE: ALWAYS
       run: ./gradlew jreleaserFullRelease
-
-    - name: Update to next SNAPSHOT version
-      run: |
-        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
-        IFS='.' read -ra VERSION_PARTS <<< "$NEW_VERSION"
-        MAJOR=${VERSION_PARTS[0]}
-        MINOR=${VERSION_PARTS[1]}
-        PATCH=$((${VERSION_PARTS[2]} + 1))
-        NEXT_SNAPSHOT="$MAJOR.$MINOR.$PATCH-SNAPSHOT"
-
-        sed -i "s/version = \".*\"/version = \"$NEXT_SNAPSHOT\"/" build.gradle.kts
-        git add build.gradle.kts
-        git commit -m "chore: prepare next development iteration $NEXT_SNAPSHOT"
-        git push origin main
 
     - name: JReleaser output
       if: always()
@@ -125,6 +239,89 @@ jobs:
         path: |
           build/jreleaser/trace.log
           build/jreleaser/output.properties
+
+    - name: Create release completion summary
+      if: success()
+      run: |
+        NEW_VERSION="${{ steps.new_version.outputs.new_version }}"
+        echo "## ✅ Release Completed Successfully!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**🎉 Version \`v$NEW_VERSION\` has been released!**" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔗 Release Links:" >> $GITHUB_STEP_SUMMARY
+        echo "- **📋 GitHub Release**: https://github.com/${{ github.repository }}/releases/tag/v$NEW_VERSION" >> $GITHUB_STEP_SUMMARY
+        echo "- **🏷️ Git Tag**: https://github.com/${{ github.repository }}/tree/v$NEW_VERSION" >> $GITHUB_STEP_SUMMARY
+        echo "- **📊 Compare**: https://github.com/${{ github.repository }}/compare/v${{ steps.current_version.outputs.current_version }}...v$NEW_VERSION" >> $GITHUB_STEP_SUMMARY
+        echo "- **📦 Maven Central**: https://central.sonatype.com/search?q=io.github.dhruv1110+AND+v:$NEW_VERSION" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📚 Documentation:" >> $GITHUB_STEP_SUMMARY
+        echo "- **📖 API Docs**: https://dhruv1110.github.io/JCacheX/" >> $GITHUB_STEP_SUMMARY
+        echo "- **📄 Javadoc.io**: https://javadoc.io/doc/io.github.dhruv1110/" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🚀 Usage:" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`gradle" >> $GITHUB_STEP_SUMMARY
+        echo "// Gradle (build.gradle)" >> $GITHUB_STEP_SUMMARY
+        echo "implementation 'io.github.dhruv1110:jcachex-core:$NEW_VERSION'" >> $GITHUB_STEP_SUMMARY
+        echo "implementation 'io.github.dhruv1110:jcachex-kotlin:$NEW_VERSION'" >> $GITHUB_STEP_SUMMARY
+        echo "implementation 'io.github.dhruv1110:jcachex-spring:$NEW_VERSION'" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`xml" >> $GITHUB_STEP_SUMMARY
+        echo "<!-- Maven (pom.xml) -->" >> $GITHUB_STEP_SUMMARY
+        echo "<dependency>" >> $GITHUB_STEP_SUMMARY
+        echo "    <groupId>io.github.dhruv1110</groupId>" >> $GITHUB_STEP_SUMMARY
+        echo "    <artifactId>jcachex-core</artifactId>" >> $GITHUB_STEP_SUMMARY
+        echo "    <version>$NEW_VERSION</version>" >> $GITHUB_STEP_SUMMARY
+        echo "</dependency>" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**🎯 The artifacts should be available on Maven Central within 10-30 minutes.**" >> $GITHUB_STEP_SUMMARY
+
+    - name: Create commit-to-tag link comment
+      if: success()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const newVersion = '${{ steps.new_version.outputs.new_version }}';
+          const currentCommit = context.sha;
+          const tagName = `v${newVersion}`;
+
+          // Create a comment on the commit linking to the tag
+          await github.rest.repos.createCommitComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            commit_sha: currentCommit,
+            body: `🚀 **Released as ${tagName}**\n\n` +
+                  `This commit was released as [${tagName}](https://github.com/${context.repo.owner}/${context.repo.repo}/releases/tag/${tagName})\n\n` +
+                  `📦 **Maven Central**: \`io.github.dhruv1110:jcachex-*:${newVersion}\`\n` +
+                  `📋 **Release Notes**: https://github.com/${context.repo.owner}/${context.repo.repo}/releases/tag/${tagName}\n` +
+                  `📊 **Changes**: https://github.com/${context.repo.owner}/${context.repo.repo}/compare/v${{ steps.current_version.outputs.current_version }}...${tagName}`
+          });
+
+          console.log(`✅ Created commit comment linking ${currentCommit.substring(0,7)} to ${tagName}`);
+
+          // Also create an issue comment if this was triggered manually
+          if (context.eventName === 'workflow_dispatch') {
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🎉 Release ${tagName} completed`,
+              body: `## Release ${tagName} Completed Successfully! 🚀\n\n` +
+                    `**Commit**: [\`${currentCommit.substring(0,7)}\`](https://github.com/${context.repo.owner}/${context.repo.repo}/commit/${currentCommit})\n` +
+                    `**Tag**: [${tagName}](https://github.com/${context.repo.owner}/${context.repo.repo}/tree/${tagName})\n` +
+                    `**Release**: [View Release](https://github.com/${context.repo.owner}/${context.repo.repo}/releases/tag/${tagName})\n\n` +
+                    `### 📦 Artifacts Published:\n` +
+                    `- \`io.github.dhruv1110:jcachex-core:${newVersion}\`\n` +
+                    `- \`io.github.dhruv1110:jcachex-kotlin:${newVersion}\`\n` +
+                    `- \`io.github.dhruv1110:jcachex-spring:${newVersion}\`\n\n` +
+                    `### 🔗 Links:\n` +
+                    `- [Maven Central Search](https://central.sonatype.com/search?q=io.github.dhruv1110+AND+v:${newVersion})\n` +
+                    `- [Documentation](https://dhruv1110.github.io/JCacheX/)\n` +
+                    `- [Compare Changes](https://github.com/${context.repo.owner}/${context.repo.repo}/compare/v${{ steps.current_version.outputs.current_version }}...${tagName})\n\n` +
+                    `*Artifacts should be available on Maven Central within 10-30 minutes.*`,
+              labels: ['release', 'published']
+            });
+          }
 
     outputs:
       new_version: ${{ steps.new_version.outputs.new_version }}
