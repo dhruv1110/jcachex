@@ -138,6 +138,37 @@ jobs:
         ./gradlew clean
         ./gradlew test
 
+    - name: Generate documentation
+      run: |
+        ./gradlew javadoc javadocJar
+        echo "Generated javadoc JARs:"
+        find . -name "*javadoc*.jar" -type f | head -10
+
+    - name: Verify javadoc content
+      run: |
+        echo "Verifying javadoc JAR contents..."
+        for jar in $(find . -name "*javadoc*.jar" -type f); do
+          echo "=== Checking $jar ==="
+          # Check if index.html exists in the JAR
+          if jar -tf "$jar" | grep -q "index.html"; then
+            echo "✅ $jar contains index.html"
+          else
+            echo "❌ $jar missing index.html"
+            echo "JAR contents:"
+            jar -tf "$jar" | head -20
+            exit 1
+          fi
+          # Check JAR size (should be more than just META-INF)
+          jar_size=$(stat -c%s "$jar")
+          if [ "$jar_size" -lt 10000 ]; then
+            echo "❌ $jar is suspiciously small ($jar_size bytes)"
+            jar -tf "$jar"
+            exit 1
+          else
+            echo "✅ $jar size looks good ($jar_size bytes)"
+          fi
+        done
+
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v6
       with:

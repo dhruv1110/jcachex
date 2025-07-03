@@ -40,6 +40,22 @@ jobs:
     - name: Build project
       run: ./gradlew build -x test
 
+    - name: Generate and verify documentation
+      run: |
+        ./gradlew javadoc javadocJar
+        echo "Generated javadoc JARs:"
+        find . -name "*javadoc*.jar" -type f
+        # Quick verification that javadoc JARs contain content
+        for jar in $(find . -name "*javadoc*.jar" -type f); do
+          echo "Checking $jar..."
+          if jar -tf "$jar" | grep -q "index.html"; then
+            echo "✅ $jar contains index.html"
+          else
+            echo "⚠️ $jar missing index.html - contents:"
+            jar -tf "$jar" | head -10
+          fi
+        done
+
 
 
     - name: Upload coverage to Codecov

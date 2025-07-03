@@ -197,6 +197,7 @@ subprojects {
             (this as StandardJavadocDocletOptions).apply {
                 addBooleanOption("html5", true)
                 addStringOption("Xdoclint:none", "-quiet")
+                // Fix the Java 8 documentation URL - use versioned link to avoid redirects
                 links("https://docs.oracle.com/javase/8/docs/api/")
                 windowTitle = "JCacheX ${project.name} API"
                 docTitle = "JCacheX ${project.name} API"
@@ -210,17 +211,41 @@ subprojects {
     // Dokka configuration for Kotlin projects
     afterEvaluate {
         if (plugins.hasPlugin("org.jetbrains.kotlin.jvm") && plugins.hasPlugin("org.jetbrains.dokka")) {
-            // Configure Dokka to generate javadoc-style documentation
-            tasks.findByName("dokkaJavadoc")?.apply {
-                // Dokka javadoc task configuration
+            // Configure Dokka javadoc generation
+            tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
+                dokkaSourceSets {
+                    configureEach {
+                        jdkVersion.set(8)
+                        // Ensure proper module name
+                        moduleName.set("JCacheX ${project.name}")
+                        // Note: Removed sourceLink due to Gradle URL serialization warning
+                        // This is not critical for javadoc.io functionality
+                    }
+                }
             }
 
-            // Configure javadoc jar to use Dokka output for Kotlin modules
+            // Ensure javadoc jar properly uses Dokka output for Kotlin modules
             tasks.withType<Jar>().matching { it.name == "javadocJar" }.configureEach {
+                archiveClassifier.set("javadoc")
                 dependsOn("dokkaJavadoc")
-                if (project.file("src/main/kotlin").exists()) {
-                    from(project.tasks.findByName("dokkaJavadoc"))
+                // Add Dokka javadoc output
+                from(tasks.named("dokkaJavadoc")) {
+                    exclude("**/*.map")  // Exclude source maps if any
                 }
+                // Ensure we have content
+                doFirst {
+                    val dokkaOutput = tasks.named("dokkaJavadoc").get().outputs.files
+                    if (dokkaOutput.isEmpty) {
+                        throw GradleException("Dokka javadoc output is empty for project ${project.name}")
+                    }
+                }
+            }
+        } else {
+            // For pure Java projects, ensure javadoc jar uses standard javadoc output
+            tasks.withType<Jar>().matching { it.name == "javadocJar" }.configureEach {
+                archiveClassifier.set("javadoc")
+                dependsOn("javadoc")
+                from(tasks.javadoc)
             }
         }
     }
