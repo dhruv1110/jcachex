@@ -33,6 +33,8 @@ A high-performance, lightweight caching library for Kotlin and Java applications
 
 ## 📦 Installation
 
+> **📌 Latest Version**: Check [Maven Central](https://central.sonatype.com/search?q=io.github.dhruv1110.jcachex) for the latest version and replace `x.y.z` with the actual version number.
+
 ### Gradle
 ```kotlin
 dependencies {
