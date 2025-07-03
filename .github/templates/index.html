@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JCacheX - High-performance caching library</title>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown-light.min.css">
+    <style>
+        body {
+            box-sizing: border-box;
+            min-width: 200px;
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 45px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #ffffff;
+            color: #24292f;
+        }
+
+        .header-banner {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-banner h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 600;
+        }
+
+        .header-banner p {
+            margin: 10px 0 0 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .version-info {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f6f8fa;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            color: #24292f;
+        }
+
+        .version-info strong {
+            color: #0969da;
+        }
+
+        .header-links {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .header-links a {
+            display: inline-block;
+            margin: 0 10px;
+            padding: 10px 20px;
+            background: #ffffff;
+            border: 2px solid #d1d9e0;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #24292f;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-links a:hover {
+            background: #f6f8fa;
+            border-color: #0969da;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .javadoc-section {
+            background: #f6f8fa;
+            border: 1px solid #d1d9e0;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .javadoc-section h3 {
+            margin-top: 0;
+            color: #0969da;
+            font-size: 1.5em;
+        }
+
+        .javadoc-section p {
+            margin-bottom: 20px;
+            color: #656d76;
+        }
+
+        .javadoc-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .javadoc-links a {
+            display: block;
+            padding: 20px;
+            background: white;
+            border: 1px solid #d1d9e0;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #24292f;
+            text-align: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .javadoc-links a:hover {
+            background: #f6f8fa;
+            border-color: #0969da;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .javadoc-links a strong {
+            color: #0969da;
+            font-size: 1.1em;
+        }
+
+        .javadoc-links a small {
+            display: block;
+            margin-top: 5px;
+            color: #656d76;
+        }
+
+        .content-wrapper {
+            margin: 40px 0;
+        }
+
+        .content-wrapper h1 {
+            border-bottom: 2px solid #eaecef;
+            padding-bottom: 10px;
+        }
+
+        .content-wrapper h2 {
+            border-bottom: 1px solid #eaecef;
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        .content-wrapper code {
+            background: #f6f8fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .content-wrapper pre {
+            background: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #d1d9e0;
+        }
+
+        .content-wrapper pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .content-wrapper ul {
+            padding-left: 20px;
+        }
+
+        .content-wrapper li {
+            margin: 5px 0;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 1px solid #d1d9e0;
+            color: #656d76;
+        }
+
+        .footer p {
+            margin: 10px 0;
+        }
+
+        .footer a {
+            color: #0969da;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            .header-banner h1 {
+                font-size: 2em;
+            }
+
+            .header-links a {
+                display: block;
+                margin: 10px 0;
+            }
+
+            .javadoc-links {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="markdown-body">
+    <div class="header-banner">
+        <h1>JCacheX</h1>
+        <p>High-performance caching library for Java and Kotlin applications</p>
+    </div>
+
+    <div class="version-info">
+        <strong>Latest Version:</strong> {{VERSION}} |
+        <strong>Released:</strong> {{DATE}}
+    </div>
+
+    <div class="header-links">
+        <a href="https://github.com/dhruv1110/JCacheX" target="_blank">📦 GitHub</a>
+        <a href="https://central.sonatype.com/search?q=io.github.dhruv1110.jcachex" target="_blank">🚀 Maven Central</a>
+        <a href="https://codecov.io/gh/dhruv1110/JCacheX" target="_blank">📊 Coverage</a>
+    </div>
+
+    <div class="javadoc-section">
+        <h3>📚 API Documentation</h3>
+        <p>Complete API documentation for all JCacheX modules:</p>
+        <div class="javadoc-links">
+            <a href="https://javadoc.io/doc/io.github.dhruv1110/jcachex-core" target="_blank">
+                <strong>jcachex-core</strong><br>
+                <small>Core caching functionality</small>
+            </a>
+            <a href="https://javadoc.io/doc/io.github.dhruv1110/jcachex-kotlin" target="_blank">
+                <strong>jcachex-kotlin</strong><br>
+                <small>Kotlin extensions</small>
+            </a>
+            <a href="https://javadoc.io/doc/io.github.dhruv1110/jcachex-spring" target="_blank">
+                <strong>jcachex-spring</strong><br>
+                <small>Spring Boot integration</small>
+            </a>
+        </div>
+    </div>
+
+    <div class="content-wrapper">
+        {{CONTENT}}
+    </div>
+
+    <div class="footer">
+        <p>Built with ❤️ for the JVM community</p>
+        <p>
+            <a href="https://github.com/dhruv1110/JCacheX" target="_blank">View on GitHub</a> |
+            <a href="https://central.sonatype.com/search?q=io.github.dhruv1110.jcachex" target="_blank">Maven
+                Central</a> |
+            <a href="https://javadoc.io/doc/io.github.dhruv1110/" target="_blank">API Docs</a>
+        </p>
+        <p><small>Documentation updated: {{DATE}}</small></p>
+    </div>
+</body>
+
+</html>
