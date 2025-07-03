@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/dhruv1110/JCacheX/branch/main/graph/badge.svg)](https://codecov.io/gh/dhruv1110/JCacheX)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dhruv1110_JCacheX&metric=alert_status)](https://sonarcloud.io/dashboard?id=dhruv1110_JCacheX)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.dhruv1110/jcachex-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.dhruv1110/jcachex-core)
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dhruv1110.github.io/JCacheX/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dhruv1110.github.io/jcachex/)
 [![javadoc](https://javadoc.io/badge2/io.github.dhruv1110/jcachex-core/javadoc.svg)](https://javadoc.io/doc/io.github.dhruv1110/jcachex-core)
 
 A high-performance, lightweight caching library for Kotlin and Java applications.
@@ -26,7 +26,7 @@ A high-performance, lightweight caching library for Kotlin and Java applications
 
 ## 📚 Documentation
 
-- **📖 API Documentation**: [GitHub Pages](https://dhruv1110.github.io/JCacheX/)
+- **📖 API Documentation**: [GitHub Pages](https://dhruv1110.github.io/jcachex/)
 - **📋 Javadoc**: [javadoc.io](https://javadoc.io/doc/io.github.dhruv1110/)
 - **📊 Documentation Coverage**: Run `./gradlew allDocumentationCoverage`
 
