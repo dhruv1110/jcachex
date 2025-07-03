@@ -22,6 +22,34 @@ allprojects {
     }
 }
 
+// Root-level tasks that depend on all subproject tasks
+tasks.register("testAll") {
+    group = "verification"
+    description = "Runs tests for all subprojects"
+    dependsOn(subprojects.map { "${it.path}:test" })
+}
+
+tasks.register("detektAll") {
+    group = "verification"
+    description = "Runs detekt for all subprojects"
+    dependsOn(subprojects.map { "${it.path}:detekt" })
+}
+
+// Make root-level test and check tasks depend on all subprojects
+tasks.named("test") {
+    dependsOn("testAll")
+}
+
+tasks.register("detekt") {
+    group = "verification"
+    description = "Runs detekt for all subprojects"
+    dependsOn("detektAll")
+}
+
+tasks.named("check") {
+    dependsOn("testAll", "detektAll")
+}
+
 // JReleaser configuration for Maven Central publishing
 jreleaser {
     signing {
