@@ -348,7 +348,7 @@ jobs:
         python3 .github/scripts/convert-readme.py README.md .github/templates/index.html docs/index.html
 
     - name: Setup Pages
-      uses: actions/configure-pages@v4
+      uses: actions/configure-pages@v5
 
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v3
