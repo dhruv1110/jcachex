@@ -16,11 +16,79 @@ import java.util.stream.Collectors;
 
 /**
  * Default implementation of the Cache interface.
+ * <p>
  * This implementation is thread-safe and supports various cache configurations
  * including eviction strategies, expiration policies, and event listeners.
+ * It provides both synchronous and asynchronous operations for maximum
+ * flexibility.
+ * </p>
+ *
+ * <h3>Basic Usage Examples:</h3>
+ *
+ * <pre>{@code
+ * // Create a simple cache with size limit
+ * CacheConfig<String, String> config = CacheConfig.<String, String>builder()
+ *         .maximumSize(1000L)
+ *         .build();
+ * Cache<String, String> cache = new DefaultCache<>(config);
+ *
+ * // Basic operations
+ * cache.put("key1", "value1");
+ * String value = cache.get("key1"); // Returns "value1"
+ * cache.remove("key1");
+ * }</pre>
+ *
+ * <h3>Advanced Usage Examples:</h3>
+ *
+ * <pre>{@code
+ * // Cache with automatic loading and expiration
+ * CacheConfig<String, User> userConfig = CacheConfig.<String, User>builder()
+ *         .maximumSize(500L)
+ *         .expireAfterWrite(Duration.ofMinutes(30))
+ *         .loader(userId -> userService.findById(userId))
+ *         .recordStats(true)
+ *         .addListener(new CacheEventListener<String, User>() { @Override
+ *             public void onEvict(String key, User value, EvictionReason reason) {
+ *                 logger.info("User {} evicted due to {}", key, reason);
+ *             }
+ *             // ... other methods
+ *         })
+ *         .build();
+ *
+ * try (DefaultCache<String, User> userCache = new DefaultCache<>(userConfig)) {
+ *     // Cache will automatically load users when not present
+ *     User user = userCache.get("user123"); // Calls loader if not cached
+ *
+ *     // Async operations
+ *     CompletableFuture<User> futureUser = userCache.getAsync("user456");
+ *
+ *     // Statistics
+ *     CacheStats stats = userCache.stats();
+ *     System.out.println("Hit rate: " + stats.hitRate());
+ * } // Cache is properly closed, releasing resources
+ * }</pre>
+ *
+ * <h3>Thread Safety:</h3>
+ * <p>
+ * This implementation is fully thread-safe. All operations can be called
+ * concurrently from multiple threads without external synchronization.
+ * </p>
+ *
+ * <h3>Resource Management:</h3>
+ * <p>
+ * The cache implements {@link AutoCloseable} and should be closed when no
+ * longer
+ * needed to release background threads and other resources. This is
+ * particularly
+ * important when using features like automatic refresh.
+ * </p>
  *
  * @param <K> the type of keys maintained by this cache
  * @param <V> the type of mapped values
+ * @see Cache
+ * @see CacheConfig
+ * @see CacheEventListener
+ * @since 1.0.0
  */
 public class DefaultCache<K, V> implements Cache<K, V>, AutoCloseable {
     private final CacheConfig<K, V> config;
@@ -32,9 +100,29 @@ public class DefaultCache<K, V> implements Cache<K, V>, AutoCloseable {
 
     /**
      * Creates a new DefaultCache with the specified configuration.
+     * <p>
+     * The cache will be initialized with the settings specified in the
+     * configuration,
+     * including size limits, eviction strategies, expiration policies, and event
+     * listeners.
+     * Background tasks for refresh and expiration will be started if configured.
+     * </p>
      *
-     * @param config the cache configuration to use
+     * <h3>Example:</h3>
+     *
+     * <pre>{@code
+     * CacheConfig<String, String> config = CacheConfig.<String, String>builder()
+     *         .maximumSize(1000L)
+     *         .expireAfterWrite(Duration.ofMinutes(30))
+     *         .recordStats(true)
+     *         .build();
+     *
+     * DefaultCache<String, String> cache = new DefaultCache<>(config);
+     * }</pre>
+     *
+     * @param config the cache configuration to use, must not be null
      * @throws IllegalArgumentException if config is null
+     * @see CacheConfig
      */
     public DefaultCache(CacheConfig<K, V> config) {
         if (config == null) {
@@ -57,6 +145,35 @@ public class DefaultCache<K, V> implements Cache<K, V>, AutoCloseable {
         }
     }
 
+    /**
+     * Returns the value associated with the key in this cache, or null if there is
+     * no cached value for the key.
+     * <p>
+     * If the key is not present and a loader is configured, this method will
+     * attempt
+     * to load the value using the loader function. If the cached entry has expired,
+     * it will be automatically removed and treated as a cache miss.
+     * </p>
+     *
+     * <h3>Examples:</h3>
+     *
+     * <pre>{@code
+     * // Simple get operation
+     * String value = cache.get("myKey");
+     * if (value != null) {
+     *     // Key was found in cache
+     *     processValue(value);
+     * }
+     *
+     * // With automatic loading (if loader is configured)
+     * User user = userCache.get("userId123"); // May trigger load from database
+     * }</pre>
+     *
+     * @param key the key whose associated value is to be returned
+     * @return the value to which the specified key is mapped, or null if this cache
+     *         contains no mapping for the key
+     * @throws RuntimeException if the loader function throws an exception
+     */
     @Override
     public V get(K key) {
         if (key == null) {
@@ -80,6 +197,37 @@ public class DefaultCache<K, V> implements Cache<K, V>, AutoCloseable {
         return loadValue(key);
     }
 
+    /**
+     * Associates the specified value with the specified key in this cache.
+     * <p>
+     * If the cache previously contained a mapping for the key, the old value is
+     * replaced.
+     * This operation may trigger eviction of other entries if the cache size or
+     * weight
+     * limits are exceeded. Event listeners will be notified of the put operation
+     * and
+     * any evictions that occur as a result.
+     * </p>
+     *
+     * <h3>Examples:</h3>
+     *
+     * <pre>{@code
+     * // Simple put operation
+     * cache.put("user123", user);
+     *
+     * // Bulk loading
+     * userIds.forEach(id -> cache.put(id, loadUser(id)));
+     *
+     * // Conditional put (manual check)
+     * if (!cache.containsKey("expensiveComputation")) {
+     *     cache.put("expensiveComputation", performExpensiveComputation());
+     * }
+     * }</pre>
+     *
+     * @param key   key with which the specified value is to be associated
+     * @param value value to be associated with the specified key
+     * @throws NullPointerException if key is null (implementation dependent)
+     */
     @Override
     public void put(K key, V value) {
         if (key == null) {
