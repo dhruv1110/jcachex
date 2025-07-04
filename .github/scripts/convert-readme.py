@@ -11,7 +11,7 @@ import html
 
 def convert_markdown_to_html(markdown_content):
     """Convert markdown content to HTML with improved parsing."""
-    html = markdown_content
+    content = markdown_content
 
     # First, protect code blocks by replacing them with placeholders
     code_blocks = []
@@ -19,7 +19,7 @@ def convert_markdown_to_html(markdown_content):
         code_blocks.append(match.group(0))
         return f"__CODE_BLOCK_{len(code_blocks)-1}__"
 
-    html = re.sub(r'```(\w+)?\n(.*?)```', replace_code_block, html, flags=re.DOTALL)
+    content = re.sub(r'```(\w+)?\n(.*?)```', replace_code_block, content, flags=re.DOTALL)
 
     # Convert inline code (protect these too)
     inline_code = []
@@ -27,23 +27,23 @@ def convert_markdown_to_html(markdown_content):
         inline_code.append(match.group(0))
         return f"__INLINE_CODE_{len(inline_code)-1}__"
 
-    html = re.sub(r'`([^`\n]+)`', replace_inline_code, html)
+    content = re.sub(r'`([^`\n]+)`', replace_inline_code, content)
 
     # Convert headers (in order from most specific to least specific)
-    html = re.sub(r'^#### (.*?)$', r'<h4>\1</h4>', html, flags=re.MULTILINE)
-    html = re.sub(r'^### (.*?)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
-    html = re.sub(r'^## (.*?)$', r'<h2>\1</h2>', html, flags=re.MULTILINE)
-    html = re.sub(r'^# (.*?)$', r'<h1>\1</h1>', html, flags=re.MULTILINE)
+    content = re.sub(r'^#### (.*?)$', r'<h4>\1</h4>', content, flags=re.MULTILINE)
+    content = re.sub(r'^### (.*?)$', r'<h3>\1</h3>', content, flags=re.MULTILINE)
+    content = re.sub(r'^## (.*?)$', r'<h2>\1</h2>', content, flags=re.MULTILINE)
+    content = re.sub(r'^# (.*?)$', r'<h1>\1</h1>', content, flags=re.MULTILINE)
 
     # Convert links (including badges)
-    html = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', html)
+    content = re.sub(r'\[([^\]]+)\]\(([^)]+)\)', r'<a href="\2">\1</a>', content)
 
     # Convert bold and italic text
-    html = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', html)
-    html = re.sub(r'\*(.*?)\*', r'<em>\1</em>', html)
+    content = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', content)
+    content = re.sub(r'\*(.*?)\*', r'<em>\1</em>', content)
 
     # Convert nested lists and simple lists
-    lines = html.split('\n')
+    lines = content.split('\n')
     in_list = False
     result_lines = []
 
@@ -77,10 +77,10 @@ def convert_markdown_to_html(markdown_content):
     if in_list:
         result_lines.append('</ul>')
 
-    html = '\n'.join(result_lines)
+    content = '\n'.join(result_lines)
 
     # Convert paragraphs (split by double newlines)
-    paragraphs = html.split('\n\n')
+    paragraphs = content.split('\n\n')
     html_paragraphs = []
 
     for para in paragraphs:
@@ -95,7 +95,7 @@ def convert_markdown_to_html(markdown_content):
                 para = f'<p>{para}</p>'
             html_paragraphs.append(para)
 
-    html = '\n\n'.join(html_paragraphs)
+    content = '\n\n'.join(html_paragraphs)
 
     # Now restore the code blocks
     for i, code_block in enumerate(code_blocks):
@@ -116,9 +116,9 @@ def convert_markdown_to_html(markdown_content):
             else:
                 formatted_code = f'<pre><code class="language-{lang}">{escaped_code}</code></pre>'
 
-            html = html.replace(f'__CODE_BLOCK_{i}__', formatted_code)
+            content = content.replace(f'__CODE_BLOCK_{i}__', formatted_code)
         else:
-            html = html.replace(f'__CODE_BLOCK_{i}__', code_block)
+            content = content.replace(f'__CODE_BLOCK_{i}__', code_block)
 
     # Restore inline code
     for i, inline in enumerate(inline_code):
@@ -129,16 +129,16 @@ def convert_markdown_to_html(markdown_content):
             # HTML escape inline code content too
             escaped_code = html.escape(code)
             formatted_code = f'<code>{escaped_code}</code>'
-            html = html.replace(f'__INLINE_CODE_{i}__', formatted_code)
+            content = content.replace(f'__INLINE_CODE_{i}__', formatted_code)
         else:
-            html = html.replace(f'__INLINE_CODE_{i}__', inline)
+            content = content.replace(f'__INLINE_CODE_{i}__', inline)
 
     # Clean up extra whitespace and improve formatting
-    html = re.sub(r'\n{3,}', '\n\n', html)
-    html = re.sub(r'<p>\s*</p>', '', html)  # Remove empty paragraphs
-    html = re.sub(r'<li>\s*</li>', '', html)  # Remove empty list items
+    content = re.sub(r'\n{3,}', '\n\n', content)
+    content = re.sub(r'<p>\s*</p>', '', content)  # Remove empty paragraphs
+    content = re.sub(r'<li>\s*</li>', '', content)  # Remove empty list items
 
-    return html
+    return content
 
 
 def replace_version_placeholders(content, version):
