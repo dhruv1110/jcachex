@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm")
+    id("org.jetbrains.kotlin.jvm") version "1.9.22"
     id("application")
 }
 
@@ -11,8 +11,8 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.dhruv1110:jcachex-core:1.0.0")
-    implementation("io.github.dhruv1110:jcachex-kotlin:1.0.0")
+    implementation(project(":jcachex-core"))
+    implementation(project(":jcachex-kotlin"))
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.slf4j:slf4j-api:2.0.9")
@@ -20,6 +20,7 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }
 
 application {

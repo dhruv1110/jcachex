@@ -22,22 +22,23 @@
 
 ## ⚡ Quick Start
 
-### 30-Second Example
+### 30-Second Quick Start
 
 ```java
-// Java: Create and use a cache in 3 lines
-Cache<String, User> userCache = CacheBuilder.<String, User>newBuilder()
-    .maximumSize(1000)
+// Java: Simple and powerful
+Cache<String, User> userCache = CacheConfig.<String, User>newBuilder()
+    .maximumSize(1000L)
     .build();
 
-userCache.put("user123", new User("Alice"));
-User user = userCache.get("user123"); // Returns: User("Alice")
+Cache<String, User> cache = new DefaultCache<>(userCache);
+cache.put("user123", new User("Alice"));
+User user = cache.get("user123"); // Returns: User("Alice")
 ```
 
 ```kotlin
 // Kotlin: Even simpler with extensions
-val userCache = cache<String, User> {
-    maximumSize = 1000
+val userCache = createCache<String, User> {
+    maximumSize(1000)
 }
 
 userCache["user123"] = User("Alice")
@@ -50,16 +51,19 @@ Let's build a complete caching solution:
 
 ```java
 import io.github.dhruv1110.jcachex.*;
+import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy;
 import java.time.Duration;
 
 // 1. Configure your cache
-Cache<String, Product> productCache = CacheBuilder.<String, Product>newBuilder()
-    .maximumSize(10_000)                           // Limit to 10k entries
+CacheConfig<String, Product> config = CacheConfig.<String, Product>newBuilder()
+    .maximumSize(10_000L)                          // Limit to 10k entries
     .expireAfterWrite(Duration.ofMinutes(30))      // Expire after 30 minutes
     .expireAfterAccess(Duration.ofMinutes(10))     // Expire if unused for 10 minutes
     .evictionStrategy(new LRUEvictionStrategy<>()) // Use LRU eviction
-    .enableStatistics()                            // Track hit/miss rates
+    .recordStats(true)                             // Track hit/miss rates
     .build();
+
+Cache<String, Product> productCache = new DefaultCache<>(config);
 
 // 2. Use it in your service
 public class ProductService {
@@ -74,15 +78,6 @@ public class ProductService {
         product = database.findProduct(id);
         productCache.put(id, product);
         return product;
-    }
-
-    // 3. Or use the convenient getOrCompute method
-    public Product getProductSimple(String id) {
-        return productCache.getOrCompute(id, this::loadFromDatabase);
-    }
-
-    private Product loadFromDatabase(String id) {
-        return database.findProduct(id);
     }
 }
 ```
@@ -99,9 +94,8 @@ CompletableFuture<User> userFuture = userCache.getAsync("user456")
         return loadUserAsync("user456");
     });
 
-// Async bulk operations
-Map<String, String> keys = Map.of("key1", "value1", "key2", "value2");
-CompletableFuture<Void> bulkPut = cache.putAllAsync(keys);
+// Async put operations
+CompletableFuture<Void> putFuture = cache.putAsync("key1", "value1");
 ```
 
 #### Kotlin Coroutines Integration
@@ -110,25 +104,28 @@ CompletableFuture<Void> bulkPut = cache.putAllAsync(keys);
 import io.github.dhruv1110.jcachex.kotlin.*
 
 class UserService {
-    private val userCache = cache<String, User> {
-        maximumSize = 5000
-        expireAfterWrite = 1.hours
+    private val userCache = createCache<String, User> {
+        maximumSize(5000)
+        expireAfterWrite(Duration.ofHours(1))
     }
 
     // Suspend function for async operations
     suspend fun getUser(id: String): User {
-        return userCache.getSuspend(id) ?: loadUserSuspend(id)
-    }
-
-    // Use cached computation
-    suspend fun getOrLoadUser(id: String): User {
-        return userCache.getOrComputeSuspend(id) {
-            userRepository.findById(it)
+        return userCache.getOrPut(id) {
+            userRepository.findById(id)
         }
     }
 
-    private suspend fun loadUserSuspend(id: String): User = withContext(Dispatchers.IO) {
-        userRepository.findById(id).also { userCache.put(id, it) }
+    // Using deferred operations
+    suspend fun getUserAsync(id: String): User {
+        val deferred = userCache.getDeferred(id, this)
+        return deferred.await() ?: loadUserFromDatabase(id)
+    }
+
+    private suspend fun loadUserFromDatabase(id: String): User {
+        return userRepository.findById(id).also {
+            userCache.put(id, it)
+        }
     }
 }
 ```
@@ -137,34 +134,33 @@ class UserService {
 
 ```kotlin
 @Configuration
-@EnableJCacheX
+@EnableCaching
 class CacheConfig {
 
     @Bean
-    @Qualifier("userCache")
-    fun userCache(): Cache<String, User> = CacheBuilder<String, User>()
-        .maximumSize(1000)
-        .expireAfterWrite(Duration.ofMinutes(15))
-        .build()
+    fun userCache(): Cache<String, User> {
+        val config = CacheConfig.builder<String, User>()
+            .maximumSize(1000L)
+            .expireAfterWrite(Duration.ofMinutes(15))
+            .recordStats(true)
+            .build()
+        return DefaultCache(config)
+    }
 }
 
 @Service
-class UserService {
+class UserService(private val userCache: Cache<String, User>) {
 
-    @Cacheable("users", key = "#id")
+    @Cacheable("users")
     fun findUser(id: String): User {
+        // Check JCacheX cache first for additional logic
+        val cached = userCache.get(id)
+        if (cached != null) return cached
+
         // Expensive operation (database call, API call, etc.)
-        return userRepository.findById(id)
-    }
-
-    @CacheEvict("users", key = "#user.id")
-    fun updateUser(user: User): User {
-        return userRepository.save(user)
-    }
-
-    @CachePut("users", key = "#result.id")
-    fun createUser(userData: CreateUserRequest): User {
-        return userRepository.create(userData)
+        val user = userRepository.findById(id)
+        userCache.put(id, user)
+        return user
     }
 }
 ```
@@ -230,32 +226,32 @@ dependencies {
 ### Cache Builder Options
 
 ```java
-Cache<String, Data> cache = CacheBuilder.<String, Data>newBuilder()
+CacheConfig<String, Data> config = CacheConfig.<String, Data>newBuilder()
     // Size-based eviction
-    .maximumSize(10_000)                    // Max 10k entries
-    .maximumWeight(1_000_000)               // Max 1MB total weight
-    .weigher((key, value) -> value.size())  // Custom weight function
+    .maximumSize(10_000L)                    // Max 10k entries
+    .maximumWeight(1_000_000L)               // Max 1MB total weight
+    .weigher((key, value) -> value.size())   // Custom weight function
 
     // Time-based expiration
     .expireAfterWrite(Duration.ofMinutes(30))   // 30 min after write
     .expireAfterAccess(Duration.ofMinutes(10))  // 10 min after last access
-    .expireAfter(customExpirationPolicy)        // Custom expiration logic
 
     // Eviction strategies
     .evictionStrategy(new LRUEvictionStrategy<>())  // Least Recently Used
     .evictionStrategy(new LFUEvictionStrategy<>())  // Least Frequently Used
     .evictionStrategy(new FIFOEvictionStrategy<>()) // First In, First Out
-    .evictionStrategy(new WeightBasedEvictionStrategy<>()) // Weight-based
 
     // Monitoring and debugging
-    .enableStatistics()                     // Track cache statistics
-    .eventListener(new LoggingCacheEventListener<>()) // Log cache events
+    .recordStats(true)                       // Track cache statistics
+    .addListener(new LoggingCacheEventListener<>()) // Log cache events
 
     // Performance tuning
-    .concurrencyLevel(16)                   // Number of segments for concurrency
-    .initialCapacity(1000)                  // Initial hash table size
+    .concurrencyLevel(16)                    // Number of segments for concurrency
+    .initialCapacity(1000)                   // Initial hash table size
 
     .build();
+
+Cache<String, Data> cache = new DefaultCache<>(config);
 ```
 
 ### Eviction Strategies Explained
@@ -286,29 +282,55 @@ public class CustomEvictionStrategy<K, V> implements EvictionStrategy<K, V> {
 ### Cache Statistics
 
 ```java
-cache.enableStatistics();
+// Enable statistics in configuration
+CacheConfig<String, User> config = CacheConfig.<String, User>newBuilder()
+    .recordStats(true)
+    .build();
 
-CacheStats stats = cache.getStats();
-System.out.printf("Hit rate: %.2f%%\n", stats.getHitRate() * 100);
-System.out.printf("Miss rate: %.2f%%\n", stats.getMissRate() * 100);
-System.out.printf("Total requests: %d\n", stats.getRequestCount());
-System.out.printf("Eviction count: %d\n", stats.getEvictionCount());
+Cache<String, User> cache = new DefaultCache<>(config);
+
+// Get statistics
+CacheStats stats = cache.stats();
+System.out.printf("Hit rate: %.2f%%\n", stats.hitRate() * 100);
+System.out.printf("Miss rate: %.2f%%\n", stats.missRate() * 100);
+System.out.printf("Total hits: %d\n", stats.hitCount());
+System.out.printf("Total misses: %d\n", stats.missCount());
+System.out.printf("Eviction count: %d\n", stats.evictionCount());
 ```
 
 ### Event Listeners
 
 ```java
-cache.setEventListener(new CacheEventListener<String, User>() {
-    @Override
-    public void onEntryAdded(String key, User value) {
-        log.debug("Added: {} -> {}", key, value);
-    }
+CacheConfig<String, User> config = CacheConfig.<String, User>newBuilder()
+    .addListener(new CacheEventListener<String, User>() {
+        @Override
+        public void onPut(String key, User value) {
+            log.debug("Added: {} -> {}", key, value);
+        }
 
-    @Override
-    public void onEntryEvicted(String key, User value, EvictionReason reason) {
-        log.info("Evicted: {} (reason: {})", key, reason);
-    }
-});
+        @Override
+        public void onEvict(String key, User value, EvictionReason reason) {
+            log.info("Evicted: {} (reason: {})", key, reason);
+        }
+
+        @Override
+        public void onRemove(String key, User value) {
+            log.debug("Removed: {} -> {}", key, value);
+        }
+
+        @Override
+        public void onExpire(String key, User value) {
+            log.info("Expired: {} -> {}", key, value);
+        }
+
+        @Override
+        public void onClear() {
+            log.info("Cache cleared");
+        }
+    })
+    .build();
+
+Cache<String, User> cache = new DefaultCache<>(config);
 ```
 
 ### Testing with Fake Cache
@@ -358,23 +380,49 @@ public class ProductCatalogService {
     private final Cache<String, List<Product>> categoryCache;
 
     public ProductCatalogService() {
-        this.productCache = CacheBuilder.<String, Product>newBuilder()
-            .maximumSize(50_000)
+        CacheConfig<String, Product> productConfig = CacheConfig.<String, Product>newBuilder()
+            .maximumSize(50_000L)
             .expireAfterWrite(Duration.ofHours(2))
             .build();
+        this.productCache = new DefaultCache<>(productConfig);
 
-        this.categoryCache = CacheBuilder.<String, List<Product>>newBuilder()
-            .maximumSize(1_000)
+        CacheConfig<String, List<Product>> categoryConfig = CacheConfig.<String, List<Product>>newBuilder()
+            .maximumSize(1_000L)
             .expireAfterWrite(Duration.ofMinutes(30))
             .build();
+        this.categoryCache = new DefaultCache<>(categoryConfig);
     }
 
     public Product getProduct(String productId) {
-        return productCache.getOrCompute(productId, this::loadProduct);
+        Product product = productCache.get(productId);
+        if (product != null) {
+            return product;
+        }
+
+        product = loadProduct(productId);
+        productCache.put(productId, product);
+        return product;
     }
 
     public List<Product> getProductsByCategory(String category) {
-        return categoryCache.getOrCompute(category, this::loadProductsByCategory);
+        List<Product> products = categoryCache.get(category);
+        if (products != null) {
+            return products;
+        }
+
+        products = loadProductsByCategory(category);
+        categoryCache.put(category, products);
+        return products;
+    }
+
+    private Product loadProduct(String productId) {
+        // Load from database
+        return productRepository.findById(productId);
+    }
+
+    private List<Product> loadProductsByCategory(String category) {
+        // Load from database
+        return productRepository.findByCategory(category);
     }
 }
 ```
@@ -387,14 +435,18 @@ public class RateLimiter {
     private final Cache<String, AtomicInteger> requestCounts;
 
     public RateLimiter() {
-        this.requestCounts = CacheBuilder.<String, AtomicInteger>newBuilder()
+        CacheConfig<String, AtomicInteger> config = CacheConfig.<String, AtomicInteger>newBuilder()
             .expireAfterWrite(Duration.ofMinutes(1))
             .build();
+        this.requestCounts = new DefaultCache<>(config);
     }
 
     public boolean isAllowed(String clientId, int maxRequests) {
-        AtomicInteger count = requestCounts.getOrCompute(clientId,
-            k -> new AtomicInteger(0));
+        AtomicInteger count = requestCounts.get(clientId);
+        if (count == null) {
+            count = new AtomicInteger(0);
+            requestCounts.put(clientId, count);
+        }
         return count.incrementAndGet() <= maxRequests;
     }
 }
@@ -405,25 +457,29 @@ public class RateLimiter {
 ```kotlin
 @Service
 class SessionService {
-    private val sessionCache = cache<String, UserSession> {
-        maximumSize = 100_000
-        expireAfterAccess = 30.minutes
-        evictionStrategy = LRUEvictionStrategy()
+    private val sessionCache = createCache<String, UserSession> {
+        maximumSize(100_000)
+        expireAfterAccess(Duration.ofMinutes(30))
+        evictionStrategy(LRUEvictionStrategy())
     }
 
-    suspend fun createSession(user: User): String {
+    fun createSession(user: User): String {
         val sessionId = generateSessionId()
         val session = UserSession(user.id, Instant.now())
-        sessionCache.putSuspend(sessionId, session)
+        sessionCache.put(sessionId, session)
         return sessionId
     }
 
-    suspend fun getSession(sessionId: String): UserSession? {
-        return sessionCache.getSuspend(sessionId)
+    fun getSession(sessionId: String): UserSession? {
+        return sessionCache.get(sessionId)
     }
 
-    suspend fun invalidateSession(sessionId: String) {
-        sessionCache.removeSuspend(sessionId)
+    fun invalidateSession(sessionId: String) {
+        sessionCache.remove(sessionId)
+    }
+
+    private fun generateSessionId(): String {
+        return UUID.randomUUID().toString()
     }
 }
 ```
@@ -440,13 +496,19 @@ LoadingCache<String, User> guavaCache = CacheBuilder.newBuilder()
     .build(this::loadUser);
 
 // JCacheX equivalent
-Cache<String, User> jcacheX = CacheBuilder.<String, User>newBuilder()
-    .maximumSize(1000)
+CacheConfig<String, User> config = CacheConfig.<String, User>newBuilder()
+    .maximumSize(1000L)
     .expireAfterWrite(Duration.ofMinutes(10))
     .build();
 
-// Usage is similar
-User user = jcacheX.getOrCompute("key", this::loadUser);
+Cache<String, User> jcacheX = new DefaultCache<>(config);
+
+// Usage pattern
+User user = jcacheX.get("key");
+if (user == null) {
+    user = loadUser("key");
+    jcacheX.put("key", user);
+}
 ```
 
 ### From Caffeine
@@ -460,10 +522,12 @@ com.github.benmanes.caffeine.cache.Cache<String, User> caffeineCache =
         .build();
 
 // JCacheX
-Cache<String, User> jcacheX = CacheBuilder.<String, User>newBuilder()
-    .maximumSize(1000)
+CacheConfig<String, User> config = CacheConfig.<String, User>newBuilder()
+    .maximumSize(1000L)
     .expireAfterWrite(Duration.ofMinutes(10))
     .build();
+
+Cache<String, User> jcacheX = new DefaultCache<>(config);
 ```
 
 ## 🛠️ Development & Contribution

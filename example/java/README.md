@@ -1,111 +1,124 @@
 # JCacheX Java Example
 
-This example demonstrates **JCacheX** in a real-world Java application with multiple caching patterns commonly found in enterprise applications.
+This example demonstrates **JCacheX** in a Java application, showcasing core caching functionality and event handling.
 
 ## 🎯 What This Example Shows
 
-- **📦 E-commerce Product Catalog**: Multi-level caching for products and categories
-- **🔒 API Rate Limiting**: Request throttling using time-based cache expiration
-- **📊 Performance Monitoring**: Cache statistics and event listening
-- **🧪 Testing Strategies**: Using fake caches for unit testing
-- **⚡ Async Operations**: CompletableFuture integration
+- **📦 Basic Cache Operations**: Put, get, remove, and clear operations
+- **🔧 Cache Configuration**: Using CacheConfig builder for setup
+- **📊 Cache Statistics**: Hit rates, miss counts, and performance monitoring
+- **🎧 Event Listening**: Real-time cache operation notifications
+- **⚡ Async Operations**: CompletableFuture-based asynchronous caching
+- **🧪 Eviction Strategies**: LRU eviction with automatic cache management
 
 ## 🚀 Running the Example
 
 ```bash
-# From the example/java directory
-./gradlew run
+# From the project root directory
+./gradlew :example:java:run
 
-# Or with your IDE: Run Main.java
+# Or from the example/java directory (if gradlew were available there)
+# java -cp "build/libs/*" io.github.dhruv1110.jcachex.example.java.Main
 ```
 
 ## 📋 Key Features Demonstrated
 
-### 1. **Product Catalog Service**
-- **Product Cache**: 50k entries, 2-hour expiration
-- **Category Cache**: 1k entries, 30-minute expiration
-- **Smart Loading**: `getOrCompute` pattern
+### 1. **Cache Configuration**
+- **Size Limit**: 100 entries maximum
+- **Time-based Expiration**: 5-minute write expiration
+- **LRU Eviction**: Least recently used eviction strategy
+- **Statistics Enabled**: Track hit rates and performance metrics
 
-### 2. **Rate Limiter**
-- **Time Windows**: 1-minute sliding windows
-- **Client Tracking**: Per-client request counting
-- **Automatic Cleanup**: Expired counters removed automatically
+### 2. **Event Handling**
+- **Put Events**: Notifications when entries are added
+- **Remove Events**: Notifications when entries are removed
+- **Eviction Events**: Notifications when entries are evicted
+- **Expiration Events**: Notifications when entries expire
+- **Clear Events**: Notifications when cache is cleared
 
-### 3. **Performance Monitoring**
-- **Cache Statistics**: Hit rates, miss counts, eviction stats
-- **Event Listeners**: Real-time cache operation logging
-- **Metrics Export**: Ready for monitoring systems
-
-### 4. **Testing Patterns**
-- **Fake Cache**: Deterministic testing with `FakeCache`
-- **Mock Integration**: Testing cache interactions
-- **Performance Tests**: JMH benchmarking setup
+### 3. **Synchronous and Asynchronous Operations**
+- **Sync Operations**: Direct put/get/remove calls
+- **Async Operations**: CompletableFuture-based operations
+- **Performance Monitoring**: Real-time statistics and hit rates
 
 ## 📖 Code Structure
 
 ```
 src/main/java/
-├── Main.java                          # Main demo application
-├── ecommerce/
-│   ├── ProductCatalogService.java     # Multi-level caching example
-│   ├── Product.java                   # Domain model
-│   └── ProductRepository.java         # Simulated data access
-├── ratelimit/
-│   ├── RateLimiter.java               # Request throttling
-│   └── ClientRequestTracker.java      # Request counting
-├── monitoring/
-│   ├── CacheMonitor.java              # Statistics and metrics
-│   └── LoggingCacheEventListener.java # Event logging
-└── testing/
-    ├── ProductServiceTest.java        # Unit testing example
-    └── PerformanceBenchmark.java      # JMH benchmarking
+└── io/github/dhruv1110/jcachex/example/java/
+    └── Main.java                    # Complete demo application
 ```
 
 ## 🎓 Learning Path
 
-1. **Start with Main.java**: See all examples in action
-2. **Study ProductCatalogService**: Learn multi-level caching
-3. **Explore RateLimiter**: Understand time-based patterns
-4. **Check CacheMonitor**: See performance monitoring
-5. **Review Tests**: Learn testing strategies
+1. **Start with Main.java**: See all features in a single comprehensive example
+2. **Study Configuration**: Learn how to set up cache with builder pattern
+3. **Explore Event Listeners**: Understand cache operation notifications
+4. **Review Statistics**: See how to monitor cache performance
 
 ## 🔧 Configuration Examples
 
-### High-Performance Cache
+### Basic Cache Setup
 ```java
-Cache<String, Product> cache = CacheBuilder.<String, Product>newBuilder()
-    .maximumSize(50_000)
-    .expireAfterWrite(Duration.ofHours(2))
+CacheConfig<String, String> config = CacheConfig.<String, String>newBuilder()
+    .maximumSize(100L)
+    .expireAfterWrite(Duration.ofMinutes(5))
     .evictionStrategy(new LRUEvictionStrategy<>())
-    .enableStatistics()
-    .concurrencyLevel(16)
+    .recordStats(true)
     .build();
+
+Cache<String, String> cache = new DefaultCache<>(config);
 ```
 
-### Memory-Conscious Cache
+### Event Listener Setup
 ```java
-Cache<String, List<Product>> cache = CacheBuilder.<String, List<Product>>newBuilder()
-    .maximumWeight(10_000_000) // 10MB
-    .weigher((key, value) -> value.size() * 1000) // Estimated bytes per product
-    .expireAfterAccess(Duration.ofMinutes(30))
-    .build();
+config.addListener(new CacheEventListener<String, String>() {
+    @Override
+    public void onPut(String key, String value) {
+        System.out.println("Put: " + key + " = " + value);
+    }
+
+    @Override
+    public void onEvict(String key, String value, EvictionReason reason) {
+        System.out.println("Evicted: " + key + " due to " + reason);
+    }
+
+    // ... implement other event methods
+});
+```
+
+## 📈 Expected Output
+
+When you run this example, you should see:
+```
+Put: key1 = value1
+Value for key1: value1
+Async value for key1: value1
+Put: key2 = value2
+Put: key3 = value3
+Cache stats: CacheStats{hitCount=2, missCount=0, evictionCount=0, ...}
+Hit rate: 1.0
+Cache size: 3
+Remove: key2 = value2
+Cache cleared
+Final cache size: 0
 ```
 
 ## 📈 Expected Performance
 
-Running this example should show:
-- **Cache Hit Rate**: 85-95% for product lookups
-- **Response Time**: < 1ms for cached products vs 100ms+ for database
+This example demonstrates:
+- **Cache Hit Rate**: 100% for the operations shown
+- **Response Time**: < 1ms for cached operations
 - **Memory Usage**: ~32 bytes overhead per cache entry
-- **Throughput**: 10M+ operations/second for in-memory operations
+- **Event Processing**: Real-time notifications for all cache operations
 
 ## 🔗 Related Documentation
 
 - [Main Documentation](../../README.md): Complete JCacheX guide
 - [Kotlin Example](../kotlin/): Coroutines and DSL examples
-- [Spring Boot Example](../springboot/): Annotation-based caching
+- [Spring Boot Example](../springboot/): Spring integration
 - [API Documentation](https://javadoc.io/doc/io.github.dhruv1110/jcachex-core): Complete API reference
 
 ---
 
-💡 **Pro Tip**: Use this example as a starting point for your own caching implementation. The patterns shown here scale well in production environments.
+💡 **Pro Tip**: This example provides a solid foundation for understanding JCacheX core concepts. The single-file approach makes it easy to see all features in context and experiment with different configurations.
