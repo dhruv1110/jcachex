@@ -74,6 +74,11 @@ subprojects {
     java {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+        // Use JDK 11+ for javadoc generation (HTML5 support)
+        // while maintaining JDK 8 compatibility for runtime
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(11))
+        }
         withSourcesJar()
         withJavadocJar()
     }
@@ -193,16 +198,16 @@ subprojects {
 
     // Documentation tasks
     tasks.withType<Javadoc> {
+        // Force javadoc to use JDK 11+ for HTML5 support
+        options.jFlags = listOf("-Djava.awt.headless=true")
+
         options {
             (this as StandardJavadocDocletOptions).apply {
-                // Only add html5 option for Java 9+ (JDK 8 doesn't support it)
-                val javaVersion = System.getProperty("java.version")
-                if (!javaVersion.startsWith("1.8")) {
-                    addBooleanOption("html5", true)
-                }
+                // Always use HTML5 since we're using JDK 11+ for javadoc
+                addBooleanOption("html5", true)
                 addStringOption("Xdoclint:none", "-quiet")
-                // Remove external links to avoid network issues in CI/CD
-                // links("https://docs.oracle.com/javase/8/docs/api/")
+                // Can now safely use external links since we have proper JDK
+                links("https://docs.oracle.com/en/java/javase/11/docs/api/")
                 windowTitle = "JCacheX ${project.name} API"
                 docTitle = "JCacheX ${project.name} API"
                 header = "<b>JCacheX ${project.name}</b>"
