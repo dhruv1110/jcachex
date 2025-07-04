@@ -197,8 +197,8 @@ subprojects {
             (this as StandardJavadocDocletOptions).apply {
                 addBooleanOption("html5", true)
                 addStringOption("Xdoclint:none", "-quiet")
-                // Fix the Java 8 documentation URL - use versioned link to avoid redirects
-                links("https://docs.oracle.com/javase/8/docs/api/")
+                // Remove external links to avoid network issues in CI/CD
+                // links("https://docs.oracle.com/javase/8/docs/api/")
                 windowTitle = "JCacheX ${project.name} API"
                 docTitle = "JCacheX ${project.name} API"
                 header = "<b>JCacheX ${project.name}</b>"
