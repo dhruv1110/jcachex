@@ -195,7 +195,11 @@ subprojects {
     tasks.withType<Javadoc> {
         options {
             (this as StandardJavadocDocletOptions).apply {
-                addBooleanOption("html5", true)
+                // Only add html5 option for Java 9+ (JDK 8 doesn't support it)
+                val javaVersion = System.getProperty("java.version")
+                if (!javaVersion.startsWith("1.8")) {
+                    addBooleanOption("html5", true)
+                }
                 addStringOption("Xdoclint:none", "-quiet")
                 // Remove external links to avoid network issues in CI/CD
                 // links("https://docs.oracle.com/javase/8/docs/api/")
