@@ -6,6 +6,7 @@ Convert README.md to HTML for GitHub Pages deployment.
 import re
 import sys
 import os
+import html
 
 
 def convert_markdown_to_html(markdown_content):
@@ -103,7 +104,18 @@ def convert_markdown_to_html(markdown_content):
         if match:
             lang = match.group(1) or ''
             code = match.group(2)
-            formatted_code = f'<pre><code class="language-{lang}">{code}</code></pre>'
+
+            # HTML escape the code content to prevent XML/HTML interpretation
+            escaped_code = html.escape(code)
+
+            # Add proper language class and structure for syntax highlighting
+            if lang.lower() == 'xml':
+                formatted_code = f'<pre class="language-xml"><code class="language-xml">{escaped_code}</code></pre>'
+            elif lang.lower() in ['kotlin', 'java', 'groovy']:
+                formatted_code = f'<pre class="language-{lang.lower()}"><code class="language-{lang.lower()}">{escaped_code}</code></pre>'
+            else:
+                formatted_code = f'<pre><code class="language-{lang}">{escaped_code}</code></pre>'
+
             html = html.replace(f'__CODE_BLOCK_{i}__', formatted_code)
         else:
             html = html.replace(f'__CODE_BLOCK_{i}__', code_block)
@@ -114,7 +126,9 @@ def convert_markdown_to_html(markdown_content):
         match = re.match(r'`([^`\n]+)`', inline)
         if match:
             code = match.group(1)
-            formatted_code = f'<code>{code}</code>'
+            # HTML escape inline code content too
+            escaped_code = html.escape(code)
+            formatted_code = f'<code>{escaped_code}</code>'
             html = html.replace(f'__INLINE_CODE_{i}__', formatted_code)
         else:
             html = html.replace(f'__INLINE_CODE_{i}__', inline)

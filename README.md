@@ -41,10 +41,7 @@ dependencies {
     // Core functionality
     implementation("io.github.dhruv1110:jcachex-core:x.y.z")
 
-    // Java-specific extensions
-    implementation("io.github.dhruv1110:jcachex-java:x.y.z")
-
-    // Kotlin-specific extensions
+    // Kotlin-specific extensions (includes coroutines support)
     implementation("io.github.dhruv1110:jcachex-kotlin:x.y.z")
 
     // Spring Boot integration
@@ -62,14 +59,7 @@ dependencies {
         <version>x.y.z</version>
     </dependency>
 
-    <!-- Java-specific extensions -->
-    <dependency>
-        <groupId>io.github.dhruv1110</groupId>
-        <artifactId>jcachex-java</artifactId>
-        <version>x.y.z</version>
-    </dependency>
-
-    <!-- Kotlin-specific extensions -->
+    <!-- Kotlin-specific extensions (includes coroutines support) -->
     <dependency>
         <groupId>io.github.dhruv1110</groupId>
         <artifactId>jcachex-kotlin</artifactId>
