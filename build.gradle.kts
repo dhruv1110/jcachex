@@ -67,7 +67,11 @@ subprojects {
     apply(plugin = "io.gitlab.arturbosch.detekt")
     apply(plugin = "maven-publish")
     apply(plugin = "signing")
-    apply(plugin = "org.jetbrains.dokka")
+
+    // Only apply Dokka plugin to core modules, not examples
+    if (!project.path.startsWith(":example")) {
+        apply(plugin = "org.jetbrains.dokka")
+    }
 
     repositories {
         mavenCentral()
@@ -83,13 +87,13 @@ subprojects {
         }
         withSourcesJar()
         // Only generate javadoc JARs for core modules, not examples
-        if (!project.name.startsWith("example")) {
+        if (!project.path.startsWith(":example")) {
             withJavadocJar()
         }
     }
 
     // Publishing configuration - only for core modules, not examples
-    if (!project.name.startsWith("example")) {
+    if (!project.path.startsWith(":example")) {
         publishing {
             publications {
                 create<MavenPublication>("maven") {
@@ -204,7 +208,7 @@ subprojects {
     }
 
     // Documentation tasks - only for core modules, not examples
-    if (!project.name.startsWith("example")) {
+    if (!project.path.startsWith(":example")) {
         tasks.withType<Javadoc> {
             // Force javadoc to use JDK 11+ for HTML5 support
             options.jFlags = listOf("-Djava.awt.headless=true")
@@ -227,8 +231,18 @@ subprojects {
     }
 
     // Dokka configuration for Kotlin projects - only for core modules, not examples
-    if (!project.name.startsWith("example")) {
-        afterEvaluate {
+    afterEvaluate {
+        if (project.path.startsWith(":example")) {
+            // Disable Dokka tasks for example modules
+            tasks.matching { it.name.contains("dokka", ignoreCase = true) }.configureEach {
+                enabled = false
+            }
+            // Explicitly disable common Dokka task names
+            listOf("dokkaJavadoc", "dokkaHtml", "dokkaGfm").forEach { taskName ->
+                tasks.findByName(taskName)?.enabled = false
+            }
+        } else {
+            // Configure Dokka for core modules only
             if (plugins.hasPlugin("org.jetbrains.kotlin.jvm") && plugins.hasPlugin("org.jetbrains.dokka")) {
                 // Configure Dokka javadoc generation
                 tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
