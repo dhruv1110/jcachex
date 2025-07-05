@@ -34,23 +34,168 @@ class CacheStatsTest {
         @Test
         @DisplayName("Custom constructor should initialize with provided values")
         void customConstructorShouldInitializeWithProvidedValues() {
-            AtomicLong hitCount = new AtomicLong(5);
-            AtomicLong missCount = new AtomicLong(3);
+            AtomicLong hitCount = new AtomicLong(10);
+            AtomicLong missCount = new AtomicLong(5);
             AtomicLong evictionCount = new AtomicLong(2);
-            AtomicLong loadCount = new AtomicLong(4);
+            AtomicLong loadCount = new AtomicLong(8);
             AtomicLong loadFailureCount = new AtomicLong(1);
-            AtomicLong totalLoadTime = new AtomicLong(100);
+            AtomicLong totalLoadTime = new AtomicLong(1000);
 
-            CacheStats customStats = new CacheStats(
-                    hitCount, missCount, evictionCount,
+            CacheStats customStats = new CacheStats(hitCount, missCount, evictionCount,
                     loadCount, loadFailureCount, totalLoadTime);
 
-            assertEquals(5L, customStats.hitCount());
-            assertEquals(3L, customStats.missCount());
+            assertEquals(10L, customStats.hitCount());
+            assertEquals(5L, customStats.missCount());
             assertEquals(2L, customStats.evictionCount());
-            assertEquals(4L, customStats.loadCount());
+            assertEquals(8L, customStats.loadCount());
             assertEquals(1L, customStats.loadFailureCount());
-            assertEquals(100L, customStats.totalLoadTime());
+            assertEquals(1000L, customStats.totalLoadTime());
+        }
+    }
+
+    @Nested
+    @DisplayName("AtomicLong Getter Tests")
+    class AtomicLongGetterTests {
+
+        @Test
+        @DisplayName("getHitCount should return AtomicLong with correct value")
+        void getHitCountShouldReturnAtomicLongWithCorrectValue() {
+            AtomicLong hitCount = stats.getHitCount();
+            assertNotNull(hitCount);
+            assertEquals(0L, hitCount.get());
+
+            stats.recordHit();
+            assertEquals(1L, hitCount.get());
+
+            stats.recordHit();
+            assertEquals(2L, hitCount.get());
+        }
+
+        @Test
+        @DisplayName("getMissCount should return AtomicLong with correct value")
+        void getMissCountShouldReturnAtomicLongWithCorrectValue() {
+            AtomicLong missCount = stats.getMissCount();
+            assertNotNull(missCount);
+            assertEquals(0L, missCount.get());
+
+            stats.recordMiss();
+            assertEquals(1L, missCount.get());
+
+            stats.recordMiss();
+            assertEquals(2L, missCount.get());
+        }
+
+        @Test
+        @DisplayName("getEvictionCount should return AtomicLong with correct value")
+        void getEvictionCountShouldReturnAtomicLongWithCorrectValue() {
+            AtomicLong evictionCount = stats.getEvictionCount();
+            assertNotNull(evictionCount);
+            assertEquals(0L, evictionCount.get());
+
+            stats.recordEviction();
+            assertEquals(1L, evictionCount.get());
+
+            stats.recordEviction();
+            assertEquals(2L, evictionCount.get());
+        }
+
+        @Test
+        @DisplayName("getLoadCount should return AtomicLong with correct value")
+        void getLoadCountShouldReturnAtomicLongWithCorrectValue() {
+            AtomicLong loadCount = stats.getLoadCount();
+            assertNotNull(loadCount);
+            assertEquals(0L, loadCount.get());
+
+            stats.recordLoad(100);
+            assertEquals(1L, loadCount.get());
+
+            stats.recordLoad(200);
+            assertEquals(2L, loadCount.get());
+        }
+
+        @Test
+        @DisplayName("getLoadFailureCount should return AtomicLong with correct value")
+        void getLoadFailureCountShouldReturnAtomicLongWithCorrectValue() {
+            AtomicLong loadFailureCount = stats.getLoadFailureCount();
+            assertNotNull(loadFailureCount);
+            assertEquals(0L, loadFailureCount.get());
+
+            stats.recordLoadFailure();
+            assertEquals(1L, loadFailureCount.get());
+
+            stats.recordLoadFailure();
+            assertEquals(2L, loadFailureCount.get());
+        }
+
+        @Test
+        @DisplayName("getTotalLoadTime should return AtomicLong with correct value")
+        void getTotalLoadTimeShouldReturnAtomicLongWithCorrectValue() {
+            AtomicLong totalLoadTime = stats.getTotalLoadTime();
+            assertNotNull(totalLoadTime);
+            assertEquals(0L, totalLoadTime.get());
+
+            stats.recordLoad(100);
+            assertEquals(100L, totalLoadTime.get());
+
+            stats.recordLoad(200);
+            assertEquals(300L, totalLoadTime.get());
+        }
+
+        @Test
+        @DisplayName("AtomicLong getters should return same instance across calls")
+        void atomicLongGettersShouldReturnSameInstanceAcrossCalls() {
+            AtomicLong hitCount1 = stats.getHitCount();
+            AtomicLong hitCount2 = stats.getHitCount();
+            assertSame(hitCount1, hitCount2, "getHitCount should return same AtomicLong instance");
+
+            AtomicLong missCount1 = stats.getMissCount();
+            AtomicLong missCount2 = stats.getMissCount();
+            assertSame(missCount1, missCount2, "getMissCount should return same AtomicLong instance");
+
+            AtomicLong evictionCount1 = stats.getEvictionCount();
+            AtomicLong evictionCount2 = stats.getEvictionCount();
+            assertSame(evictionCount1, evictionCount2, "getEvictionCount should return same AtomicLong instance");
+
+            AtomicLong loadCount1 = stats.getLoadCount();
+            AtomicLong loadCount2 = stats.getLoadCount();
+            assertSame(loadCount1, loadCount2, "getLoadCount should return same AtomicLong instance");
+
+            AtomicLong loadFailureCount1 = stats.getLoadFailureCount();
+            AtomicLong loadFailureCount2 = stats.getLoadFailureCount();
+            assertSame(loadFailureCount1, loadFailureCount2,
+                    "getLoadFailureCount should return same AtomicLong instance");
+
+            AtomicLong totalLoadTime1 = stats.getTotalLoadTime();
+            AtomicLong totalLoadTime2 = stats.getTotalLoadTime();
+            assertSame(totalLoadTime1, totalLoadTime2, "getTotalLoadTime should return same AtomicLong instance");
+        }
+
+        @Test
+        @DisplayName("AtomicLong getters should reflect changes made directly to returned objects")
+        void atomicLongGettersShouldReflectDirectChanges() {
+            AtomicLong hitCount = stats.getHitCount();
+            hitCount.set(42);
+            assertEquals(42L, stats.hitCount());
+
+            AtomicLong missCount = stats.getMissCount();
+            missCount.incrementAndGet();
+            assertEquals(1L, stats.missCount());
+
+            AtomicLong evictionCount = stats.getEvictionCount();
+            evictionCount.addAndGet(5);
+            assertEquals(5L, stats.evictionCount());
+
+            AtomicLong loadCount = stats.getLoadCount();
+            loadCount.set(10);
+            assertEquals(10L, stats.loadCount());
+
+            AtomicLong loadFailureCount = stats.getLoadFailureCount();
+            loadFailureCount.incrementAndGet();
+            assertEquals(1L, stats.loadFailureCount());
+
+            AtomicLong totalLoadTime = stats.getTotalLoadTime();
+            totalLoadTime.set(1000);
+            assertEquals(1000L, stats.totalLoadTime());
         }
     }
 
