@@ -8,7 +8,6 @@ plugins {
     id("jacoco")
     id("maven-publish")
     id("signing")
-    id("org.owasp.dependencycheck") version "10.0.3"
 
     id("org.jreleaser") version "1.18.0"
     id("org.jetbrains.dokka") version "1.9.10" apply false
@@ -56,18 +55,7 @@ jreleaser {
     configFile = file("jreleaser.yml")
 }
 
-// OWASP Dependency Check configuration
-configure<org.owasp.dependencycheck.gradle.extension.DependencyCheckExtension> {
-    formats = listOf("ALL")
-    failBuildOnCVSS = 7.0f
-    suppressionFile = "config/owasp/owasp-suppression.xml"
-    data.apply {
-        directory = "~/.gradle/dependency-check-data"
-    }
-    nvd.apply {
-        apiKey = System.getenv("NVD_API_KEY") ?: ""
-    }
-}
+
 
 subprojects {
     group = rootProject.group

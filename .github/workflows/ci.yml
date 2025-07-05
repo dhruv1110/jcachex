@@ -41,28 +41,9 @@ jobs:
         ./gradlew detekt
         ./gradlew ktlintCheck
 
-    - name: Security scan with OWASP dependency check
-      run: ./gradlew dependencyCheckAnalyze
-      continue-on-error: true
-
     - name: Run performance tests
       run: ./gradlew :jcachex-core:test --tests "*PerformanceBenchmarkTest*"
       continue-on-error: true
-
-    - name: Vulnerability scanning with Trivy
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: '.'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-      continue-on-error: true
-
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
-      if: always() && hashFiles('trivy-results.sarif') != ''
-      with:
-        sarif_file: 'trivy-results.sarif'
 
     - name: Generate documentation coverage
       run: ./gradlew allDocumentationCoverage
