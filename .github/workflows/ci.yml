@@ -57,12 +57,12 @@ jobs:
         echo "Using Java for documentation: $(java -version 2>&1 | head -1)"
 
         ./gradlew javadoc javadocJar
-        echo "Generated javadoc JARs:"
-        find . -name "*javadoc*.jar" -type f
+        echo "Generated javadoc JARs for core modules:"
+        find . -name "*javadoc*.jar" -type f | grep -v example
 
-        # Comprehensive verification that javadoc JARs contain proper content
-        echo "Verifying javadoc JAR contents..."
-        for jar in $(find . -name "*javadoc*.jar" -type f); do
+        # Comprehensive verification that javadoc JARs contain proper content (core modules only)
+        echo "Verifying core module javadoc JAR contents..."
+        for jar in $(find . -name "*javadoc*.jar" -type f | grep -v example); do
           echo "=== Checking $jar ==="
           # Check if index.html exists in the JAR
           if jar -tf "$jar" | grep -q "index.html"; then

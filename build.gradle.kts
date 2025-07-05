@@ -82,52 +82,57 @@ subprojects {
             languageVersion.set(JavaLanguageVersion.of(11))
         }
         withSourcesJar()
-        withJavadocJar()
+        // Only generate javadoc JARs for core modules, not examples
+        if (!project.name.startsWith("example")) {
+            withJavadocJar()
+        }
     }
 
-    // Publishing configuration
-    publishing {
-        publications {
-            create<MavenPublication>("maven") {
-                from(components["java"])
+    // Publishing configuration - only for core modules, not examples
+    if (!project.name.startsWith("example")) {
+        publishing {
+            publications {
+                create<MavenPublication>("maven") {
+                    from(components["java"])
 
-                pom {
-                    name.set("JCacheX - ${project.name}")
-                    description.set("High-performance caching library for Java and Kotlin applications")
-                    url.set("https://github.com/dhruv1110/JCacheX")
-
-                    licenses {
-                        license {
-                            name.set("MIT License")
-                            url.set("https://opensource.org/licenses/MIT")
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id.set("dhruv1110")
-                            name.set("dhruv1110")
-                            email.set("dhruv1110@users.noreply.github.com") // Update with your email
-                        }
-                    }
-
-                    scm {
-                        connection.set("scm:git:git://github.com/dhruv1110/JCacheX.git")
-                        developerConnection.set("scm:git:ssh://github.com/dhruv1110/JCacheX.git")
+                    pom {
+                        name.set("JCacheX - ${project.name}")
+                        description.set("High-performance caching library for Java and Kotlin applications")
                         url.set("https://github.com/dhruv1110/JCacheX")
-                    }
 
-                    issueManagement {
-                        system.set("GitHub")
-                        url.set("https://github.com/dhruv1110/JCacheX/issues")
+                        licenses {
+                            license {
+                                name.set("MIT License")
+                                url.set("https://opensource.org/licenses/MIT")
+                            }
+                        }
+
+                        developers {
+                            developer {
+                                id.set("dhruv1110")
+                                name.set("dhruv1110")
+                                email.set("dhruv1110@users.noreply.github.com") // Update with your email
+                            }
+                        }
+
+                        scm {
+                            connection.set("scm:git:git://github.com/dhruv1110/JCacheX.git")
+                            developerConnection.set("scm:git:ssh://github.com/dhruv1110/JCacheX.git")
+                            url.set("https://github.com/dhruv1110/JCacheX")
+                        }
+
+                        issueManagement {
+                            system.set("GitHub")
+                            url.set("https://github.com/dhruv1110/JCacheX/issues")
+                        }
                     }
                 }
             }
-        }
 
-        repositories {
-            maven {
-                url = rootProject.layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
+            repositories {
+                maven {
+                    url = rootProject.layout.buildDirectory.dir("staging-deploy").get().asFile.toURI()
+                }
             }
         }
     }
@@ -198,65 +203,69 @@ subprojects {
         }
     }
 
-    // Documentation tasks
-    tasks.withType<Javadoc> {
-        // Force javadoc to use JDK 11+ for HTML5 support
-        options.jFlags = listOf("-Djava.awt.headless=true")
+    // Documentation tasks - only for core modules, not examples
+    if (!project.name.startsWith("example")) {
+        tasks.withType<Javadoc> {
+            // Force javadoc to use JDK 11+ for HTML5 support
+            options.jFlags = listOf("-Djava.awt.headless=true")
 
-        options {
-            (this as StandardJavadocDocletOptions).apply {
-                // Always use HTML5 since we're using JDK 11+ for javadoc
-                addBooleanOption("html5", true)
-                addStringOption("Xdoclint:none", "-quiet")
-                // Can now safely use external links since we have proper JDK
-                links("https://docs.oracle.com/en/java/javase/11/docs/api/")
-                windowTitle = "JCacheX ${project.name} API"
-                docTitle = "JCacheX ${project.name} API"
-                header = "<b>JCacheX ${project.name}</b>"
-                bottom = "Copyright © 2024 dhruv1110. All rights reserved."
+            options {
+                (this as StandardJavadocDocletOptions).apply {
+                    // Always use HTML5 since we're using JDK 11+ for javadoc
+                    addBooleanOption("html5", true)
+                    addStringOption("Xdoclint:none", "-quiet")
+                    // Can now safely use external links since we have proper JDK
+                    links("https://docs.oracle.com/en/java/javase/11/docs/api/")
+                    windowTitle = "JCacheX ${project.name} API"
+                    docTitle = "JCacheX ${project.name} API"
+                    header = "<b>JCacheX ${project.name}</b>"
+                    bottom = "Copyright © 2024 dhruv1110. All rights reserved."
+                }
             }
+            isFailOnError = false
         }
-        isFailOnError = false
     }
 
-    // Dokka configuration for Kotlin projects
-    afterEvaluate {
-        if (plugins.hasPlugin("org.jetbrains.kotlin.jvm") && plugins.hasPlugin("org.jetbrains.dokka")) {
-            // Configure Dokka javadoc generation
-            tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
-                dokkaSourceSets {
-                    configureEach {
-                        jdkVersion.set(8)
-                        // Ensure proper module name
-                        moduleName.set("JCacheX ${project.name}")
-                        // Note: Removed sourceLink due to Gradle URL serialization warning
-                        // This is not critical for javadoc.io functionality
+    // Dokka configuration for Kotlin projects - only for core modules, not examples
+    if (!project.name.startsWith("example")) {
+        afterEvaluate {
+            if (plugins.hasPlugin("org.jetbrains.kotlin.jvm") && plugins.hasPlugin("org.jetbrains.dokka")) {
+                // Configure Dokka javadoc generation
+                tasks.withType<org.jetbrains.dokka.gradle.DokkaTask>().configureEach {
+                    dokkaSourceSets {
+                        configureEach {
+                            jdkVersion.set(8)
+                            // Ensure proper module name
+                            moduleName.set("JCacheX ${project.name}")
+                            // Note: Removed sourceLink due to Gradle URL serialization warning
+                            // This is not critical for javadoc.io functionality
+                        }
                     }
                 }
-            }
 
-            // Ensure javadoc jar properly uses Dokka output for Kotlin modules
-            tasks.withType<Jar>().matching { it.name == "javadocJar" }.configureEach {
-                archiveClassifier.set("javadoc")
-                dependsOn("dokkaJavadoc")
-                // Add Dokka javadoc output
-                from(tasks.named("dokkaJavadoc")) {
-                    exclude("**/*.map")  // Exclude source maps if any
-                }
-                // Ensure we have content
-                doFirst {
-                    val dokkaOutput = tasks.named("dokkaJavadoc").get().outputs.files
-                    if (dokkaOutput.isEmpty) {
-                        throw GradleException("Dokka javadoc output is empty for project ${project.name}")
+                // Ensure javadoc jar properly uses Dokka output for Kotlin modules
+                tasks.withType<Jar>().matching { it.name == "javadocJar" }.configureEach {
+                    archiveClassifier.set("javadoc")
+                    dependsOn("dokkaJavadoc")
+                    // Add Dokka javadoc output
+                    from(tasks.named("dokkaJavadoc")) {
+                        exclude("**/*.map")  // Exclude source maps if any
+                    }
+                    // Ensure we have content
+                    doFirst {
+                        val dokkaOutput = tasks.named("dokkaJavadoc").get().outputs.files
+                        if (dokkaOutput.isEmpty) {
+                            throw GradleException("Dokka javadoc output is empty for project ${project.name}")
+                        }
                     }
                 }
-            }
-        } else {
-            // For pure Java projects, ensure javadoc jar uses standard javadoc output
-            tasks.withType<Jar>().matching { it.name == "javadocJar" }.configureEach {
-                archiveClassifier.set("javadoc")
-                dependsOn("javadoc")
-                from(tasks.javadoc)
+            } else {
+                // For pure Java projects, ensure javadoc jar uses standard javadoc output
+                tasks.withType<Jar>().matching { it.name == "javadocJar" }.configureEach {
+                    archiveClassifier.set("javadoc")
+                    dependsOn("javadoc")
+                    from(tasks.javadoc)
+                }
             }
         }
     }
@@ -351,11 +360,17 @@ tasks.register("allDocumentationCoverage") {
 
 tasks.register("generateAllDocs") {
     group = "documentation"
-    description = "Generates documentation for all modules"
-    dependsOn(subprojects.map { it.tasks.named("javadoc") })
+    description = "Generates documentation for core modules only (excludes examples)"
 
-    if (subprojects.any { it.plugins.hasPlugin("org.jetbrains.kotlin.jvm") }) {
-        dependsOn(subprojects.map {
+    // Only include core modules (jcachex-core, jcachex-kotlin, jcachex-spring)
+    val coreModules = subprojects.filter { !it.name.startsWith("example") }
+
+    dependsOn(coreModules.map {
+        try { it.tasks.named("javadoc") } catch (e: Exception) { null }
+    }.filterNotNull())
+
+    if (coreModules.any { it.plugins.hasPlugin("org.jetbrains.kotlin.jvm") }) {
+        dependsOn(coreModules.map {
             try { it.tasks.named("dokkaHtml") } catch (e: Exception) { null }
         }.filterNotNull())
     }
