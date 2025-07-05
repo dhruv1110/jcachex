@@ -50,6 +50,7 @@ jobs:
     - name: Generate and verify documentation
       env:
         JAVA_HOME: ${{ env.JAVA_HOME_11_X64 }}
+        GRADLE_OPTS: "-Xmx2g -XX:MaxMetaspaceSize=1024m"
       run: |
         # Switch to JDK 11 for documentation generation (supports HTML5)
         export PATH=$JAVA_HOME/bin:$PATH
