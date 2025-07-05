@@ -11,11 +11,10 @@ This document provides comprehensive API documentation for JCacheX, including al
 3. [Statistics API](#statistics-api)
 4. [Eviction Strategies](#eviction-strategies)
 5. [Event Listeners](#event-listeners)
-6. [Security API](#security-api)
-7. [Monitoring API](#monitoring-api)
-8. [Resilience API](#resilience-api)
-9. [Exception Handling](#exception-handling)
-10. [Utility Classes](#utility-classes)
+6. [Monitoring API](#monitoring-api)
+7. [Resilience API](#resilience-api)
+8. [Exception Handling](#exception-handling)
+9. [Utility Classes](#utility-classes)
 
 ---
 
@@ -373,60 +372,6 @@ public class UserCacheListener implements CacheEventListener<String, User> {
         logger.error("Failed to load user: {}", key, cause);
         metrics.increment("cache.load.failure.count");
     }
-}
-```
-
----
-
-## 🔒 **Security API**
-
-### CacheSecurityValidator Class
-
-```java
-public class CacheSecurityValidator {
-    public static Builder builder() { /* ... */ }
-    public static CacheSecurityValidator defaultValidator() { /* ... */ }
-
-    public void validateKey(Object key);
-    public void validateValue(Object value);
-    public void validateOperation(Object key, Object value);
-
-    public static String sanitizeForLogging(String input);
-}
-```
-
-### Security Validator Builder
-
-```java
-public static class Builder {
-    public Builder maxKeyLength(int maxKeyLength);
-    public Builder maxValueSize(long maxValueSize);
-    public Builder allowedKeyPattern(String pattern);
-    public Builder blacklistKeywords(String... keywords);
-    public Builder keyValidator(Predicate<Object> validator);
-    public Builder valueValidator(Predicate<Object> validator);
-    public Builder enableSizeValidation(boolean enabled);
-    public CacheSecurityValidator build();
-}
-```
-
-### Security Usage
-
-```java
-// Create security validator
-CacheSecurityValidator validator = CacheSecurityValidator.builder()
-    .maxKeyLength(256)
-    .maxValueSize(1024 * 1024) // 1MB
-    .allowedKeyPattern("^[a-zA-Z0-9_-]+$")
-    .blacklistKeywords("script", "eval", "javascript")
-    .build();
-
-// Validate before cache operations
-try {
-    validator.validateOperation(key, value);
-    cache.put(key, value);
-} catch (CacheOperationException e) {
-    logger.warn("Security validation failed: {}", e.getMessage());
 }
 ```
 

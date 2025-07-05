@@ -32,9 +32,9 @@ JCacheX is a high-performance, production-ready caching library for Java applica
 │  │  ConcurrentHashMap  │  LRU  │  LFU  │  FIFO  │  TTL         ││
 │  └─────────────────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────────────────┤
-│  Monitoring & Security                                          │
+│  Monitoring & Events                                            │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │  CacheStats  │  SecurityValidator  │  Event Listeners       ││
+│  │  CacheStats  │  Event Listeners  │  Performance Monitoring  ││
 │  └─────────────────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────────────────┤
 │  Resilience & Error Handling                                   │
@@ -49,7 +49,7 @@ JCacheX is a high-performance, production-ready caching library for Java applica
 1. **Performance First**: Optimized for high-throughput, low-latency operations
 2. **Thread Safety**: Full concurrent access support using lock-free data structures
 3. **Memory Efficiency**: Intelligent eviction strategies and memory management
-4. **Production Ready**: Comprehensive monitoring, security, and error handling
+4. **Production Ready**: Comprehensive monitoring and error handling
 5. **Flexibility**: Extensive configuration options and extension points
 
 ## 🔧 **Component Deep Dive**
@@ -171,37 +171,6 @@ CacheConfig<String, User> config = CacheConfig.<String, User>builder()
 | GET       | 50ns   | 100ns  | 200ns  | 500ns  |
 | PUT       | 100ns  | 200ns  | 400ns  | 1μs    |
 | EVICT     | 200ns  | 500ns  | 1μs    | 5μs    |
-
-## 🔐 **Security Architecture**
-
-### Security Validation Pipeline
-
-```java
-public class SecureCache<K, V> implements Cache<K, V> {
-    private final Cache<K, V> delegate;
-    private final CacheSecurityValidator validator;
-
-    @Override
-    public V get(K key) {
-        validator.validateKey(key);
-        return delegate.get(key);
-    }
-
-    @Override
-    public void put(K key, V value) {
-        validator.validateOperation(key, value);
-        delegate.put(key, value);
-    }
-}
-```
-
-### Security Features
-
-1. **Input Validation**: Key and value sanitization
-2. **Size Limits**: Prevent resource exhaustion attacks
-3. **Pattern Matching**: Regex-based key validation
-4. **Blacklisting**: Dangerous keyword detection
-5. **Type Safety**: Serialization vulnerability prevention
 
 ## 📈 **Monitoring & Observability**
 
@@ -504,11 +473,11 @@ logger.info("Cache performance: hit_rate={}, avg_load_time={}ms, evictions={}",
 - **Error Rate**: Alert if above 5%
 - **Memory Usage**: Alert if above 80% capacity
 
-### 4. Security Considerations
-- **Input Validation**: Always validate keys and values
-- **Size Limits**: Prevent resource exhaustion
-- **Access Control**: Implement proper authentication
-- **Audit Logging**: Log cache access patterns
+### 4. Error Handling
+- **Exception Handling**: Implement proper exception handling around cache operations
+- **Fallback Strategies**: Always have fallback mechanisms for cache failures
+- **Retry Logic**: Use retry policies for transient failures
+- **Circuit Breakers**: Implement circuit breakers for external dependencies
 
 ## 🔄 **Migration Guide**
 
