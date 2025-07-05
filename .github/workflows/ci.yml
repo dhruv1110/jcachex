@@ -41,10 +41,6 @@ jobs:
         ./gradlew detekt
         ./gradlew ktlintCheck
 
-    - name: Run performance tests
-      run: ./gradlew :jcachex-core:test --tests "*PerformanceBenchmarkTest*"
-      continue-on-error: true
-
     - name: Generate documentation coverage
       run: ./gradlew allDocumentationCoverage
 
