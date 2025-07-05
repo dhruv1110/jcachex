@@ -34,7 +34,7 @@ JCacheX is a high-performance, production-ready caching library for Java applica
 ├─────────────────────────────────────────────────────────────────┤
 │  Monitoring & Security                                          │
 │  ┌─────────────────────────────────────────────────────────────┐│
-│  │  CacheHealth  │  CacheMetrics  │  SecurityValidator         ││
+│  │  CacheStats  │  SecurityValidator  │  Event Listeners       ││
 │  └─────────────────────────────────────────────────────────────┘│
 ├─────────────────────────────────────────────────────────────────┤
 │  Resilience & Error Handling                                   │
@@ -205,52 +205,64 @@ public class SecureCache<K, V> implements Cache<K, V> {
 
 ## 📈 **Monitoring & Observability**
 
-### Health Monitoring
+### Simple Performance Monitoring
 
 ```java
-// Health check configuration
-CacheHealth health = CacheHealth.builder()
-    .hitRateThreshold(0.8)
-    .maxResponseTime(Duration.ofMillis(100))
-    .errorRateThreshold(0.05)
+// Enable statistics during cache creation
+CacheConfig<String, User> config = CacheConfig.<String, User>builder()
+    .maximumSize(10_000L)
+    .recordStats(true)  // Enable simple statistics
     .build();
 
-// Register caches
-health.registerCache("userCache", userCache);
-health.registerCache("sessionCache", sessionCache);
+Cache<String, User> cache = new DefaultCache<>(config);
 
-// Health checks
-HealthStatus status = health.getOverallHealth();
-if (!status.isHealthy()) {
-    alerting.sendAlert("Cache health degraded", status.getIssues());
-}
+// Monitor performance with built-in statistics
+CacheStats stats = cache.stats();
+System.out.println("Hit rate: " + (stats.hitRate() * 100) + "%");
+System.out.println("Miss rate: " + (stats.missRate() * 100) + "%");
+System.out.println("Evictions: " + stats.evictionCount());
+System.out.println("Average load time: " + (stats.averageLoadTime() / 1_000_000.0) + "ms");
 ```
 
-### Metrics Collection
+### Essential Metrics
 
 ```java
-// Metrics configuration
-CacheMetrics metrics = CacheMetrics.create("productCache");
+// Simple built-in statistics - no complex configuration needed
+Cache<String, Product> cache = new DefaultCache<>(config);
 
-// Operation timing
-try (CacheMetrics.Timer timer = metrics.startTimer("get")) {
-    Product product = cache.get(productId);
-    return product;
+// Get current statistics
+CacheStats stats = cache.stats();
+
+// Monitor key performance indicators
+double hitRate = stats.hitRate();
+long evictions = stats.evictionCount();
+long totalRequests = stats.hitCount() + stats.missCount();
+
+// Log performance metrics
+logger.info("Cache performance: hit rate {}%, evictions {}, requests {}",
+    hitRate * 100, evictions, totalRequests);
+
+// Alert on poor performance
+if (hitRate < 0.8) {
+    alertService.warn("Low cache hit rate: " + (hitRate * 100) + "%");
 }
-
-// Custom metrics
-metrics.recordCounter("cache.requests", 1);
-metrics.recordGauge("cache.memory.usage", memoryUsage);
-metrics.recordHistogram("cache.response.size", responseSize);
 ```
 
 ### Integration with Monitoring Systems
 
-#### Prometheus Integration
+#### Simple Metrics Export
 ```java
-// Export metrics in Prometheus format
-Map<String, Object> allMetrics = metrics.exportMetrics();
-prometheusRegistry.register(new CacheMetricsCollector(allMetrics));
+// Export basic statistics for external monitoring
+CacheStats stats = cache.stats();
+Map<String, Object> metrics = Map.of(
+    "hit_rate", stats.hitRate(),
+    "miss_rate", stats.missRate(),
+    "hit_count", stats.hitCount(),
+    "miss_count", stats.missCount(),
+    "eviction_count", stats.evictionCount(),
+    "load_count", stats.loadCount(),
+    "average_load_time_ms", stats.averageLoadTime() / 1_000_000.0
+);
 ```
 
 #### Grafana Dashboard

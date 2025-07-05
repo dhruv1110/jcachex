@@ -434,79 +434,65 @@ try {
 
 ## 📈 **Monitoring API**
 
-### CacheHealth Class
+### CacheStats Class
 
 ```java
-public class CacheHealth {
-    public static Builder builder() { /* ... */ }
+public class CacheStats {
+    // Access counters
+    public long hitCount();
+    public long missCount();
 
-    public void registerCache(String name, Object cache);
-    public void unregisterCache(String name);
-    public HealthStatus getOverallHealth();
-    public HealthStatus getCacheHealth(String cacheName);
-    public Map<String, Map<String, Object>> getAllMetrics();
-}
-```
+    // Calculated rates
+    public double hitRate();
+    public double missRate();
 
-### HealthStatus Class
+    // Operation counters
+    public long evictionCount();
+    public long loadCount();
+    public long loadFailureCount();
 
-```java
-public static class HealthStatus {
-    public Status getStatus();
-    public String getMessage();
-    public List<String> getIssues();
-    public Map<String, Object> getMetrics();
-    public Instant getCheckTime();
+    // Timing metrics
+    public long totalLoadTime();
+    public double averageLoadTime();
 
-    public boolean isHealthy();
-    public boolean isDegraded();
-    public boolean isUnhealthy();
-}
-```
-
-### CacheMetrics Class
-
-```java
-public class CacheMetrics {
-    public static CacheMetrics create(String cacheName);
-
-    public Timer startTimer(String operation);
-    public void recordCounter(String name, long value);
-    public void recordGauge(String name, double value);
-    public void recordHistogram(String name, double value);
-    public Map<String, Object> exportMetrics();
+    // Utility methods
+    public CacheStats snapshot();
     public void reset();
+    public static CacheStats empty();
 }
 ```
 
-### Monitoring Usage
+### Simple Monitoring Usage
 
 ```java
-// Health monitoring
-CacheHealth health = CacheHealth.builder()
-    .hitRateThreshold(0.8)
-    .errorRateThreshold(0.05)
+// Enable statistics in cache configuration
+CacheConfig<String, User> config = CacheConfig.<String, User>builder()
+    .maximumSize(1000L)
+    .recordStats(true)  // Enable simple statistics
     .build();
 
-health.registerCache("userCache", userCache);
+Cache<String, User> cache = new DefaultCache<>(config);
 
-// Check health
-HealthStatus status = health.getOverallHealth();
-if (!status.isHealthy()) {
-    alertService.sendAlert("Cache health degraded", status.getIssues());
+// Monitor performance
+CacheStats stats = cache.stats();
+
+// Basic performance monitoring
+logger.info("Cache performance:");
+logger.info("  Hit rate: {}%", stats.hitRate() * 100);
+logger.info("  Total requests: {}", stats.hitCount() + stats.missCount());
+logger.info("  Evictions: {}", stats.evictionCount());
+logger.info("  Average load time: {}ms", stats.averageLoadTime() / 1_000_000.0);
+
+// Alert on poor performance
+if (stats.hitRate() < 0.8) {
+    alertService.warn("Low cache hit rate: " + (stats.hitRate() * 100) + "%");
 }
 
-// Metrics collection
-CacheMetrics metrics = CacheMetrics.create("userCache");
+// Reset statistics for fresh measurement
+stats.reset();
 
-// Time operations
-try (CacheMetrics.Timer timer = metrics.startTimer("get")) {
-    return cache.get(key);
-}
-
-// Record custom metrics
-metrics.recordCounter("business.events", 1);
-metrics.recordGauge("active.users", activeUserCount);
+// Create snapshot for reporting
+CacheStats snapshot = stats.snapshot();
 ```
 
 ---
@@ -736,14 +722,17 @@ public class CacheConfiguration {
     }
 
     @Bean
-    public CacheHealth cacheHealth(Cache<String, User> userCache) {
-        CacheHealth health = CacheHealth.builder()
-            .hitRateThreshold(0.8)
-            .errorRateThreshold(0.05)
-            .build();
+    public void monitorCache(Cache<String, User> userCache) {
+        CacheStats stats = userCache.stats();
 
-        health.registerCache("userCache", userCache);
-        return health;
+        // Simple monitoring without complex health checks
+        if (stats.hitRate() < 0.8) {
+            logger.warn("Cache hit rate below threshold: {}%", stats.hitRate() * 100);
+        }
+
+                // Log key metrics
+        logger.info("Cache metrics - Hit rate: {}%, Evictions: {}",
+            stats.hitRate() * 100, stats.evictionCount());
     }
 
     private User loadUser(String userId) {
