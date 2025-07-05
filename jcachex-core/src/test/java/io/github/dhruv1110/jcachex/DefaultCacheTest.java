@@ -186,15 +186,24 @@ class DefaultCacheTest {
         // Test async operations
         cache.put("key1", "value1");
 
+        // Test getAsync
         CompletableFuture<String> getFuture = cache.getAsync("key1");
-        CompletableFuture<Void> putFuture = cache.putAsync("key2", "value2");
-        CompletableFuture<String> removeFuture = cache.removeAsync("key1");
-        CompletableFuture<Void> clearFuture = cache.clearAsync();
-
         assertEquals("value1", getFuture.get());
+
+        // Test putAsync
+        CompletableFuture<Void> putFuture = cache.putAsync("key2", "value2");
         assertNull(putFuture.get());
+        assertEquals("value2", cache.get("key2")); // Verify the put worked
+
+        // Test removeAsync
+        CompletableFuture<String> removeFuture = cache.removeAsync("key1");
         assertEquals("value1", removeFuture.get());
+        assertNull(cache.get("key1")); // Verify the remove worked
+
+        // Test clearAsync
+        CompletableFuture<Void> clearFuture = cache.clearAsync();
         assertNull(clearFuture.get());
+        assertEquals(0, cache.size()); // Verify the clear worked
     }
 
     @Test
