@@ -2,6 +2,7 @@ package io.github.dhruv1110.jcachex.integration;
 
 import io.github.dhruv1110.jcachex.*;
 import io.github.dhruv1110.jcachex.eviction.*;
+import io.github.dhruv1110.jcachex.exceptions.CacheConfigurationException;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -663,14 +664,14 @@ class CoreIntegrationTest {
         @DisplayName("Invalid configuration throws appropriate exceptions")
         void invalidConfigurationTest() {
             // Test negative maximum size
-            assertThrows(IllegalArgumentException.class, () -> {
+            assertThrows(CacheConfigurationException.class, () -> {
                 CacheConfig.<String, String>builder()
                         .maximumSize(-1L)
                         .build();
             });
 
             // Test negative maximum weight
-            assertThrows(IllegalArgumentException.class, () -> {
+            assertThrows(CacheConfigurationException.class, () -> {
                 CacheConfig.<String, String>builder()
                         .maximumWeight(-1L)
                         .build();
