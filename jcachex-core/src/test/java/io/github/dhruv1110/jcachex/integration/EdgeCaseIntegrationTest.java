@@ -336,7 +336,6 @@ class EdgeCaseIntegrationTest {
     void extremeConfigurationValuesTest() {
         CacheConfig<String, String> extremeConfig = CacheConfig.<String, String>builder()
                 .maximumSize(1000000L) // Large but reasonable size
-                .maximumWeight(1000000L) // Large but reasonable weight
                 .expireAfterWrite(Duration.ofDays(365))
                 .expireAfterAccess(Duration.ofDays(365))
                 .refreshAfterWrite(Duration.ofDays(1))
@@ -347,6 +346,32 @@ class EdgeCaseIntegrationTest {
 
         assertDoesNotThrow(() -> {
             Cache<String, String> cache = createCache(extremeConfig);
+            cache.put("test", "value");
+            assertEquals("value", cache.get("test"));
+        });
+    }
+
+    @Test
+    @DisplayName("Weight-based configuration with extreme values")
+    void extremeWeightConfigurationValuesTest() {
+        CacheConfig<String, String> extremeWeightConfig = CacheConfig.<String, String>builder()
+                .maximumWeight(1000000L) // Large but reasonable weight
+                .weigher((key, value) -> {
+                    if (key == null || value == null) {
+                        return 1L; // Default weight for null values
+                    }
+                    return (long) (key.length() + value.length());
+                })
+                .expireAfterWrite(Duration.ofDays(365))
+                .expireAfterAccess(Duration.ofDays(365))
+                .refreshAfterWrite(Duration.ofDays(1))
+                .initialCapacity(1000)
+                .concurrencyLevel(1000) // Reasonable concurrency level
+                .recordStats(true)
+                .build();
+
+        assertDoesNotThrow(() -> {
+            Cache<String, String> cache = createCache(extremeWeightConfig);
             cache.put("test", "value");
             assertEquals("value", cache.get("test"));
         });

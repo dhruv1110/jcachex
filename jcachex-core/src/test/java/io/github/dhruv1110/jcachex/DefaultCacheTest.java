@@ -2,6 +2,7 @@ package io.github.dhruv1110.jcachex;
 
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy;
+import io.github.dhruv1110.jcachex.exceptions.CacheConfigurationException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -289,23 +290,23 @@ class DefaultCacheTest {
     @Test
     void testInvalidConfig() {
         // Test invalid configuration
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(CacheConfigurationException.class, () -> {
             CacheConfig.<String, String>builder()
                     .maximumSize(-1L)
                     .build();
-        }, "Should throw IllegalArgumentException for negative maximum size");
+        }, "Should throw CacheConfigurationException for negative maximum size");
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(CacheConfigurationException.class, () -> {
             CacheConfig.<String, String>builder()
                     .maximumWeight(-1L)
                     .build();
-        }, "Should throw IllegalArgumentException for negative maximum weight");
+        }, "Should throw CacheConfigurationException for negative maximum weight");
 
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(CacheConfigurationException.class, () -> {
             CacheConfig.<String, String>builder()
                     .expireAfterWrite(Duration.ofMillis(-1))
                     .build();
-        }, "Should throw IllegalArgumentException for negative expiration duration");
+        }, "Should throw CacheConfigurationException for negative expiration duration");
     }
 
     @Test

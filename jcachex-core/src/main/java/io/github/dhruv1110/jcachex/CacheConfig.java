@@ -1,6 +1,7 @@
 package io.github.dhruv1110.jcachex;
 
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
+import io.github.dhruv1110.jcachex.exceptions.CacheConfigurationException;
 
 import java.time.Duration;
 import java.util.HashSet;
@@ -20,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
  * </p>
  *
  * <h3>Basic Usage Examples:</h3>
- * 
+ *
  * <pre>{@code
  * // Simple cache with size limit
  * CacheConfig<String, String> config = CacheConfig.<String, String>builder()
@@ -43,7 +44,7 @@ import java.util.concurrent.CompletableFuture;
  * }</pre>
  *
  * <h3>Advanced Configuration Examples:</h3>
- * 
+ *
  * <pre>{@code
  * // Cache with custom eviction strategy and listeners
  * CacheConfig<String, LargeObject> advancedConfig = CacheConfig.<String, LargeObject>builder()
@@ -303,7 +304,7 @@ public class CacheConfig<K, V> {
      * </p>
      *
      * <h3>Usage Example:</h3>
-     * 
+     *
      * <pre>{@code
      * CacheConfig<String, User> config = CacheConfig.<String, User>builder()
      *         .maximumSize(1000L)
@@ -347,6 +348,9 @@ public class CacheConfig<K, V> {
          * @throws IllegalArgumentException if maximumSize is not positive
          */
         public Builder<K, V> maximumSize(Long maximumSize) {
+            if (maximumSize != null && maximumSize <= 0) {
+                throw CacheConfigurationException.invalidMaximumSize(maximumSize);
+            }
             this.maximumSize = maximumSize;
             return this;
         }
@@ -363,6 +367,9 @@ public class CacheConfig<K, V> {
          * @throws IllegalArgumentException if maximumWeight is not positive
          */
         public Builder<K, V> maximumWeight(Long maximumWeight) {
+            if (maximumWeight != null && maximumWeight <= 0) {
+                throw CacheConfigurationException.invalidMaximumWeight(maximumWeight);
+            }
             this.maximumWeight = maximumWeight;
             return this;
         }
@@ -374,7 +381,7 @@ public class CacheConfig<K, V> {
          * </p>
          *
          * <h3>Example:</h3>
-         * 
+         *
          * <pre>{@code
          * .weigher((key, value) -> value.toString().length())
          * }</pre>
@@ -512,7 +519,7 @@ public class CacheConfig<K, V> {
          * </p>
          *
          * <h3>Example:</h3>
-         * 
+         *
          * <pre>{@code
          * .loader(key -> userService.findById(key))
          * }</pre>
@@ -534,7 +541,7 @@ public class CacheConfig<K, V> {
          * </p>
          *
          * <h3>Example:</h3>
-         * 
+         *
          * <pre>{@code
          * .asyncLoader(key -> CompletableFuture.supplyAsync(() -> userService.findById(key)))
          * }</pre>
@@ -632,7 +639,7 @@ public class CacheConfig<K, V> {
          * </p>
          *
          * <h3>Example:</h3>
-         * 
+         *
          * <pre>{@code
          * .addListener(new CacheEventListener<String, User>() {
          *     &#64;Override
@@ -659,15 +666,35 @@ public class CacheConfig<K, V> {
          * @throws IllegalArgumentException if any configuration is invalid
          */
         public CacheConfig<K, V> build() {
+            // Enhanced validation with proper exception types
             if (maximumSize != null && maximumSize < 1) {
-                throw new IllegalArgumentException("Maximum size must be greater than 0");
+                throw CacheConfigurationException.invalidMaximumSize(maximumSize);
             }
             if (maximumWeight != null && maximumWeight < 1) {
-                throw new IllegalArgumentException("Maximum weight must be greater than 0");
+                throw CacheConfigurationException.invalidMaximumWeight(maximumWeight);
             }
             if (expireAfterWrite != null && expireAfterWrite.isNegative()) {
-                throw new IllegalArgumentException("Expire after write duration must be non-negative");
+                throw new CacheConfigurationException("Expire after write duration must be non-negative",
+                        "INVALID_EXPIRATION");
             }
+
+            // Check for conflicting configurations
+            if (maximumWeight != null && weigher == null) {
+                throw CacheConfigurationException.missingWeigher();
+            }
+
+            if (maximumSize != null && maximumWeight != null) {
+                throw CacheConfigurationException.conflictingSettings("maximumSize", "maximumWeight");
+            }
+
+            if (weakValues && softValues) {
+                throw CacheConfigurationException.conflictingSettings("weakValues", "softValues");
+            }
+
+            if (loader != null && asyncLoader != null) {
+                throw CacheConfigurationException.conflictingSettings("loader", "asyncLoader");
+            }
+
             return new CacheConfig<>(this);
         }
     }
