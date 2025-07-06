@@ -138,39 +138,32 @@ public class JCacheXDistributedAutoConfiguration {
         NetworkProtocol.CompressionType compressionType = NetworkProtocol.CompressionType.valueOf(
                 networkConfig.getCompression().toUpperCase());
 
-        // Use the appropriate factory method based on protocol type
+        NetworkProtocol.ProtocolBuilder builder;
+
+        // Create appropriate builder based on protocol type
         switch (protocolType) {
             case TCP:
-                return NetworkProtocol.tcp()
-                        .serialization(serializationType)
-                        .compression(compressionType)
-                        .encryption(networkConfig.getEncryption())
-                        .port(networkConfig.getPort())
-                        .build();
+                builder = NetworkProtocol.tcp();
+                break;
             case UDP:
-                return NetworkProtocol.udp()
-                        .serialization(serializationType)
-                        .compression(compressionType)
-                        .encryption(networkConfig.getEncryption())
-                        .port(networkConfig.getPort())
-                        .build();
+                builder = NetworkProtocol.udp();
+                break;
             case HTTP:
-                return NetworkProtocol.http()
-                        .serialization(serializationType)
-                        .compression(compressionType)
-                        .encryption(networkConfig.getEncryption())
-                        .port(networkConfig.getPort())
-                        .build();
+                builder = NetworkProtocol.http();
+                break;
             case WEBSOCKET:
-                return NetworkProtocol.websocket()
-                        .serialization(serializationType)
-                        .compression(compressionType)
-                        .encryption(networkConfig.getEncryption())
-                        .port(networkConfig.getPort())
-                        .build();
+                builder = NetworkProtocol.websocket();
+                break;
             default:
-                throw new IllegalArgumentException("Unsupported protocol type: " + protocolType);
+                builder = NetworkProtocol.tcp(); // Default to TCP
         }
+
+        return builder
+                .serialization(serializationType)
+                .compression(compressionType)
+                .encryption(networkConfig.getEncryption())
+                .port(networkConfig.getPort())
+                .build();
     }
 
     /**
@@ -184,19 +177,37 @@ public class JCacheXDistributedAutoConfiguration {
         return new JCacheXDistributedCacheFactory(properties);
     }
 
-    // TODO: Implement cluster topology monitor for advanced cluster management
-    // @Bean
-    // @ConditionalOnMissingBean(JCacheXClusterTopologyMonitor.class)
-    // public JCacheXClusterTopologyMonitor clusterTopologyMonitor() {
-    // return new JCacheXClusterTopologyMonitor(properties);
-    // }
+    // TODO: Implement JCacheXClusterTopologyMonitor for cluster health monitoring
+    /**
+     * Creates cluster topology monitor for monitoring cluster health.
+     *
+     * @return cluster topology monitor
+     */
+    /*
+     * @Bean
+     *
+     * @ConditionalOnMissingBean(JCacheXClusterTopologyMonitor.class)
+     * public JCacheXClusterTopologyMonitor clusterTopologyMonitor() {
+     * return new JCacheXClusterTopologyMonitor(properties);
+     * }
+     */
 
-    // TODO: Implement adaptive cache manager for environment-aware caching
-    // @Bean
-    // @ConditionalOnProperty(prefix = "jcachex.adaptive", name = "enabled",
-    // havingValue = "true")
-    // @ConditionalOnMissingBean(JCacheXAdaptiveCacheManager.class)
-    // public JCacheXAdaptiveCacheManager adaptiveCacheManager() {
-    // return new JCacheXAdaptiveCacheManager(properties);
-    // }
+    // TODO: Implement JCacheXAdaptiveCacheManager for adaptive cache management
+    /**
+     * Creates adaptive cache manager that switches between local and distributed
+     * based on environment conditions.
+     *
+     * @return adaptive cache manager
+     */
+    /*
+     * @Bean
+     *
+     * @ConditionalOnProperty(prefix = "jcachex.adaptive", name = "enabled",
+     * havingValue = "true")
+     *
+     * @ConditionalOnMissingBean(JCacheXAdaptiveCacheManager.class)
+     * public JCacheXAdaptiveCacheManager adaptiveCacheManager() {
+     * return new JCacheXAdaptiveCacheManager(properties);
+     * }
+     */
 }
