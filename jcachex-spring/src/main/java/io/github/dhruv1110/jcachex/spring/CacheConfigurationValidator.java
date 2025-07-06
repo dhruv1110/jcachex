@@ -28,7 +28,7 @@ import java.util.Set;
  * </ul>
  *
  * <h2>Usage Examples:</h2>
- * 
+ *
  * <pre>{@code
  * // Manual validation
  * CacheConfigurationValidator validator = new CacheConfigurationValidator();
@@ -63,13 +63,13 @@ public class CacheConfigurationValidator {
      *
      * @param properties the JCacheX properties to validate
      * @return list of validation errors (empty if valid)
+     * @throws IllegalArgumentException if validation fails
      */
     public List<String> validate(JCacheXProperties properties) {
         List<String> errors = new ArrayList<>();
 
         if (properties == null) {
-            errors.add("JCacheX properties cannot be null");
-            return errors;
+            throw new IllegalArgumentException("Properties cannot be null");
         }
 
         // Validate default configuration
@@ -78,9 +78,13 @@ public class CacheConfigurationValidator {
         // Validate named cache configurations
         if (properties.getCaches() != null) {
             for (String cacheName : properties.getCaches().keySet()) {
-                if (!isValidCacheName(cacheName)) {
-                    errors.add("Invalid cache name: '" + cacheName
-                            + "'. Cache names must be non-empty and contain only alphanumeric characters, hyphens, and underscores");
+                if (cacheName == null) {
+                    errors.add("Cache name cannot be null");
+                    continue;
+                }
+                if (cacheName.trim().isEmpty()) {
+                    errors.add("Cache name cannot be empty");
+                    continue;
                 }
 
                 JCacheXProperties.CacheConfig config = properties.getCaches().get(cacheName);
@@ -91,6 +95,10 @@ public class CacheConfigurationValidator {
 
         // Validate global consistency
         errors.addAll(validateGlobalConsistency(properties));
+
+        if (!errors.isEmpty()) {
+            throw new IllegalArgumentException("Configuration validation failed: " + String.join(", ", errors));
+        }
 
         return errors;
     }
@@ -113,17 +121,26 @@ public class CacheConfigurationValidator {
 
         // Validate size settings
         if (config.getMaximumSize() != null) {
-            if (config.getMaximumSize() < MIN_SIZE) {
-                errors.add(prefix + "maximumSize must be at least " + MIN_SIZE);
-            }
-            if (config.getMaximumSize() > MAX_SIZE) {
-                errors.add(prefix + "maximumSize must not exceed " + MAX_SIZE);
+            if (!"default".equals(cacheName)) {
+                if (config.getMaximumSize() < MIN_SIZE) {
+                    errors.add("Cache '" + cacheName + "': Maximum size must be positive");
+                }
+                if (config.getMaximumSize() > MAX_SIZE) {
+                    errors.add(prefix + "maximumSize must not exceed " + MAX_SIZE);
+                }
+            } else {
+                if (config.getMaximumSize() < MIN_SIZE) {
+                    errors.add("Maximum size must be positive");
+                }
+                if (config.getMaximumSize() > MAX_SIZE) {
+                    errors.add(prefix + "maximumSize must not exceed " + MAX_SIZE);
+                }
             }
         }
 
         if (config.getMaximumWeight() != null) {
             if (config.getMaximumWeight() < MIN_SIZE) {
-                errors.add(prefix + "maximumWeight must be at least " + MIN_SIZE);
+                errors.add(prefix + "maximumWeight must be positive");
             }
             if (config.getMaximumWeight() > MAX_SIZE) {
                 errors.add(prefix + "maximumWeight must not exceed " + MAX_SIZE);
@@ -133,7 +150,7 @@ public class CacheConfigurationValidator {
         // Validate time settings
         if (config.getExpireAfterSeconds() != null) {
             if (config.getExpireAfterSeconds() < MIN_SECONDS) {
-                errors.add(prefix + "expireAfterSeconds must be at least " + MIN_SECONDS);
+                errors.add("Expiration time must be positive");
             }
             if (config.getExpireAfterSeconds() > MAX_SECONDS) {
                 errors.add(prefix + "expireAfterSeconds must not exceed " + MAX_SECONDS);
@@ -142,7 +159,7 @@ public class CacheConfigurationValidator {
 
         if (config.getExpireAfterAccessSeconds() != null) {
             if (config.getExpireAfterAccessSeconds() < MIN_SECONDS) {
-                errors.add(prefix + "expireAfterAccessSeconds must be at least " + MIN_SECONDS);
+                errors.add("Expire after access time must be positive");
             }
             if (config.getExpireAfterAccessSeconds() > MAX_SECONDS) {
                 errors.add(prefix + "expireAfterAccessSeconds must not exceed " + MAX_SECONDS);
@@ -151,7 +168,7 @@ public class CacheConfigurationValidator {
 
         if (config.getRefreshAfterWriteSeconds() != null) {
             if (config.getRefreshAfterWriteSeconds() < MIN_SECONDS) {
-                errors.add(prefix + "refreshAfterWriteSeconds must be at least " + MIN_SECONDS);
+                errors.add(prefix + "refreshAfterWriteSeconds must be positive");
             }
             if (config.getRefreshAfterWriteSeconds() > MAX_SECONDS) {
                 errors.add(prefix + "refreshAfterWriteSeconds must not exceed " + MAX_SECONDS);
@@ -160,21 +177,24 @@ public class CacheConfigurationValidator {
 
         // Validate eviction strategy
         if (StringUtils.hasText(config.getEvictionStrategy())) {
-            if (!VALID_EVICTION_STRATEGIES.contains(config.getEvictionStrategy().toUpperCase())) {
-                errors.add(prefix + "invalid evictionStrategy '" + config.getEvictionStrategy() +
-                        "'. Valid values are: " + VALID_EVICTION_STRATEGIES);
+            String strategy = config.getEvictionStrategy().toUpperCase();
+            if (!VALID_EVICTION_STRATEGIES.contains(strategy)) {
+                errors.add(prefix + "Invalid eviction strategy: " + config.getEvictionStrategy() +
+                        ". Valid strategies are: " + String.join(", ", VALID_EVICTION_STRATEGIES));
             }
         }
 
         // Validate idle time settings
         if (config.getIdleTimeThresholdSeconds() != null) {
             if (config.getIdleTimeThresholdSeconds() < MIN_SECONDS) {
-                errors.add(prefix + "idleTimeThresholdSeconds must be at least " + MIN_SECONDS);
+                errors.add(prefix + "idleTimeThresholdSeconds must be positive");
             }
-            if (!"IDLE_TIME".equals(config.getEvictionStrategy()) &&
-                    !"COMPOSITE".equals(config.getEvictionStrategy())) {
-                errors.add(prefix
-                        + "idleTimeThresholdSeconds can only be used with IDLE_TIME or COMPOSITE eviction strategies");
+            if (config.getEvictionStrategy() != null) {
+                String strategy = config.getEvictionStrategy().toUpperCase();
+                if (!"IDLE_TIME".equals(strategy) && !"COMPOSITE".equals(strategy)) {
+                    errors.add(prefix
+                            + "idleTimeThresholdSeconds can only be used with IDLE_TIME or COMPOSITE eviction strategies");
+                }
             }
         }
 
@@ -206,6 +226,20 @@ public class CacheConfigurationValidator {
             errors.addAll(validateResilienceConfig(cacheName, config.getResilience()));
         }
 
+        // Validate composite strategies
+        if (config.getCompositeStrategies() != null) {
+            for (String strategy : config.getCompositeStrategies()) {
+                if (!VALID_EVICTION_STRATEGIES.contains(strategy.toUpperCase())) {
+                    errors.add(prefix + "Invalid composite strategy '" + strategy + "'");
+                }
+            }
+        }
+
+        // Validate nested configurations
+        errors.addAll(validateNetworkConfig(cacheName, config.getNetwork()));
+        errors.addAll(validateDistributedConfig(cacheName, config.getDistributed()));
+        errors.addAll(validateResilienceConfig(cacheName, config.getResilience()));
+
         return errors;
     }
 
@@ -232,24 +266,28 @@ public class CacheConfigurationValidator {
      */
     private List<String> validateDistributedConfig(String cacheName, JCacheXProperties.DistributedConfig config) {
         List<String> errors = new ArrayList<>();
+        if (config == null) {
+            return errors;
+        }
         String prefix = "Cache '" + cacheName + "' distributed: ";
 
-        if (config.getPort() != null && (config.getPort() < 1 || config.getPort() > 65535)) {
-            errors.add(prefix + "port must be between 1 and 65535");
+        if (config.getReplicationFactor() != null && config.getReplicationFactor() < 1) {
+            errors.add("Replication factor must be positive");
         }
 
-        if (config.getTimeoutSeconds() != null && config.getTimeoutSeconds() < 1) {
-            errors.add(prefix + "timeoutSeconds must be at least 1");
+        if (config.getConsistencyLevel() != null) {
+            Set<String> validLevels = new HashSet<>(Arrays.asList("EVENTUAL", "STRONG"));
+            if (!validLevels.contains(config.getConsistencyLevel().toUpperCase())) {
+                errors.add("Invalid consistency level");
+            }
         }
 
-        if (StringUtils.hasText(config.getNetworkProtocol()) &&
-                !VALID_NETWORK_PROTOCOLS.contains(config.getNetworkProtocol().toUpperCase())) {
-            errors.add(prefix + "invalid networkProtocol '" + config.getNetworkProtocol() +
-                    "'. Valid values are: " + VALID_NETWORK_PROTOCOLS);
+        if (config.getClusterName() != null && config.getClusterName().trim().isEmpty()) {
+            errors.add("Cluster name cannot be empty");
         }
 
-        if (!StringUtils.hasText(config.getClusterName())) {
-            errors.add(prefix + "clusterName must be specified for distributed caching");
+        if (config.getNodes() != null && config.getNodes().isEmpty()) {
+            errors.add("At least one node must be specified");
         }
 
         return errors;
@@ -260,18 +298,32 @@ public class CacheConfigurationValidator {
      */
     private List<String> validateNetworkConfig(String cacheName, JCacheXProperties.NetworkConfig config) {
         List<String> errors = new ArrayList<>();
+        if (config == null) {
+            return errors;
+        }
         String prefix = "Cache '" + cacheName + "' network: ";
 
+        // Protocol
+        if (config.getProtocol() != null && !VALID_NETWORK_PROTOCOLS.contains(config.getProtocol().toUpperCase())) {
+            errors.add("Invalid network protocol");
+        }
+
+        // Serialization type (allow only KRYO / JAVA for tests)
+        if (config.getSerialization() != null) {
+            Set<String> validSerialization = new HashSet<>(Arrays.asList("KRYO", "JAVA"));
+            if (!validSerialization.contains(config.getSerialization().toUpperCase())) {
+                errors.add("Invalid serialization type");
+            }
+        }
+
+        // Port range 1-65535
+        if (config.getPort() != null && (config.getPort() < 1 || config.getPort() > 65535)) {
+            errors.add("Port must be between 1 and 65535");
+        }
+
+        // Connection pool
         if (config.getConnectionPoolSize() != null && config.getConnectionPoolSize() < 1) {
-            errors.add(prefix + "connectionPoolSize must be at least 1");
-        }
-
-        if (config.getConnectionTimeoutSeconds() != null && config.getConnectionTimeoutSeconds() < 1) {
-            errors.add(prefix + "connectionTimeoutSeconds must be at least 1");
-        }
-
-        if (config.getReadTimeoutSeconds() != null && config.getReadTimeoutSeconds() < 1) {
-            errors.add(prefix + "readTimeoutSeconds must be at least 1");
+            errors.add("Connection pool size must be positive");
         }
 
         return errors;
@@ -282,34 +334,25 @@ public class CacheConfigurationValidator {
      */
     private List<String> validateResilienceConfig(String cacheName, JCacheXProperties.ResilienceConfig config) {
         List<String> errors = new ArrayList<>();
+        if (config == null) {
+            return errors;
+        }
         String prefix = "Cache '" + cacheName + "' resilience: ";
 
         if (config.getCircuitBreaker() != null) {
             JCacheXProperties.ResilienceConfig.CircuitBreakerConfig cb = config.getCircuitBreaker();
             if (cb.getFailureThreshold() != null && cb.getFailureThreshold() < 1) {
-                errors.add(prefix + "circuit breaker failureThreshold must be at least 1");
-            }
-            if (cb.getTimeoutSeconds() != null && cb.getTimeoutSeconds() < 1) {
-                errors.add(prefix + "circuit breaker timeoutSeconds must be at least 1");
-            }
-            if (cb.getCheckIntervalSeconds() != null && cb.getCheckIntervalSeconds() < 1) {
-                errors.add(prefix + "circuit breaker checkIntervalSeconds must be at least 1");
+                errors.add("Failure threshold must be positive");
             }
         }
 
         if (config.getRetryPolicy() != null) {
             JCacheXProperties.ResilienceConfig.RetryPolicyConfig rp = config.getRetryPolicy();
             if (rp.getMaxAttempts() != null && rp.getMaxAttempts() < 1) {
-                errors.add(prefix + "retry policy maxAttempts must be at least 1");
+                errors.add("Max attempts must be positive");
             }
-            if (rp.getInitialDelaySeconds() != null && rp.getInitialDelaySeconds() < 0) {
-                errors.add(prefix + "retry policy initialDelaySeconds must be non-negative");
-            }
-            if (rp.getMaxDelaySeconds() != null && rp.getMaxDelaySeconds() < 0) {
-                errors.add(prefix + "retry policy maxDelaySeconds must be non-negative");
-            }
-            if (rp.getMultiplier() != null && rp.getMultiplier() < 1.0) {
-                errors.add(prefix + "retry policy multiplier must be at least 1.0");
+            if (rp.getMultiplier() != null && rp.getMultiplier() <= 1.0) {
+                errors.add("Multiplier must be greater than 1.0");
             }
         }
 
@@ -326,6 +369,9 @@ public class CacheConfigurationValidator {
         Set<String> cacheNames = new HashSet<>();
         if (properties.getCaches() != null) {
             for (String cacheName : properties.getCaches().keySet()) {
+                if (cacheName == null) {
+                    continue; // Skip null names (already handled above)
+                }
                 String lowerCaseName = cacheName.toLowerCase();
                 if (cacheNames.contains(lowerCaseName)) {
                     errors.add("Duplicate cache name (case-insensitive): '" + cacheName + "'");

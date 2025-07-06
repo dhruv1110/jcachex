@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentMap;
  * </ul>
  *
  * <h2>Usage Examples:</h2>
- * 
+ *
  * <pre>
  * {
  *     &#64;code
@@ -59,7 +59,7 @@ import java.util.concurrent.ConcurrentMap;
  * </pre>
  *
  * <h2>Configuration Integration:</h2>
- * 
+ *
  * <pre>{@code
  * jcachex:
  *   default:
@@ -109,7 +109,8 @@ public class JCacheXCacheFactory {
      */
     @SuppressWarnings("unchecked")
     public <K, V> Cache<K, V> createCache(String cacheName) {
-        return (Cache<K, V>) cacheRegistry.computeIfAbsent(cacheName, this::createCacheInternal);
+        String key = cacheName == null ? "<null>" : cacheName;
+        return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, this::createCacheInternal);
     }
 
     /**
@@ -125,7 +126,11 @@ public class JCacheXCacheFactory {
      */
     @SuppressWarnings("unchecked")
     public <K, V> Cache<K, V> createCache(String cacheName, Class<K> keyType, Class<V> valueType) {
-        return (Cache<K, V>) cacheRegistry.computeIfAbsent(cacheName, this::createCacheInternal);
+        String key = cacheName == null ? "<null>" : cacheName;
+        return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, name -> {
+            CacheConfig.Builder<K, V> builder = createBaseConfiguration(name);
+            return new DefaultCache<>(builder.build());
+        });
     }
 
     /**
@@ -139,7 +144,8 @@ public class JCacheXCacheFactory {
      */
     @SuppressWarnings("unchecked")
     public <K, V> Cache<K, V> createCache(String cacheName, CacheConfigurator<K, V> configurator) {
-        return (Cache<K, V>) cacheRegistry.computeIfAbsent(cacheName, name -> {
+        String key = cacheName == null ? "<null>" : cacheName;
+        return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, name -> {
             CacheConfig.Builder<K, V> builder = createBaseConfiguration(name);
             configurator.configure(builder);
             return new DefaultCache<>(builder.build());
@@ -160,7 +166,8 @@ public class JCacheXCacheFactory {
     @SuppressWarnings("unchecked")
     public <K, V> Cache<K, V> createCache(String cacheName, Class<K> keyType, Class<V> valueType,
             CacheConfigurator<K, V> configurator) {
-        return (Cache<K, V>) cacheRegistry.computeIfAbsent(cacheName, name -> {
+        String key = cacheName == null ? "<null>" : cacheName;
+        return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, name -> {
             CacheConfig.Builder<K, V> builder = createBaseConfiguration(name);
             configurator.configure(builder);
             return new DefaultCache<>(builder.build());
@@ -214,6 +221,11 @@ public class JCacheXCacheFactory {
      * Clears all caches from the factory registry.
      */
     public void clearAll() {
+        // Clear individual cache contents
+        for (Cache<?, ?> cache : cacheRegistry.values()) {
+            cache.clear();
+        }
+        // Then clear registry
         cacheRegistry.clear();
     }
 
@@ -284,8 +296,8 @@ public class JCacheXCacheFactory {
             }
         }
 
-        if (config.getEnableStatistics() != null) {
-            builder.recordStats(config.getEnableStatistics());
+        if (config.getEnableStatistics() == null || config.getEnableStatistics()) {
+            builder.recordStats(true);
         }
     }
 

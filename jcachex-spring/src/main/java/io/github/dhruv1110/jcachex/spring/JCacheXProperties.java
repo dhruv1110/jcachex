@@ -90,11 +90,34 @@ public class JCacheXProperties {
 
     // Getters and setters
     public CacheConfig getDefaultConfig() {
+        if (defaultConfig == null) {
+            defaultConfig = new CacheConfig();
+        }
         return defaultConfig;
     }
 
     public void setDefaultConfig(CacheConfig defaultConfig) {
         this.defaultConfig = defaultConfig;
+    }
+
+    /**
+     * Gets the default configuration using the property name "default".
+     * This enables property binding for "jcachex.default.*" properties.
+     *
+     * @return the default cache configuration
+     */
+    public CacheConfig getDefault() {
+        return getDefaultConfig();
+    }
+
+    /**
+     * Sets the default configuration using the property name "default".
+     * This enables property binding for "jcachex.default.*" properties.
+     *
+     * @param defaultConfig the default cache configuration
+     */
+    public void setDefault(CacheConfig defaultConfig) {
+        setDefaultConfig(defaultConfig);
     }
 
     public Map<String, CacheConfig> getCaches() {

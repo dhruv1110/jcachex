@@ -3,7 +3,7 @@ package io.github.dhruv1110.jcachex.spring;
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.DefaultCache;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -52,7 +52,7 @@ import java.util.Map;
  * <p>
  * You can override any automatic configuration by defining your own beans:
  * </p>
- * 
+ *
  * <pre>
  * {
  *     &#64;code
@@ -84,7 +84,7 @@ import java.util.Map;
  * <p>
  * All configuration can be controlled via application properties:
  * </p>
- * 
+ *
  * <pre>{@code
  * jcachex:
  *   default:
@@ -113,7 +113,7 @@ import java.util.Map;
                                                                                                          // default
 )
 @EnableConfigurationProperties(JCacheXProperties.class)
-@AutoConfigureAfter(name = {
+@AutoConfigureBefore(name = {
         "org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration"
 })
 public class JCacheXAutoConfiguration {
@@ -130,6 +130,17 @@ public class JCacheXAutoConfiguration {
     }
 
     /**
+     * Provides the JCacheX properties with the expected bean name.
+     *
+     * @return the JCacheX properties
+     */
+    @Bean("jcacheXProperties")
+    @Primary
+    public JCacheXProperties jcacheXProperties() {
+        return this.properties;
+    }
+
+    /**
      * Creates the primary JCacheX cache manager.
      *
      * This cache manager integrates with Spring's caching abstraction and provides
@@ -138,10 +149,9 @@ public class JCacheXAutoConfiguration {
      *
      * @return configured JCacheXCacheManager instance
      */
-    @Bean
+    @Bean({ "jcacheXCacheManager", "cacheManager" })
     @Primary
-    @ConditionalOnMissingBean(CacheManager.class)
-    public JCacheXCacheManager jcachexCacheManager() {
+    public JCacheXCacheManager jcacheXCacheManager() {
         JCacheXCacheManager manager = new JCacheXCacheManager(properties);
         // Initialize with configured caches
         manager.initializeCaches();
@@ -183,9 +193,9 @@ public class JCacheXAutoConfiguration {
      *
      * @return the cache factory
      */
-    @Bean
+    @Bean("jcacheXCacheFactory")
     @ConditionalOnMissingBean(JCacheXCacheFactory.class)
-    public JCacheXCacheFactory jcachexCacheFactory() {
+    public JCacheXCacheFactory jcacheXCacheFactory() {
         return new JCacheXCacheFactory(properties);
     }
 

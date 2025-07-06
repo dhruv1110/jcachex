@@ -69,6 +69,9 @@ public class EvictionStrategyFactory {
     public <K, V> EvictionStrategy<K, V> createStrategy(
             String strategyName,
             JCacheXProperties.CacheConfig config) {
+        if (strategyName == null) {
+            throw new IllegalArgumentException("Unknown eviction strategy: null");
+        }
         String normalizedName = strategyName.toUpperCase();
         StrategyProvider provider = strategyProviders.get(normalizedName);
         if (provider == null) {
