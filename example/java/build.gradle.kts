@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "io.github.dhruv1110.jcachex.example"
-version = "1.0-SNAPSHOT"
+// version inherited from root project
 
 repositories {
     mavenCentral()

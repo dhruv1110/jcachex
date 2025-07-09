@@ -28,7 +28,7 @@ plugins {
 }
 
 group = "io.github.dhruv1110"
-version = "1.0.0"
+// version inherited from root project
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
