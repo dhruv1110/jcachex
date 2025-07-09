@@ -1,0 +1,11 @@
+/* Minimal CSS - Material UI CssBaseline + Prism theme handle most styling */
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    overflow-x: hidden;
+}

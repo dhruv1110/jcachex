@@ -1,5 +1,4 @@
 import React from 'react';
-import './FeatureCard.css';
 
 const FeatureCard = ({
     icon,
@@ -15,7 +14,7 @@ const FeatureCard = ({
             className={`feature-card ${variant} ${className} ${onClick ? 'clickable' : ''}`}
             onClick={onClick}
         >
-            <div className="feature-icon">{icon}</div>
+            <div className="feature-icon" data-icon={icon}></div>
             <div className="feature-content">
                 <h3 className="feature-title">{title}</h3>
                 <p className="feature-description">{description}</p>

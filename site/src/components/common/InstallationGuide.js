@@ -1,7 +1,6 @@
 import React from 'react';
 import CodeTabs from '../CodeTabs';
 import { useVersion } from '../../hooks';
-import './InstallationGuide.css';
 
 const InstallationGuide = ({
     tabs,

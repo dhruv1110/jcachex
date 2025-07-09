@@ -4,7 +4,7 @@ import { INSTALLATION_TABS, BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN } from '../cons
 import { Section, Grid, FeatureCard, InstallationGuide } from './common';
 import CodeTabs from './CodeTabs';
 import { CodeTab, Feature } from '../types';
-import './GettingStarted.css';
+import PageWrapper from './PageWrapper';
 
 const GettingStarted: React.FC = () => {
     const { version } = useVersion();
@@ -173,121 +173,99 @@ public class CacheConfig {
         }
     ];
 
-    const configurationOptions: Feature[] = [
+    const configurationOptions = [
         {
-            icon: '⚙️',
+            icon: 'config',
             title: 'Size Limits',
             description: 'Control cache size with maximum entries and memory-based limits',
             details: ['Maximum size', 'Weighted size', 'Memory-based eviction']
         },
         {
-            icon: '⏰',
-            title: 'Expiration',
+            icon: 'time',
+            title: 'Expiration Policies',
             description: 'Configure time-based expiration policies',
             details: ['Expire after write', 'Expire after access', 'Custom TTL']
         },
         {
-            icon: '🔄',
+            icon: 'strategy',
             title: 'Eviction Strategies',
             description: 'Choose from multiple eviction algorithms',
             details: ['LRU', 'LFU', 'FIFO', 'Weight-based']
         },
         {
-            icon: '📊',
-            title: 'Monitoring',
-            description: 'Built-in statistics and metrics collection',
-            details: ['Hit/miss ratios', 'Access patterns', 'Performance metrics']
-        }
-    ];
-
-    const bestPractices: Feature[] = [
-        {
-            icon: '🎯',
-            title: 'Cache Strategy',
-            description: 'Choose appropriate cache patterns for your use case',
-            details: ['Cache-aside', 'Write-through', 'Write-behind', 'Refresh-ahead']
-        },
-        {
-            icon: '🔧',
-            title: 'Configuration',
-            description: 'Optimize cache settings for your workload',
-            details: ['Right-size your cache', 'Choose appropriate eviction', 'Monitor performance']
-        },
-        {
-            icon: '⚡',
-            title: 'Performance',
-            description: 'Maximize cache effectiveness',
-            details: ['Batch operations', 'Async loading', 'Preloading strategies']
+            icon: 'monitoring',
+            title: 'Performance Monitoring',
+            description: 'Built-in metrics and monitoring capabilities',
+            details: ['Hit/miss ratios', 'Performance metrics', 'Health checks']
         }
     ];
 
     return (
-        <div className="getting-started">
+        <PageWrapper
+            title="Getting Started - JCacheX Documentation"
+            description="Get up and running with JCacheX in minutes. Learn installation, basic usage, and advanced configuration for Java and Kotlin projects."
+            keywords="JCacheX, getting started, installation, documentation, Java cache, Kotlin"
+            className="getting-started-page"
+        >
+
             {/* Header */}
             <Section background="gradient" padding="lg" centered>
-                <div className="header-content">
-                    <h1 className="page-title">Getting Started with JCacheX</h1>
-                    <p className="page-subtitle">
-                        Learn how to integrate JCacheX into your Java or Kotlin application in just a few minutes
+                <div className="docs-header">
+                    <h1 className="docs-title">Getting Started</h1>
+                    <p className="docs-subtitle">
+                        Get up and running with JCacheX in minutes. This guide covers installation,
+                        basic usage, and advanced configuration options for both Java and Kotlin projects.
                     </p>
                 </div>
             </Section>
 
             {/* Installation */}
-            <Section padding="lg">
+            <Section background="dark" padding="lg" className="installation-section">
+                <div className="installation-header">
+                    <h2>Installation</h2>
+                    <p>Add JCacheX to your project with your preferred build tool</p>
+                </div>
                 <InstallationGuide
                     tabs={INSTALLATION_TABS}
-                    title="1. Installation"
-                    description="Add JCacheX to your project using your preferred build tool:"
+                    title="Installation"
+                    description="Add JCacheX to your project with your preferred build tool"
                 />
             </Section>
 
-            {/* Basic Usage */}
-            <Section
-                background="light"
-                padding="lg"
-                title="2. Basic Usage"
-                subtitle="Create and use caches with simple, intuitive API"
-                centered
-            >
-                <div className="code-section">
-                    <CodeTabs tabs={basicUsageTabs} />
+            {/* Quick Start */}
+            <Section background="primary" padding="lg" className="quick-start-section">
+                <div className="quick-start-header">
+                    <h2>Quick Start</h2>
+                    <p>Basic cache setup and operations in Java and Kotlin</p>
                 </div>
+                <CodeTabs tabs={basicUsageTabs} />
             </Section>
 
-            {/* Asynchronous Operations */}
-            <Section
-                padding="lg"
-                title="3. Asynchronous Operations"
-                subtitle="Leverage async capabilities for better performance"
-                centered
-            >
-                <div className="code-section">
-                    <CodeTabs tabs={asyncTabs} />
+            {/* Async Operations */}
+            <Section background="dark" padding="lg" className="async-section">
+                <div className="async-header">
+                    <h2>Async Operations</h2>
+                    <p>Leverage async capabilities for high-performance applications</p>
                 </div>
+                <CodeTabs tabs={asyncTabs} />
             </Section>
 
-            {/* Spring Boot Configuration */}
-            <Section
-                background="light"
-                padding="lg"
-                title="4. Spring Boot Configuration"
-                subtitle="Configure JCacheX in your Spring Boot application"
-                centered
-            >
-                <div className="code-section">
-                    <CodeTabs tabs={springConfigTabs} />
+            {/* Spring Configuration */}
+            <Section background="primary" padding="lg" className="spring-config-section">
+                <div className="spring-config-header">
+                    <h2>Spring Boot Configuration</h2>
+                    <p>Configure JCacheX in your Spring Boot application</p>
                 </div>
+                <CodeTabs tabs={springConfigTabs} />
             </Section>
 
             {/* Configuration Options */}
-            <Section
-                padding="lg"
-                title="Configuration Options"
-                subtitle="Customize cache behavior to match your requirements"
-                centered
-            >
-                <Grid columns={2} gap="lg">
+            <Section background="dark" padding="lg" className="config-options-section">
+                <div className="config-options-header">
+                    <h2>Configuration Options</h2>
+                    <p>Customize JCacheX behavior for your specific needs</p>
+                </div>
+                <Grid>
                     {configurationOptions.map((option, index) => (
                         <FeatureCard
                             key={index}
@@ -295,29 +273,6 @@ public class CacheConfig {
                             title={option.title}
                             description={option.description}
                             details={option.details}
-                            variant="horizontal"
-                        />
-                    ))}
-                </Grid>
-            </Section>
-
-            {/* Best Practices */}
-            <Section
-                background="light"
-                padding="lg"
-                title="Best Practices"
-                subtitle="Tips for getting the most out of JCacheX"
-                centered
-            >
-                <Grid columns={3} gap="lg">
-                    {bestPractices.map((practice, index) => (
-                        <FeatureCard
-                            key={index}
-                            icon={practice.icon}
-                            title={practice.title}
-                            description={practice.description}
-                            details={practice.details}
-                            variant="compact"
                         />
                     ))}
                 </Grid>
@@ -325,22 +280,23 @@ public class CacheConfig {
 
             {/* Next Steps */}
             <Section background="gradient" padding="lg" centered>
-                <div className="next-steps">
-                    <h2 className="next-steps-title">Next Steps</h2>
-                    <p className="next-steps-subtitle">
-                        Ready to explore more advanced features?
+                <div className="next-steps-cta">
+                    <h3>Ready to Explore More?</h3>
+                    <p>
+                        Check out our comprehensive examples and framework-specific guides
+                        to master JCacheX in your applications.
                     </p>
-                    <div className="next-steps-buttons">
+                    <div className="cta-buttons">
                         <a href="/examples" className="btn btn-primary">
                             View Examples
                         </a>
                         <a href="/spring" className="btn btn-secondary">
-                            Spring Boot Guide
+                            Spring Guide
                         </a>
                     </div>
                 </div>
             </Section>
-        </div>
+        </PageWrapper>
     );
 };
 

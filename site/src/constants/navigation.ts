@@ -12,102 +12,9 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
         path: '/getting-started'
     },
     {
-        id: 'features',
-        label: 'Features',
-        children: [
-            {
-                id: 'overview',
-                label: 'Overview',
-                path: '/features'
-            },
-            {
-                id: 'performance',
-                label: 'Performance',
-                path: '/features/performance'
-            },
-            {
-                id: 'async-support',
-                label: 'Async Support',
-                path: '/features/async'
-            },
-            {
-                id: 'monitoring',
-                label: 'Monitoring',
-                path: '/features/monitoring'
-            }
-        ]
-    },
-    {
-        id: 'strategies',
-        label: 'Cache Strategies',
-        children: [
-            {
-                id: 'eviction-strategies',
-                label: 'Eviction Strategies',
-                path: '/strategies/eviction'
-            },
-            {
-                id: 'lru-strategy',
-                label: 'LRU (Least Recently Used)',
-                path: '/strategies/lru'
-            },
-            {
-                id: 'lfu-strategy',
-                label: 'LFU (Least Frequently Used)',
-                path: '/strategies/lfu'
-            },
-            {
-                id: 'fifo-strategy',
-                label: 'FIFO (First In, First Out)',
-                path: '/strategies/fifo'
-            },
-            {
-                id: 'weight-strategy',
-                label: 'Weight-Based',
-                path: '/strategies/weight-based'
-            },
-            {
-                id: 'custom-strategy',
-                label: 'Custom Strategies',
-                path: '/strategies/custom'
-            }
-        ]
-    },
-    {
         id: 'examples',
         label: 'Examples',
-        children: [
-            {
-                id: 'basic-usage',
-                label: 'Basic Usage',
-                path: '/examples/basic'
-            },
-            {
-                id: 'async-operations',
-                label: 'Async Operations',
-                path: '/examples/async'
-            },
-            {
-                id: 'spring-integration',
-                label: 'Spring Boot',
-                path: '/examples/spring'
-            },
-            {
-                id: 'distributed-caching',
-                label: 'Distributed Caching',
-                path: '/examples/distributed'
-            },
-            {
-                id: 'kotlin-examples',
-                label: 'Kotlin Examples',
-                path: '/examples/kotlin'
-            },
-            {
-                id: 'advanced-patterns',
-                label: 'Advanced Patterns',
-                path: '/examples/advanced'
-            }
-        ]
+        path: '/examples'
     },
     {
         id: 'spring',
@@ -125,19 +32,9 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
                 target: '_blank'
             },
             {
-                id: 'configuration',
-                label: 'Configuration Guide',
-                path: '/docs/configuration'
-            },
-            {
-                id: 'migration',
-                label: 'Migration Guide',
-                path: '/docs/migration'
-            },
-            {
-                id: 'troubleshooting',
-                label: 'Troubleshooting',
-                path: '/docs/troubleshooting'
+                id: 'faq',
+                label: 'FAQ',
+                path: '/faq'
             }
         ]
     },
@@ -145,16 +42,6 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
         id: 'support',
         label: 'Support',
         children: [
-            {
-                id: 'faq',
-                label: 'FAQ',
-                path: '/faq'
-            },
-            {
-                id: 'community',
-                label: 'Community',
-                path: '/community'
-            },
             {
                 id: 'github',
                 label: 'GitHub Issues',
@@ -190,16 +77,6 @@ export const MOBILE_NAVIGATION_ITEMS: NavigationItem[] = [
         path: '/getting-started'
     },
     {
-        id: 'features',
-        label: 'Features',
-        path: '/features'
-    },
-    {
-        id: 'strategies',
-        label: 'Cache Strategies',
-        path: '/strategies'
-    },
-    {
         id: 'examples',
         label: 'Examples',
         path: '/examples'
@@ -213,12 +90,6 @@ export const MOBILE_NAVIGATION_ITEMS: NavigationItem[] = [
         id: 'faq',
         label: 'FAQ',
         path: '/faq'
-    },
-    {
-        id: 'api-docs',
-        label: 'API Docs',
-        href: 'https://javadoc.io/doc/io.github.dhruv1110/jcachex-core',
-        target: '_blank'
     },
     {
         id: 'github',

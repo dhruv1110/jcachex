@@ -1,282 +1,200 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import type { NavigationItem } from '../types';
-import { NAVIGATION_ITEMS, MOBILE_NAVIGATION_ITEMS } from '../constants/navigation';
-import './Navbar.css';
-
-interface DropdownMenuProps {
-    items: NavigationItem[];
-    isOpen: boolean;
-    onClose: () => void;
-}
-
-const DropdownMenu: React.FC<DropdownMenuProps> = ({ items, isOpen, onClose }) => {
-    if (!isOpen || !items.length) return null;
-
-    return (
-        <div className="dropdown-menu">
-            <div className="dropdown-content">
-                {items.map((item) => (
-                    <div key={item.id} className="dropdown-item">
-                        {item.path ? (
-                            <Link
-                                to={item.path}
-                                className="dropdown-link"
-                                onClick={onClose}
-                            >
-                                {item.icon && <span className="dropdown-icon">{item.icon}</span>}
-                                <div className="dropdown-text">
-                                    <span className="dropdown-label">{item.label}</span>
-                                </div>
-                            </Link>
-                        ) : item.href ? (
-                            <a
-                                href={item.href}
-                                className="dropdown-link"
-                                target={item.target}
-                                rel="noopener noreferrer"
-                                onClick={onClose}
-                            >
-                                {item.icon && <span className="dropdown-icon">{item.icon}</span>}
-                                <div className="dropdown-text">
-                                    <span className="dropdown-label">{item.label}</span>
-                                </div>
-                            </a>
-                        ) : null}
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
-
-interface NavItemProps {
-    item: NavigationItem;
-    isActive: boolean;
-    onMobileClick: () => void;
-}
-
-const NavItem: React.FC<NavItemProps> = ({ item, isActive, onMobileClick }) => {
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsDropdownOpen(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    const handleMouseEnter = () => {
-        if (item.children?.length) {
-            setIsDropdownOpen(true);
-        }
-    };
-
-    const handleMouseLeave = () => {
-        setIsDropdownOpen(false);
-    };
-
-    const handleClick = () => {
-        if (item.children?.length) {
-            setIsDropdownOpen(!isDropdownOpen);
-        } else {
-            onMobileClick();
-        }
-    };
-
-    const handleDropdownClose = () => {
-        setIsDropdownOpen(false);
-        onMobileClick();
-    };
-
-    if (item.children?.length) {
-        return (
-            <div
-                ref={dropdownRef}
-                className={`nav-item dropdown ${isDropdownOpen ? 'open' : ''}`}
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
-            >
-                <button
-                    className={`nav-link dropdown-toggle ${isActive ? 'active' : ''}`}
-                    onClick={handleClick}
-                    aria-haspopup="true"
-                    aria-expanded={isDropdownOpen}
-                >
-                    {item.icon && <span className="nav-icon">{item.icon}</span>}
-                    <span className="nav-label">{item.label}</span>
-                    <svg
-                        className={`dropdown-arrow ${isDropdownOpen ? 'open' : ''}`}
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <path
-                            d="M3 4.5L6 7.5L9 4.5"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                        />
-                    </svg>
-                </button>
-                <DropdownMenu
-                    items={item.children}
-                    isOpen={isDropdownOpen}
-                    onClose={handleDropdownClose}
-                />
-            </div>
-        );
-    }
-
-    return (
-        <div className="nav-item">
-            {item.path ? (
-                <Link
-                    to={item.path}
-                    className={`nav-link ${isActive ? 'active' : ''}`}
-                    onClick={onMobileClick}
-                >
-                    {item.icon && <span className="nav-icon">{item.icon}</span>}
-                    <span className="nav-label">{item.label}</span>
-                </Link>
-            ) : item.href ? (
-                <a
-                    href={item.href}
-                    className={`nav-link ${isActive ? 'active' : ''}`}
-                    target={item.target}
-                    rel="noopener noreferrer"
-                    onClick={onMobileClick}
-                >
-                    {item.icon && <span className="nav-icon">{item.icon}</span>}
-                    <span className="nav-label">{item.label}</span>
-                </a>
-            ) : null}
-        </div>
-    );
-};
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Button,
+    IconButton,
+    Box,
+    Drawer,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    useTheme,
+    useMediaQuery,
+} from '@mui/material';
+import {
+    Menu as MenuIcon,
+    Close as CloseIcon,
+    GitHub as GitHubIcon,
+} from '@mui/icons-material';
 
 const Navbar: React.FC = () => {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
     const location = useLocation();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-    const toggleMobileMenu = () => {
-        setIsMobileMenuOpen(!isMobileMenuOpen);
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
     };
 
-    const closeMobileMenu = () => {
-        setIsMobileMenuOpen(false);
+    const isActiveLink = (path: string) => {
+        if (path === '/') {
+            return location.pathname === '/';
+        }
+        return location.pathname.startsWith(path);
     };
 
-    const isPathActive = (item: NavigationItem): boolean => {
-        if (item.path) {
-            return location.pathname === item.path;
-        }
-        if (item.children) {
-            return item.children.some(child => child.path && location.pathname.startsWith(child.path));
-        }
-        return false;
-    };
+    const navigationLinks = [
+        { label: 'Docs', path: '/getting-started' },
+        { label: 'Examples', path: '/examples' },
+        { label: 'Spring', path: '/spring' },
+        { label: 'FAQ', path: '/faq' },
+    ];
 
-    // Close mobile menu when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            const navbar = document.querySelector('.navbar-container');
-            if (navbar && !navbar.contains(event.target as Node)) {
-                closeMobileMenu();
-            }
-        };
-
-        if (isMobileMenuOpen) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isMobileMenuOpen]);
-
-    // Close mobile menu on route change
-    useEffect(() => {
-        closeMobileMenu();
-    }, [location.pathname]);
+    const drawer = (
+        <Box sx={{ width: 250 }}>
+            <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6" component="div">
+                    JCacheX
+                </Typography>
+                <IconButton onClick={handleDrawerToggle}>
+                    <CloseIcon />
+                </IconButton>
+            </Box>
+            <List>
+                {navigationLinks.map((link) => (
+                    <ListItem key={link.path} disablePadding>
+                        <ListItemButton
+                            component={Link}
+                            to={link.path}
+                            selected={isActiveLink(link.path)}
+                            onClick={handleDrawerToggle}
+                        >
+                            <ListItemText primary={link.label} />
+                        </ListItemButton>
+                    </ListItem>
+                ))}
+            </List>
+            <Box sx={{ p: 2, mt: 'auto' }}>
+                <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<GitHubIcon />}
+                    href="https://github.com/dhruv1110/JCacheX"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ mb: 1 }}
+                >
+                    GitHub
+                </Button>
+                <Button
+                    fullWidth
+                    variant="contained"
+                    component={Link}
+                    to="/getting-started"
+                >
+                    Get Started
+                </Button>
+            </Box>
+        </Box>
+    );
 
     return (
-        <nav className="navbar">
-            <div className="navbar-container">
-                {/* Brand */}
-                <div className="navbar-brand">
-                    <Link to="/" className="brand-link" onClick={closeMobileMenu}>
-                        <span className="brand-text">JCacheX</span>
-                    </Link>
-                </div>
+        <>
+            <AppBar position="fixed" color="default" elevation={0}>
+                <Toolbar>
+                    {/* Logo */}
+                    <Typography
+                        variant="h6"
+                        component={Link}
+                        to="/"
+                        sx={{
+                            mr: 4,
+                            fontWeight: 700,
+                            color: 'primary.main',
+                            textDecoration: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                        }}
+                    >
+                        <Box
+                            component="svg"
+                            sx={{ width: 32, height: 32, fill: 'currentColor' }}
+                            viewBox="0 0 24 24"
+                        >
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                        </Box>
+                        JCacheX
+                    </Typography>
 
-                {/* Desktop Navigation */}
-                <div className="navbar-nav desktop">
-                    {NAVIGATION_ITEMS.map((item) => (
-                        <NavItem
-                            key={item.id}
-                            item={item}
-                            isActive={isPathActive(item)}
-                            onMobileClick={closeMobileMenu}
-                        />
-                    ))}
-                </div>
+                    {/* Desktop Navigation */}
+                    {!isMobile && (
+                        <Box sx={{ display: 'flex', gap: 1, mr: 'auto' }}>
+                            {navigationLinks.map((link) => (
+                                <Button
+                                    key={link.path}
+                                    component={Link}
+                                    to={link.path}
+                                    color={isActiveLink(link.path) ? 'primary' : 'inherit'}
+                                    variant={isActiveLink(link.path) ? 'contained' : 'text'}
+                                    size="small"
+                                >
+                                    {link.label}
+                                </Button>
+                            ))}
+                        </Box>
+                    )}
 
-                {/* Mobile Menu Toggle */}
-                <button
-                    className={`mobile-menu-toggle ${isMobileMenuOpen ? 'open' : ''}`}
-                    onClick={toggleMobileMenu}
-                    aria-label="Toggle navigation menu"
-                    aria-expanded={isMobileMenuOpen}
-                >
-                    <span className="toggle-line"></span>
-                    <span className="toggle-line"></span>
-                    <span className="toggle-line"></span>
-                </button>
+                    {/* Desktop Actions */}
+                    {!isMobile && (
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button
+                                variant="outlined"
+                                startIcon={<GitHubIcon />}
+                                href="https://github.com/dhruv1110/JCacheX"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                size="small"
+                            >
+                                GitHub
+                            </Button>
+                            <Button
+                                variant="contained"
+                                component={Link}
+                                to="/getting-started"
+                                size="small"
+                            >
+                                Get Started
+                            </Button>
+                        </Box>
+                    )}
 
-                {/* Mobile Navigation */}
-                <div className={`navbar-nav mobile ${isMobileMenuOpen ? 'open' : ''}`}>
-                    <div className="mobile-nav-content">
-                        {MOBILE_NAVIGATION_ITEMS.map((item) => (
-                            <div key={item.id} className="mobile-nav-item">
-                                {item.path ? (
-                                    <Link
-                                        to={item.path}
-                                        className={`mobile-nav-link ${isPathActive(item) ? 'active' : ''}`}
-                                        onClick={closeMobileMenu}
-                                    >
-                                        {item.icon && <span className="mobile-nav-icon">{item.icon}</span>}
-                                        <span className="mobile-nav-label">{item.label}</span>
-                                    </Link>
-                                ) : item.href ? (
-                                    <a
-                                        href={item.href}
-                                        className="mobile-nav-link"
-                                        target={item.target}
-                                        rel="noopener noreferrer"
-                                        onClick={closeMobileMenu}
-                                    >
-                                        {item.icon && <span className="mobile-nav-icon">{item.icon}</span>}
-                                        <span className="mobile-nav-label">{item.label}</span>
-                                    </a>
-                                ) : null}
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                    {/* Mobile Menu Button */}
+                    {isMobile && (
+                        <IconButton
+                            color="inherit"
+                            aria-label="open drawer"
+                            edge="end"
+                            onClick={handleDrawerToggle}
+                            sx={{ ml: 'auto' }}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    )}
+                </Toolbar>
+            </AppBar>
 
-                {/* Mobile Menu Backdrop */}
-                {isMobileMenuOpen && (
-                    <div className="mobile-menu-backdrop" onClick={closeMobileMenu} />
-                )}
-            </div>
-        </nav>
+            {/* Mobile Drawer */}
+            <Drawer
+                variant="temporary"
+                anchor="right"
+                open={mobileOpen}
+                onClose={handleDrawerToggle}
+                ModalProps={{
+                    keepMounted: true, // Better open performance on mobile.
+                }}
+            >
+                {drawer}
+            </Drawer>
+
+            {/* Toolbar spacer */}
+            <Toolbar />
+        </>
     );
 };
 

@@ -1,12 +1,14 @@
 import React from 'react';
-import type { CodeTab } from '../types';
+import { Link } from 'react-router-dom';
+import { Container, Typography, Button, Box, Card, CardContent, Chip, Paper } from '@mui/material';
+import { ArrowForward as ArrowIcon, PlayArrow as PlayIcon, Speed, Security, Cloud, Settings, Star, Delete, Extension, Memory, Code } from '@mui/icons-material';
+import type { CodeTab, Module } from '../types';
 import { useVersion } from '../hooks';
-import { INSTALLATION_TABS, FEATURES, EVICTION_STRATEGIES, MODULES, PERFORMANCE_STATS, ARCHITECTURE, BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN, SPRING_USAGE } from '../constants';
-import { Section, Grid, FeatureCard, InstallationGuide, Badge } from './common';
+import { BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN, SPRING_USAGE, INSTALLATION_TABS, MODULES, FEATURES } from '../constants';
+import PageWrapper from './PageWrapper';
 import CodeTabs from './CodeTabs';
-import './Home.css';
 
-const Home: React.FC = () => {
+const HomeComponent: React.FC = () => {
     const { version } = useVersion();
 
     const heroCodeTabs: CodeTab[] = [
@@ -30,160 +32,356 @@ const Home: React.FC = () => {
         }
     ];
 
+    // Convert features from constants to MUI compatible format
+    const featureIcons: { [key: string]: JSX.Element } = {
+        '⚡': <Speed sx={{ fontSize: 40 }} />,
+        '🔧': <Settings sx={{ fontSize: 40 }} />,
+        '🔄': <Code sx={{ fontSize: 40 }} />,
+        '🍃': <Extension sx={{ fontSize: 40 }} />,
+        '🌐': <Cloud sx={{ fontSize: 40 }} />,
+        '📊': <Star sx={{ fontSize: 40 }} />
+    };
+
+    const moduleIcons: { [key: string]: JSX.Element } = {
+        'jcachex-core': <Memory sx={{ fontSize: 40 }} />,
+        'jcachex-spring': <Extension sx={{ fontSize: 40 }} />,
+        'jcachex-kotlin': <Code sx={{ fontSize: 40 }} />
+    };
+
     return (
-        <div className="home">
+        <PageWrapper
+            title="JCacheX - High Performance Java Caching Framework"
+            description="JCacheX is a modern, high-performance Java caching framework with advanced features like distributed caching, smart eviction strategies, and Spring Boot integration."
+            keywords="Java, cache, caching, framework, performance, distributed, spring boot"
+            className="home"
+        >
             {/* Hero Section */}
-            <Section background="gradient" padding="lg" centered>
-                <div className="hero-content">
-                    <div className="hero-badges">
-                        <Badge variant="github" size="medium" href="https://github.com/dhruv1110/JCacheX">
-                            GitHub
-                        </Badge>
-                        <Badge variant="maven" size="medium" href="https://mvnrepository.com/artifact/io.github.dhruv1110/jcachex-core">
-                            Maven Central
-                        </Badge>
-                        <Badge variant="primary" size="medium">
-                            v{version}
-                        </Badge>
-                    </div>
+            <Box
+                sx={{
+                    background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%)',
+                    py: { xs: 8, md: 12 },
+                    minHeight: '70vh',
+                    display: 'flex',
+                    alignItems: 'center'
+                }}
+            >
+                <Container maxWidth="lg">
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Typography
+                            variant="h1"
+                            component="h1"
+                            sx={{
+                                fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
+                                fontWeight: 700,
+                                mb: 3,
+                                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                                backgroundClip: 'text',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                lineHeight: 1.1
+                            }}
+                        >
+                            A high performance, open source
+                            <br />
+                            Java caching framework
+                        </Typography>
 
-                    <h1 className="hero-title">JCacheX</h1>
-                    <p className="hero-subtitle">
-                        High-performance, thread-safe caching library for Java & Kotlin applications with
-                        async support, multiple eviction strategies, and Spring Boot integration.
-                    </p>
+                        <Typography
+                            variant="h5"
+                            sx={{
+                                mx: 'auto',
+                                mt: 2,
+                                mb: 4,
+                                maxWidth: '800px',
+                                color: 'text.secondary',
+                                fontSize: { xs: '1.1rem', md: '1.25rem' }
+                            }}
+                        >
+                            JCacheX provides modern caching capabilities with distributed support,
+                            intelligent eviction strategies, and seamless Spring Boot integration
+                            for enterprise Java applications.
+                        </Typography>
 
-                    <div className="hero-stats">
-                        {PERFORMANCE_STATS.map((stat, index) => (
-                            <div key={index} className="stat-item">
-                                <div className="stat-value">{stat.value}</div>
-                                <div className="stat-label">{stat.label}</div>
-                            </div>
+                        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap', mb: 6 }}>
+                            <Button
+                                component={Link}
+                                to="/getting-started"
+                                variant="contained"
+                                size="large"
+                                endIcon={<ArrowIcon />}
+                                sx={{ px: 4, py: 1.5 }}
+                            >
+                                Get Started
+                            </Button>
+                            <Button
+                                href="https://github.com/dhruv1110/JCacheX"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                variant="outlined"
+                                size="large"
+                                startIcon={<PlayIcon />}
+                                sx={{ px: 4, py: 1.5 }}
+                            >
+                                View on GitHub
+                            </Button>
+                        </Box>
+
+                        <Box sx={{ display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
+                            {[
+                                { number: '1M+', label: 'Operations/sec' },
+                                { number: '<1ms', label: 'Latency' },
+                                { number: 'Zero', label: 'Dependencies' }
+                            ].map((stat, index) => (
+                                <Box key={index} sx={{ textAlign: 'center' }}>
+                                    <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                                        {stat.number}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                        {stat.label}
+                                    </Typography>
+                                </Box>
+                            ))}
+                        </Box>
+                    </Box>
+                </Container>
+            </Box>
+
+            {/* Features Section */}
+            <Box sx={{ py: 8 }}>
+                <Container maxWidth="lg">
+                    <Box sx={{ textAlign: 'center', mb: 6 }}>
+                        <Chip
+                            label="✨ Modern Caching"
+                            sx={{ mb: 2, px: 2, py: 1 }}
+                            variant="outlined"
+                            color="primary"
+                        />
+                        <Typography variant="h2" component="h2" sx={{ mb: 2, fontWeight: 700 }}>
+                            Why JCacheX?
+                        </Typography>
+                        <Typography variant="h6" sx={{ color: 'text.secondary', maxWidth: '600px', mx: 'auto' }}>
+                            Modern caching capabilities designed for high-performance Java applications
+                        </Typography>
+                    </Box>
+
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: {
+                                xs: '1fr',
+                                sm: 'repeat(2, 1fr)',
+                                md: 'repeat(3, 1fr)'
+                            },
+                            gap: 4
+                        }}
+                    >
+                        {FEATURES.map((feature, index) => (
+                            <Card
+                                key={index}
+                                sx={{
+                                    height: '100%',
+                                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                    '&:hover': {
+                                        transform: 'translateY(-4px)',
+                                        boxShadow: (theme) => theme.shadows[8]
+                                    }
+                                }}
+                            >
+                                <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                                    <Box sx={{ color: 'primary.main', mb: 2 }}>
+                                        {featureIcons[feature.icon] || <Star sx={{ fontSize: 40 }} />}
+                                    </Box>
+                                    <Typography variant="h6" component="h3" sx={{ mb: 2, fontWeight: 600 }}>
+                                        {feature.title}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6, mb: 2 }}>
+                                        {feature.description}
+                                    </Typography>
+                                    {feature.details && (
+                                        <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
+                                            {feature.details.map((detail, detailIndex) => (
+                                                <Typography
+                                                    key={detailIndex}
+                                                    component="li"
+                                                    variant="caption"
+                                                    sx={{
+                                                        color: 'text.secondary',
+                                                        fontSize: '0.75rem',
+                                                        '&:before': {
+                                                            content: '"•"',
+                                                            color: 'primary.main',
+                                                            fontWeight: 'bold',
+                                                            display: 'inline-block',
+                                                            width: '1em',
+                                                            marginLeft: '-1em'
+                                                        }
+                                                    }}
+                                                >
+                                                    {detail}
+                                                </Typography>
+                                            ))}
+                                        </Box>
+                                    )}
+                                </CardContent>
+                            </Card>
                         ))}
-                    </div>
-                </div>
-            </Section>
+                    </Box>
+                </Container>
+            </Box>
 
-            {/* Code Examples */}
-            <Section background="dark" padding="lg" centered>
-                <div className="hero-code-container">
-                    <CodeTabs tabs={heroCodeTabs} />
-                </div>
-            </Section>
-
-            {/* Installation */}
-            <Section
-                padding="lg"
-                title="Installation"
-                subtitle="Get started with JCacheX in your project"
-                centered
-            >
-                <InstallationGuide tabs={INSTALLATION_TABS} />
-            </Section>
-
-            {/* Features */}
-            <Section
-                background="dark"
-                padding="lg"
-                title="Core Features"
-                subtitle="Everything you need for modern caching"
-                centered
-            >
-                <Grid columns={3} gap="lg">
-                    {FEATURES.map((feature, index) => (
-                        <FeatureCard
-                            key={index}
-                            icon={feature.icon}
-                            title={feature.title}
-                            description={feature.description}
-                            details={feature.details}
+            {/* Quick Start Section */}
+            <Box sx={{ py: 8, bgcolor: 'grey.50' }}>
+                <Container maxWidth="lg">
+                    <Box sx={{ textAlign: 'center', mb: 6 }}>
+                        <Chip
+                            label="🚀 Get Started"
+                            sx={{ mb: 2, px: 2, py: 1 }}
+                            variant="outlined"
+                            color="primary"
                         />
-                    ))}
-                </Grid>
-            </Section>
+                        <Typography variant="h2" component="h2" sx={{ mb: 2, fontWeight: 700 }}>
+                            Quick Start
+                        </Typography>
+                        <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                            Get up and running with JCacheX in minutes
+                        </Typography>
+                    </Box>
 
-            {/* Modules */}
-            <Section
-                padding="lg"
-                title="Modules"
-                subtitle="Choose the right modules for your needs"
-                centered
-            >
-                <Grid columns={3} gap="lg">
-                    {MODULES.map((module, index) => (
-                        <FeatureCard
-                            key={index}
-                            icon="📦"
-                            title={module.title}
-                            description={module.description}
-                            details={module.features}
-                            variant="compact"
+                    <Box sx={{ maxWidth: 800, mx: 'auto', mb: 4 }}>
+                        <CodeTabs tabs={heroCodeTabs} />
+                    </Box>
+
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Button
+                            component={Link}
+                            to="/getting-started"
+                            variant="contained"
+                            size="large"
+                            endIcon={<ArrowIcon />}
+                            sx={{ px: 4, py: 1.5 }}
+                        >
+                            View Full Documentation
+                        </Button>
+                    </Box>
+                </Container>
+            </Box>
+
+            {/* Installation Section */}
+            <Box sx={{ py: 8 }}>
+                <Container maxWidth="lg">
+                    <Box sx={{ textAlign: 'center', mb: 6 }}>
+                        <Typography variant="h3" component="h2" sx={{ mb: 2, fontWeight: 700 }}>
+                            Installation
+                        </Typography>
+                        <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                            Add JCacheX to your project with your preferred build tool
+                        </Typography>
+                    </Box>
+
+                    <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+                        <CodeTabs tabs={INSTALLATION_TABS} />
+                    </Box>
+                </Container>
+            </Box>
+
+            {/* Modules Section */}
+            <Box sx={{ py: 8, bgcolor: 'grey.50' }}>
+                <Container maxWidth="lg">
+                    <Box sx={{ textAlign: 'center', mb: 6 }}>
+                        <Chip
+                            label="📦 Modules"
+                            sx={{ mb: 2, px: 2, py: 1 }}
+                            variant="outlined"
+                            color="primary"
                         />
-                    ))}
-                </Grid>
-            </Section>
+                        <Typography variant="h2" component="h2" sx={{ mb: 2, fontWeight: 700 }}>
+                            Choose Your Components
+                        </Typography>
+                        <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+                            Modular architecture - use only what you need
+                        </Typography>
+                    </Box>
 
-            {/* Eviction Strategies */}
-            <Section
-                background="dark"
-                padding="lg"
-                title="Eviction Strategies"
-                subtitle="Choose the right eviction strategy for your use case"
-                centered
-            >
-                <Grid columns={3} gap="md">
-                    {EVICTION_STRATEGIES.map((strategy, index) => (
-                        <FeatureCard
-                            key={index}
-                            icon="🔄"
-                            title={strategy.title}
-                            description={strategy.description}
-                            details={[strategy.useCase]}
-                            variant="compact"
-                        />
-                    ))}
-                </Grid>
-            </Section>
-
-            {/* Architecture Section */}
-            <Section
-                padding="lg"
-                title="Architecture"
-                subtitle="Clean, modular design with pluggable components"
-                centered
-            >
-                <Grid columns={3} gap="lg">
-                    {ARCHITECTURE.map((component, index) => (
-                        <FeatureCard
-                            key={index}
-                            icon="🏗️"
-                            title={component.name}
-                            description={component.description}
-                            variant="compact"
-                        />
-                    ))}
-                </Grid>
-            </Section>
-
-            {/* Call to Action */}
-            <Section background="gradient" padding="lg" centered>
-                <div className="cta-content">
-                    <h2 className="cta-title">Ready to get started?</h2>
-                    <p className="cta-subtitle">
-                        Join thousands of developers using JCacheX in production
-                    </p>
-                    <div className="cta-buttons">
-                        <Badge variant="primary" size="large" href="/getting-started">
-                            Get Started
-                        </Badge>
-                        <Badge variant="default" size="large" href="/examples">
-                            View Examples
-                        </Badge>
-                    </div>
-                </div>
-            </Section>
-        </div>
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: {
+                                xs: '1fr',
+                                md: 'repeat(3, 1fr)'
+                            },
+                            gap: 4
+                        }}
+                    >
+                        {MODULES.map((module: Module, index) => (
+                            <Card
+                                key={module.name}
+                                sx={{
+                                    height: '100%',
+                                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                    '&:hover': {
+                                        transform: 'translateY(-4px)',
+                                        boxShadow: (theme) => theme.shadows[8]
+                                    }
+                                }}
+                            >
+                                <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                                    <Box sx={{ color: 'secondary.main', mb: 2 }}>
+                                        {moduleIcons[module.name] || <Extension sx={{ fontSize: 40 }} />}
+                                    </Box>
+                                    <Typography variant="h6" component="h3" sx={{ mb: 1, fontWeight: 600 }}>
+                                        {module.title}
+                                    </Typography>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            color: 'text.secondary',
+                                            fontFamily: 'monospace',
+                                            bgcolor: 'grey.100',
+                                            px: 1,
+                                            py: 0.5,
+                                            borderRadius: 1,
+                                            display: 'block',
+                                            mb: 2
+                                        }}
+                                    >
+                                        {module.name}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.6, mb: 2 }}>
+                                        {module.description}
+                                    </Typography>
+                                    {module.features && (
+                                        <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
+                                            {module.features.map((feature, featureIndex) => (
+                                                <Typography
+                                                    key={featureIndex}
+                                                    component="li"
+                                                    variant="caption"
+                                                    sx={{
+                                                        color: 'text.secondary',
+                                                        fontSize: '0.75rem',
+                                                        '&:before': {
+                                                            content: '"•"',
+                                                            color: 'secondary.main',
+                                                            fontWeight: 'bold',
+                                                            display: 'inline-block',
+                                                            width: '1em',
+                                                            marginLeft: '-1em'
+                                                        }
+                                                    }}
+                                                >
+                                                    {feature}
+                                                </Typography>
+                                            ))}
+                                        </Box>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </Box>
+                </Container>
+            </Box>
+        </PageWrapper>
     );
 };
 
-export default Home;
+export default HomeComponent;

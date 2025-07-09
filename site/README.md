@@ -143,6 +143,87 @@ The local testing setup resolves Chrome console errors when serving GitHub Pages
 - API documentation links
 - GitHub release links
 
+## Routing Configuration
+
+The website uses React Router with dynamic basename configuration to support both local development and GitHub Pages deployment.
+
+### How Routing Works
+
+#### Local Development (`npm start`)
+- **Base URL**: `http://localhost:3000/`
+- **Basename**: `/` (root)
+- **Example routes**:
+  - Home: `http://localhost:3000/`
+  - Docs: `http://localhost:3000/getting-started`
+  - Examples: `http://localhost:3000/examples`
+
+#### Production (GitHub Pages)
+- **Base URL**: `https://dhruv1110.github.io/jcachex/`
+- **Basename**: `/jcachex`
+- **Example routes**:
+  - Home: `https://dhruv1110.github.io/jcachex/`
+  - Docs: `https://dhruv1110.github.io/jcachex/getting-started`
+  - Examples: `https://dhruv1110.github.io/jcachex/examples`
+
+### Configuration Details
+
+The routing configuration is handled in `src/index.js`:
+
+```javascript
+const getBasename = () => {
+    if (process.env.NODE_ENV === 'development') {
+        return '/';
+    }
+    // Extract basename from homepage URL
+    const homepage = process.env.PUBLIC_URL || '/jcachex';
+    return new URL(homepage, 'https://example.com').pathname;
+};
+
+<BrowserRouter basename={getBasename()}>
+    <App />
+</BrowserRouter>
+```
+
+### Testing Routing
+
+#### Test Local Development
+```bash
+npm start
+# Navigate to http://localhost:3000/
+# All routes should work without /jcachex prefix
+```
+
+#### Test Production Build Locally
+```bash
+npm run test:production
+# Navigate to http://localhost:3001/jcachex/
+# All routes should work with /jcachex prefix
+```
+
+#### Key Points
+
+1. **All internal links use relative paths** (`to="/getting-started"`)
+2. **React Router automatically handles basename** - no code changes needed in components
+3. **External links use full URLs** - GitHub, documentation links, etc.
+4. **Browser refresh works** - Server must be configured for SPA routing
+
+### Adding New Routes
+
+When adding new routes to the application:
+
+```javascript
+// In App.js
+<Routes>
+    <Route path="/new-page" element={<NewPage />} />
+</Routes>
+
+// In components - use Link for internal navigation
+<Link to="/new-page">New Page</Link>
+
+// External links (no basename applied)
+<a href="https://external-site.com">External Link</a>
+```
+
 ## Development Guidelines
 
 ### Code Structure

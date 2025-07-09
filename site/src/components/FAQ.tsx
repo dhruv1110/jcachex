@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import type { FAQ } from '../types';
 import { Section } from './common';
-import './FAQ.css';
+import PageWrapper from './PageWrapper';
+
 
 const FAQ_DATA: FAQ[] = [
     {
@@ -168,7 +169,13 @@ const FAQPage: React.FC = () => {
     });
 
     return (
-        <div className="faq-page">
+        <PageWrapper
+            title="Frequently Asked Questions - JCacheX"
+            description="Find answers to common questions about JCacheX Java caching framework, including usage, performance, configuration, and troubleshooting."
+            keywords="JCacheX, FAQ, questions, answers, help, support, Java cache"
+            className="faq-page"
+        >
+
             {/* Header */}
             <Section background="gradient" padding="lg" centered>
                 <div className="faq-header">
@@ -240,27 +247,27 @@ const FAQPage: React.FC = () => {
                 </div>
             </Section>
 
-            {/* Support Section */}
+            {/* Footer CTA */}
             <Section background="gradient" padding="lg" centered>
-                <div className="faq-support">
-                    <h2 className="faq-support-title">Still need help?</h2>
-                    <p className="faq-support-subtitle">
+                <div className="faq-footer">
+                    <h3>Still need help?</h3>
+                    <p>
                         Our community and documentation are here to help you succeed with JCacheX.
                     </p>
-                    <div className="faq-support-actions">
-                        <a href="/docs" className="btn btn-primary">
+                    <div className="faq-footer-buttons">
+                        <a href="/getting-started" className="btn btn-primary">
                             View Documentation
                         </a>
                         <a href="https://github.com/dhruv1110/JCacheX/discussions" className="btn btn-secondary">
                             Join Discussions
                         </a>
-                        <a href="https://github.com/dhruv1110/JCacheX/issues" className="btn btn-secondary">
+                        <a href="https://github.com/dhruv1110/JCacheX/issues" className="btn btn-outline">
                             Report Issue
                         </a>
                     </div>
                 </div>
             </Section>
-        </div>
+        </PageWrapper>
     );
 };
 
