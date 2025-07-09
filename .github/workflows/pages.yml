@@ -1,8 +1,6 @@
 name: Deploy React Site to GitHub Pages
 
 on:
-  push:
-    branches: ["main"]
   workflow_dispatch:
     inputs:
       version:
