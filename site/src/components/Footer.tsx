@@ -11,6 +11,68 @@ import {
 } from '@mui/material';
 import { GitHub as GitHubIcon } from '@mui/icons-material';
 
+// Shared styles
+const linkStyles = {
+    color: 'grey.400',
+    textDecoration: 'none',
+    '&:hover': { color: 'primary.main' },
+    transition: 'color 0.2s ease',
+} as const;
+
+// Reusable link components
+const FooterLink: React.FC<{ to: string; children: React.ReactNode }> = ({ to, children }) => (
+    <Typography
+        variant="body2"
+        component={Link}
+        to={to}
+        sx={linkStyles}
+    >
+        {children}
+    </Typography>
+);
+
+const ExternalFooterLink: React.FC<{ href: string; children: React.ReactNode }> = ({ href, children }) => (
+    <Typography
+        variant="body2"
+        component="a"
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        sx={linkStyles}
+    >
+        {children}
+    </Typography>
+);
+
+// Navigation data
+const navigationSections = [
+    {
+        title: 'Documentation',
+        links: [
+            { type: 'internal', to: '/getting-started', label: 'Getting Started' },
+            { type: 'internal', to: '/examples', label: 'Examples' },
+            { type: 'internal', to: '/spring', label: 'Spring Guide' },
+            { type: 'internal', to: '/faq', label: 'FAQ' },
+        ]
+    },
+    {
+        title: 'Resources',
+        links: [
+            { type: 'external', href: 'https://github.com/dhruv1110/JCacheX', label: 'GitHub Repository' },
+            { type: 'external', href: 'https://github.com/dhruv1110/JCacheX/releases', label: 'Releases' },
+            { type: 'external', href: 'https://github.com/dhruv1110/JCacheX/issues', label: 'Report Issues' },
+        ]
+    },
+    {
+        title: 'Community',
+        links: [
+            { type: 'external', href: 'https://github.com/dhruv1110/JCacheX/blob/main/CONTRIBUTING.md', label: 'Contributing' },
+            { type: 'external', href: 'https://github.com/dhruv1110/JCacheX/blob/main/CODE_OF_CONDUCT.md', label: 'Code of Conduct' },
+            { type: 'external', href: 'https://github.com/dhruv1110/JCacheX/blob/main/LICENSE', label: 'License' },
+        ]
+    }
+] as const;
+
 const Footer: React.FC = () => {
     const currentYear = new Date().getFullYear();
     const theme = useTheme();
@@ -92,186 +154,26 @@ const Footer: React.FC = () => {
                             gap: 4,
                         }}
                     >
-                        <Box sx={{ flex: 1 }}>
-                            <Typography variant="h6" color="grey.100" gutterBottom>
-                                Documentation
-                            </Typography>
-                            <Stack spacing={0.5}>
-                                <Typography
-                                    variant="body2"
-                                    component={Link}
-                                    to="/getting-started"
-                                    sx={{
-                                        color: 'grey.400',
-                                        textDecoration: 'none',
-                                        '&:hover': { color: 'primary.main' },
-                                        transition: 'color 0.2s ease',
-                                    }}
-                                >
-                                    Getting Started
+                        {navigationSections.map((section) => (
+                            <Box key={section.title} sx={{ flex: 1 }}>
+                                <Typography variant="h6" color="grey.100" gutterBottom>
+                                    {section.title}
                                 </Typography>
-                                <Typography
-                                    variant="body2"
-                                    component={Link}
-                                    to="/examples"
-                                    sx={{
-                                        color: 'grey.400',
-                                        textDecoration: 'none',
-                                        '&:hover': { color: 'primary.main' },
-                                        transition: 'color 0.2s ease',
-                                    }}
-                                >
-                                    Examples
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    component={Link}
-                                    to="/spring"
-                                    sx={{
-                                        color: 'grey.400',
-                                        textDecoration: 'none',
-                                        '&:hover': { color: 'primary.main' },
-                                        transition: 'color 0.2s ease',
-                                    }}
-                                >
-                                    Spring Guide
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    component={Link}
-                                    to="/faq"
-                                    sx={{
-                                        color: 'grey.400',
-                                        textDecoration: 'none',
-                                        '&:hover': { color: 'primary.main' },
-                                        transition: 'color 0.2s ease',
-                                    }}
-                                >
-                                    FAQ
-                                </Typography>
-                            </Stack>
-                        </Box>
-
-                        <Box sx={{ flex: 1 }}>
-                            <Typography variant="h6" color="grey.100" gutterBottom>
-                                Resources
-                            </Typography>
-                            <Stack spacing={0.5}>
-                                <Typography
-                                    variant="body2"
-                                    component="a"
-                                    href="https://github.com/dhruv1110/JCacheX"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{
-                                        color: 'grey.400',
-                                        textDecoration: 'none',
-                                        '&:hover': { color: 'primary.main' },
-                                        transition: 'color 0.2s ease',
-                                    }}
-                                >
-                                    GitHub Repository
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    component="a"
-                                    href="https://github.com/dhruv1110/JCacheX/releases"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{
-                                        color: 'grey.400',
-                                        textDecoration: 'none',
-                                        '&:hover': { color: 'primary.main' },
-                                        transition: 'color 0.2s ease',
-                                    }}
-                                >
-                                    Releases
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    component="a"
-                                    href="https://github.com/dhruv1110/JCacheX/issues"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{
-                                        color: 'grey.400',
-                                        textDecoration: 'none',
-                                        '&:hover': { color: 'primary.main' },
-                                        transition: 'color 0.2s ease',
-                                    }}
-                                >
-                                    Report Issues
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    component="a"
-                                    href="https://github.com/dhruv1110/JCacheX/discussions"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{
-                                        color: 'grey.400',
-                                        textDecoration: 'none',
-                                        '&:hover': { color: 'primary.main' },
-                                        transition: 'color 0.2s ease',
-                                    }}
-                                >
-                                    Discussions
-                                </Typography>
-                            </Stack>
-                        </Box>
-
-                        <Box sx={{ flex: 1 }}>
-                            <Typography variant="h6" color="grey.100" gutterBottom>
-                                Community
-                            </Typography>
-                            <Stack spacing={0.5}>
-                                <Typography
-                                    variant="body2"
-                                    component="a"
-                                    href="https://github.com/dhruv1110/JCacheX/blob/main/CONTRIBUTING.md"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{
-                                        color: 'grey.400',
-                                        textDecoration: 'none',
-                                        '&:hover': { color: 'primary.main' },
-                                        transition: 'color 0.2s ease',
-                                    }}
-                                >
-                                    Contributing
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    component="a"
-                                    href="https://github.com/dhruv1110/JCacheX/blob/main/CODE_OF_CONDUCT.md"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{
-                                        color: 'grey.400',
-                                        textDecoration: 'none',
-                                        '&:hover': { color: 'primary.main' },
-                                        transition: 'color 0.2s ease',
-                                    }}
-                                >
-                                    Code of Conduct
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    component="a"
-                                    href="https://github.com/dhruv1110/JCacheX/blob/main/LICENSE"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{
-                                        color: 'grey.400',
-                                        textDecoration: 'none',
-                                        '&:hover': { color: 'primary.main' },
-                                        transition: 'color 0.2s ease',
-                                    }}
-                                >
-                                    License
-                                </Typography>
-                            </Stack>
-                        </Box>
+                                <Stack spacing={0.5}>
+                                    {section.links.map((link) =>
+                                        link.type === 'internal' ? (
+                                            <FooterLink key={link.label} to={link.to!}>
+                                                {link.label}
+                                            </FooterLink>
+                                        ) : (
+                                            <ExternalFooterLink key={link.label} href={link.href!}>
+                                                {link.label}
+                                            </ExternalFooterLink>
+                                        )
+                                    )}
+                                </Stack>
+                            </Box>
+                        ))}
                     </Box>
                 </Box>
 
