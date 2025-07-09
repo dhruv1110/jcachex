@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import type { CodeTab } from '../types';
-import './CodeTabs.css';
 
 interface CodeTabsProps {
     tabs: CodeTab[];

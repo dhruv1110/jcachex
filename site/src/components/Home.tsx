@@ -7,7 +7,6 @@ import type { Module } from '../types';
 import { Section, Grid, FeatureCard, InstallationGuide, Badge } from './common';
 import PageWrapper from './PageWrapper';
 import CodeTabs from './CodeTabs';
-import './Home.css';
 
 // Icons (you can replace these with actual icon components)
 const PlayIcon = () => (

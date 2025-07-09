@@ -1,6 +1,5 @@
 import React from 'react';
 import type { SectionBackground, SectionPadding } from '../../types';
-import './Section.css';
 
 interface SectionProps {
     children: React.ReactNode;

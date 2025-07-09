@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { BreadcrumbItem } from '../../types';
-import './Breadcrumbs.css';
 
 interface BreadcrumbsProps {
     items: BreadcrumbItem[];

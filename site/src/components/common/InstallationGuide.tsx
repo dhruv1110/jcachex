@@ -2,7 +2,6 @@ import React from 'react';
 import type { CodeTab } from '../../types';
 import CodeTabs from '../CodeTabs';
 import { useVersion } from '../../hooks';
-import './InstallationGuide.css';
 
 interface InstallationGuideProps {
     tabs: CodeTab[];

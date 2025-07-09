@@ -1,57 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-
-// Icons
-const MenuIcon = () => (
-    <svg className="navbar__toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-);
-
-const CloseIcon = () => (
-    <svg className="navbar__toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
-);
-
-const ExternalIcon = () => (
-    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-    </svg>
-);
+import {
+    AppBar,
+    Toolbar,
+    Typography,
+    Button,
+    IconButton,
+    Box,
+    Drawer,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText,
+    useTheme,
+    useMediaQuery,
+} from '@mui/material';
+import {
+    Menu as MenuIcon,
+    Close as CloseIcon,
+    GitHub as GitHubIcon,
+} from '@mui/icons-material';
 
 const Navbar: React.FC = () => {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
     const location = useLocation();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-    // Close mobile menu when route changes
-    useEffect(() => {
-        setIsMobileMenuOpen(false);
-    }, [location]);
-
-    // Close mobile menu on escape key
-    useEffect(() => {
-        const handleEscape = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') {
-                setIsMobileMenuOpen(false);
-            }
-        };
-
-        if (isMobileMenuOpen) {
-            document.addEventListener('keydown', handleEscape);
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-
-        return () => {
-            document.removeEventListener('keydown', handleEscape);
-            document.body.style.overflow = '';
-        };
-    }, [isMobileMenuOpen]);
-
-    const toggleMobileMenu = () => {
-        setIsMobileMenuOpen(!isMobileMenuOpen);
+    const handleDrawerToggle = () => {
+        setMobileOpen(!mobileOpen);
     };
 
     const isActiveLink = (path: string) => {
@@ -68,95 +45,155 @@ const Navbar: React.FC = () => {
         { label: 'FAQ', path: '/faq' },
     ];
 
+    const drawer = (
+        <Box sx={{ width: 250 }}>
+            <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="h6" component="div">
+                    JCacheX
+                </Typography>
+                <IconButton onClick={handleDrawerToggle}>
+                    <CloseIcon />
+                </IconButton>
+            </Box>
+            <List>
+                {navigationLinks.map((link) => (
+                    <ListItem key={link.path} disablePadding>
+                        <ListItemButton
+                            component={Link}
+                            to={link.path}
+                            selected={isActiveLink(link.path)}
+                            onClick={handleDrawerToggle}
+                        >
+                            <ListItemText primary={link.label} />
+                        </ListItemButton>
+                    </ListItem>
+                ))}
+            </List>
+            <Box sx={{ p: 2, mt: 'auto' }}>
+                <Button
+                    fullWidth
+                    variant="outlined"
+                    startIcon={<GitHubIcon />}
+                    href="https://github.com/dhruv1110/JCacheX"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ mb: 1 }}
+                >
+                    GitHub
+                </Button>
+                <Button
+                    fullWidth
+                    variant="contained"
+                    component={Link}
+                    to="/getting-started"
+                >
+                    Get Started
+                </Button>
+            </Box>
+        </Box>
+    );
+
     return (
         <>
-            <nav className="navbar">
-                <div className="navbar__container">
-                    {/* Brand */}
-                    <Link to="/" className="navbar__brand">
-                        <svg className="navbar__brand-logo" viewBox="0 0 24 24" fill="currentColor">
+            <AppBar position="fixed" color="default" elevation={0}>
+                <Toolbar>
+                    {/* Logo */}
+                    <Typography
+                        variant="h6"
+                        component={Link}
+                        to="/"
+                        sx={{
+                            mr: 4,
+                            fontWeight: 700,
+                            color: 'primary.main',
+                            textDecoration: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                        }}
+                    >
+                        <Box
+                            component="svg"
+                            sx={{ width: 32, height: 32, fill: 'currentColor' }}
+                            viewBox="0 0 24 24"
+                        >
                             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                        </svg>
+                        </Box>
                         JCacheX
-                    </Link>
+                    </Typography>
 
                     {/* Desktop Navigation */}
-                    <div className="navbar__nav">
-                        {navigationLinks.map((link) => (
-                            <Link
-                                key={link.path}
-                                to={link.path}
-                                className={`navbar__link ${isActiveLink(link.path) ? 'navbar__link--active' : ''}`}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                    </div>
+                    {!isMobile && (
+                        <Box sx={{ display: 'flex', gap: 1, mr: 'auto' }}>
+                            {navigationLinks.map((link) => (
+                                <Button
+                                    key={link.path}
+                                    component={Link}
+                                    to={link.path}
+                                    color={isActiveLink(link.path) ? 'primary' : 'inherit'}
+                                    variant={isActiveLink(link.path) ? 'contained' : 'text'}
+                                    size="small"
+                                >
+                                    {link.label}
+                                </Button>
+                            ))}
+                        </Box>
+                    )}
 
                     {/* Desktop Actions */}
-                    <div className="navbar__actions">
-                        <a
-                            href="https://github.com/dhruv1110/JCacheX"
-                            className="btn btn--ghost btn--sm"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            <ExternalIcon />
-                            GitHub
-                        </a>
-                        <Link to="/getting-started" className="btn btn--primary btn--sm">
-                            Get Started
-                        </Link>
-                    </div>
-
-                    {/* Mobile Menu Toggle */}
-                    <button
-                        className="navbar__toggle"
-                        onClick={toggleMobileMenu}
-                        aria-label="Toggle mobile menu"
-                        aria-expanded={isMobileMenuOpen}
-                    >
-                        {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
-                    </button>
-                </div>
-
-                {/* Mobile Menu */}
-                <div className={`navbar__mobile ${isMobileMenuOpen ? 'navbar__mobile--open' : ''}`}>
-                    <div className="navbar__mobile-nav">
-                        {navigationLinks.map((link) => (
-                            <Link
-                                key={link.path}
-                                to={link.path}
-                                className={`navbar__mobile-link ${isActiveLink(link.path) ? 'navbar__mobile-link--active' : ''}`}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-
-                        <div className="navbar__mobile-actions">
-                            <a
+                    {!isMobile && (
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button
+                                variant="outlined"
+                                startIcon={<GitHubIcon />}
                                 href="https://github.com/dhruv1110/JCacheX"
-                                className="btn btn--secondary btn--block"
                                 target="_blank"
                                 rel="noopener noreferrer"
+                                size="small"
                             >
-                                <ExternalIcon />
-                                View on GitHub
-                            </a>
-                            <Link to="/getting-started" className="btn btn--primary btn--block">
+                                GitHub
+                            </Button>
+                            <Button
+                                variant="contained"
+                                component={Link}
+                                to="/getting-started"
+                                size="small"
+                            >
                                 Get Started
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </nav>
+                            </Button>
+                        </Box>
+                    )}
 
-            {/* Mobile Menu Overlay */}
-            <div
-                className={`navbar-overlay ${isMobileMenuOpen ? 'navbar-overlay--open' : ''}`}
-                onClick={() => setIsMobileMenuOpen(false)}
-                aria-hidden="true"
-            />
+                    {/* Mobile Menu Button */}
+                    {isMobile && (
+                        <IconButton
+                            color="inherit"
+                            aria-label="open drawer"
+                            edge="end"
+                            onClick={handleDrawerToggle}
+                            sx={{ ml: 'auto' }}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    )}
+                </Toolbar>
+            </AppBar>
+
+            {/* Mobile Drawer */}
+            <Drawer
+                variant="temporary"
+                anchor="right"
+                open={mobileOpen}
+                onClose={handleDrawerToggle}
+                ModalProps={{
+                    keepMounted: true, // Better open performance on mobile.
+                }}
+            >
+                {drawer}
+            </Drawer>
+
+            {/* Toolbar spacer */}
+            <Toolbar />
         </>
     );
 };

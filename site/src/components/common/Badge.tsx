@@ -1,6 +1,5 @@
 import React from 'react';
 import type { BadgeVariant, BadgeSize } from '../../types';
-import './Badge.css';
 
 interface BadgeProps {
     children: React.ReactNode;

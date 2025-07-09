@@ -1,8 +1,8 @@
 import React from 'react';
 import { HelmetProvider } from 'react-helmet-async';
+import { Box } from '@mui/material';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import './Layout.css';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -11,13 +11,26 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
     return (
         <HelmetProvider>
-            <div className="layout">
+            <Box
+                sx={{
+                    minHeight: '100vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                }}
+            >
                 <Navbar />
-                <main className="layout__main">
+                <Box
+                    component="main"
+                    sx={{
+                        flex: 1,
+                        display: 'flex',
+                        flexDirection: 'column',
+                    }}
+                >
                     {children}
-                </main>
+                </Box>
                 <Footer />
-            </div>
+            </Box>
         </HelmetProvider>
     );
 };

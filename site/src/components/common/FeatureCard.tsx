@@ -1,5 +1,4 @@
 import React from 'react';
-import './FeatureCard.css';
 
 interface FeatureCardProps {
     icon: string;
