@@ -1,15 +1,13 @@
 import React from 'react';
-import { useVersion, useSEO } from '../hooks';
+import { useVersion } from '../hooks';
 import { INSTALLATION_TABS, BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN } from '../constants';
 import { Section, Grid, FeatureCard, InstallationGuide } from './common';
 import CodeTabs from './CodeTabs';
 import { CodeTab, Feature } from '../types';
-import { MetaTags } from './SEO';
+import PageWrapper from './PageWrapper';
 
 const GettingStarted: React.FC = () => {
     const { version } = useVersion();
-    const { getCurrentPageSEO } = useSEO();
-    const seoData = getCurrentPageSEO();
 
     const basicUsageTabs: CodeTab[] = [
         {
@@ -203,8 +201,12 @@ public class CacheConfig {
     ];
 
     return (
-        <div className="getting-started-page">
-            <MetaTags seo={seoData} />
+        <PageWrapper
+            title="Getting Started - JCacheX Documentation"
+            description="Get up and running with JCacheX in minutes. Learn installation, basic usage, and advanced configuration for Java and Kotlin projects."
+            keywords="JCacheX, getting started, installation, documentation, Java cache, Kotlin"
+            className="getting-started-page"
+        >
 
             {/* Header */}
             <Section background="gradient" padding="lg" centered>
@@ -294,7 +296,7 @@ public class CacheConfig {
                     </div>
                 </div>
             </Section>
-        </div>
+        </PageWrapper>
     );
 };
 
