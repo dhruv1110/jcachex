@@ -1,7 +1,18 @@
 import React from 'react';
+import type { SectionBackground, SectionPadding } from '../../types';
 import './Section.css';
 
-const Section = ({
+interface SectionProps {
+    children: React.ReactNode;
+    title?: string;
+    subtitle?: string;
+    className?: string;
+    background?: SectionBackground;
+    centered?: boolean;
+    padding?: SectionPadding;
+}
+
+const Section: React.FC<SectionProps> = ({
     children,
     title,
     subtitle,

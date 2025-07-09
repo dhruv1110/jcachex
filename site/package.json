@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "description": "JCacheX website built with React",
     "private": true,
-    "homepage": "https://dhruv1110.github.io/JCacheX",
+    "homepage": "https://dhruv1110.github.io/jcachex",
     "scripts": {
         "start": "react-scripts start",
         "build": "react-scripts build",
@@ -18,13 +18,17 @@
     "dependencies": {
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "react-helmet-async": "^2.0.5",
         "react-router-dom": "^6.8.0",
         "react-scripts": "5.0.1"
     },
     "devDependencies": {
-        "@types/react": "^18.0.28",
-        "@types/react-dom": "^18.0.11",
-        "serve": "^14.2.4"
+        "@types/node": "^18.19.31",
+        "@types/react": "^18.2.66",
+        "@types/react-dom": "^18.2.22",
+        "@types/react-router-dom": "^5.3.3",
+        "serve": "^14.2.4",
+        "typescript": "^4.9.5"
     },
     "browserslist": {
         "production": [

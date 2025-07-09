@@ -3,12 +3,13 @@ import { useVersion } from '../hooks';
 import { INSTALLATION_TABS, BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN } from '../constants';
 import { Section, Grid, FeatureCard, InstallationGuide } from './common';
 import CodeTabs from './CodeTabs';
+import { CodeTab, Feature } from '../types';
 import './GettingStarted.css';
 
-const GettingStarted = () => {
+const GettingStarted: React.FC = () => {
     const { version } = useVersion();
 
-    const basicUsageTabs = [
+    const basicUsageTabs: CodeTab[] = [
         {
             id: 'java',
             label: 'Java',
@@ -23,7 +24,7 @@ const GettingStarted = () => {
         }
     ];
 
-    const asyncTabs = [
+    const asyncTabs: CodeTab[] = [
         {
             id: 'java',
             label: 'Java',
@@ -94,7 +95,7 @@ suspend fun getOrCreate(id: String): User = withContext(Dispatchers.IO) {
         }
     ];
 
-    const springConfigTabs = [
+    const springConfigTabs: CodeTab[] = [
         {
             id: 'yaml',
             label: 'application.yml',
@@ -172,7 +173,7 @@ public class CacheConfig {
         }
     ];
 
-    const configurationOptions = [
+    const configurationOptions: Feature[] = [
         {
             icon: '⚙️',
             title: 'Size Limits',
@@ -199,7 +200,7 @@ public class CacheConfig {
         }
     ];
 
-    const bestPractices = [
+    const bestPractices: Feature[] = [
         {
             icon: '🎯',
             title: 'Cache Strategy',
@@ -223,7 +224,7 @@ public class CacheConfig {
     return (
         <div className="getting-started">
             {/* Header */}
-            <Section background="gradient" padding="large" centered>
+            <Section background="gradient" padding="lg" centered>
                 <div className="header-content">
                     <h1 className="page-title">Getting Started with JCacheX</h1>
                     <p className="page-subtitle">
@@ -233,7 +234,7 @@ public class CacheConfig {
             </Section>
 
             {/* Installation */}
-            <Section padding="large">
+            <Section padding="lg">
                 <InstallationGuide
                     tabs={INSTALLATION_TABS}
                     title="1. Installation"
@@ -244,7 +245,7 @@ public class CacheConfig {
             {/* Basic Usage */}
             <Section
                 background="light"
-                padding="large"
+                padding="lg"
                 title="2. Basic Usage"
                 subtitle="Create and use caches with simple, intuitive API"
                 centered
@@ -256,7 +257,7 @@ public class CacheConfig {
 
             {/* Asynchronous Operations */}
             <Section
-                padding="large"
+                padding="lg"
                 title="3. Asynchronous Operations"
                 subtitle="Leverage async capabilities for better performance"
                 centered
@@ -269,7 +270,7 @@ public class CacheConfig {
             {/* Spring Boot Configuration */}
             <Section
                 background="light"
-                padding="large"
+                padding="lg"
                 title="4. Spring Boot Configuration"
                 subtitle="Configure JCacheX in your Spring Boot application"
                 centered
@@ -281,12 +282,12 @@ public class CacheConfig {
 
             {/* Configuration Options */}
             <Section
-                padding="large"
+                padding="lg"
                 title="Configuration Options"
                 subtitle="Customize cache behavior to match your requirements"
                 centered
             >
-                <Grid columns={2} gap="large">
+                <Grid columns={2} gap="lg">
                     {configurationOptions.map((option, index) => (
                         <FeatureCard
                             key={index}
@@ -303,12 +304,12 @@ public class CacheConfig {
             {/* Best Practices */}
             <Section
                 background="light"
-                padding="large"
+                padding="lg"
                 title="Best Practices"
                 subtitle="Tips for getting the most out of JCacheX"
                 centered
             >
-                <Grid columns={3} gap="large">
+                <Grid columns={3} gap="lg">
                     {bestPractices.map((practice, index) => (
                         <FeatureCard
                             key={index}
@@ -323,7 +324,7 @@ public class CacheConfig {
             </Section>
 
             {/* Next Steps */}
-            <Section background="gradient" padding="large" centered>
+            <Section background="gradient" padding="lg" centered>
                 <div className="next-steps">
                     <h2 className="next-steps-title">Next Steps</h2>
                     <p className="next-steps-subtitle">

@@ -3,12 +3,13 @@ import { useVersion } from '../hooks';
 import { INSTALLATION_TABS, BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN, SPRING_USAGE } from '../constants';
 import { Section, Grid, FeatureCard, InstallationGuide, Badge } from './common';
 import CodeTabs from './CodeTabs';
+import { CodeTab, Feature, ExampleCategory, Resource } from '../types';
 import './Examples.css';
 
-const Examples = () => {
+const Examples: React.FC = () => {
     const { version } = useVersion();
 
-    const basicTabs = [
+    const basicTabs: CodeTab[] = [
         {
             id: 'java',
             label: 'Java',
@@ -75,7 +76,7 @@ println("Hit rate: \${stats.hitRate()}")`
         }
     ];
 
-    const asyncTabs = [
+    const asyncTabs: CodeTab[] = [
         {
             id: 'java',
             label: 'Java Async',
@@ -151,7 +152,7 @@ runBlocking {
         }
     ];
 
-    const springTabs = [
+    const springTabs: CodeTab[] = [
         {
             id: 'service',
             label: 'Service Layer',
@@ -231,7 +232,7 @@ public class UserController {
         }
     ];
 
-    const distributedTabs = [
+    const distributedTabs: CodeTab[] = [
         {
             id: 'setup',
             label: 'Distributed Setup',
@@ -290,7 +291,7 @@ DistributedCacheConfig<String, User> sessionConfig = DistributedCacheConfig.<Str
         }
     ];
 
-    const monitoringTabs = [
+    const monitoringTabs: CodeTab[] = [
         {
             id: 'metrics',
             label: 'Micrometer Metrics',
@@ -367,7 +368,7 @@ management:
         }
     ];
 
-    const exampleCategories = [
+    const exampleCategories: ExampleCategory[] = [
         {
             id: 'basic',
             icon: '🚀',
@@ -405,7 +406,7 @@ management:
         }
     ];
 
-    const performanceTips = [
+    const performanceTips: Feature[] = [
         {
             icon: '⚡',
             title: 'Batch Operations',
@@ -426,7 +427,7 @@ management:
         }
     ];
 
-    const resources = [
+    const resources: Resource[] = [
         {
             title: 'Spring Boot Guide',
             description: 'Complete guide for Spring Boot integration',
@@ -453,7 +454,7 @@ management:
     return (
         <div className="examples">
             {/* Header */}
-            <Section background="gradient" padding="large" centered>
+            <Section background="gradient" padding="lg" centered>
                 <div className="header-content">
                     <h1 className="page-title">JCacheX Examples</h1>
                     <p className="page-subtitle">
@@ -463,7 +464,7 @@ management:
             </Section>
 
             {/* Installation */}
-            <Section padding="large">
+            <Section padding="lg">
                 <InstallationGuide
                     tabs={INSTALLATION_TABS}
                     title="Quick Setup"
@@ -474,7 +475,7 @@ management:
             {/* Example Categories */}
             <Section
                 background="light"
-                padding="large"
+                padding="lg"
                 title="Example Categories"
                 subtitle="Choose from different categories based on your needs"
                 centered
@@ -497,12 +498,12 @@ management:
 
             {/* Performance Tips */}
             <Section
-                padding="large"
+                padding="lg"
                 title="Performance Tips"
                 subtitle="Best practices for optimal cache performance"
                 centered
             >
-                <Grid columns={3} gap="large">
+                <Grid columns={3} gap="lg">
                     {performanceTips.map((tip, index) => (
                         <FeatureCard
                             key={index}
@@ -519,12 +520,12 @@ management:
             {/* Resources */}
             <Section
                 background="light"
-                padding="large"
+                padding="lg"
                 title="Additional Resources"
                 subtitle="Learn more about JCacheX and get support"
                 centered
             >
-                <Grid columns={3} gap="large">
+                <Grid columns={3} gap="lg">
                     {resources.map((resource, index) => (
                         <div key={index} className="resource-card">
                             <div className="resource-icon">{resource.icon}</div>
@@ -545,7 +546,7 @@ management:
             </Section>
 
             {/* Next Steps */}
-            <Section background="gradient" padding="large" centered>
+            <Section background="gradient" padding="lg" centered>
                 <div className="next-steps">
                     <h2 className="next-steps-title">Ready to implement?</h2>
                     <p className="next-steps-subtitle">
@@ -566,4 +567,3 @@ management:
 };
 
 export default Examples;
-

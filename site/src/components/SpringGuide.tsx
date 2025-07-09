@@ -3,12 +3,13 @@ import { useVersion } from '../hooks';
 import { SPRING_USAGE } from '../constants';
 import { Section, Grid, FeatureCard, InstallationGuide, Badge } from './common';
 import CodeTabs from './CodeTabs';
+import { CodeTab, Feature, Resource } from '../types';
 import './SpringGuide.css';
 
-const SpringGuide = () => {
+const SpringGuide: React.FC = () => {
     const { version } = useVersion();
 
-    const setupTabs = [
+    const setupTabs: CodeTab[] = [
         {
             id: 'maven',
             label: 'Maven',
@@ -51,7 +52,7 @@ const SpringGuide = () => {
         }
     ];
 
-    const configTabs = [
+    const configTabs: CodeTab[] = [
         {
             id: 'yaml',
             label: 'application.yml',
@@ -146,7 +147,7 @@ spring.cache.type=jcachex`
         }
     ];
 
-    const annotationTabs = [
+    const annotationTabs: CodeTab[] = [
         {
             id: 'service',
             label: 'Service Layer',
@@ -267,7 +268,7 @@ public class CacheConfiguration {
         }
     ];
 
-    const monitoringTabs = [
+    const monitoringTabs: CodeTab[] = [
         {
             id: 'health',
             label: 'Health Indicators',
@@ -364,7 +365,7 @@ public class CacheMetrics implements MeterBinder {
         }
     ];
 
-    const annotations = [
+    const annotations: Feature[] = [
         {
             icon: '🎯',
             title: '@JCacheXCacheable',
@@ -391,7 +392,7 @@ public class CacheMetrics implements MeterBinder {
         }
     ];
 
-    const features = [
+    const features: Feature[] = [
         {
             icon: '🚀',
             title: 'Auto-Configuration',
@@ -412,34 +413,34 @@ public class CacheMetrics implements MeterBinder {
         }
     ];
 
-    const resources = [
+    const resources: Resource[] = [
         {
             title: 'Getting Started',
             description: 'Basic usage and configuration guide',
             icon: '📖',
             href: '/getting-started',
-            badge: 'guide'
+            badge: 'primary'
         },
         {
             title: 'Examples',
             description: 'Comprehensive examples and use cases',
             icon: '💡',
             href: '/examples',
-            badge: 'examples'
+            badge: 'success'
         },
         {
             title: 'API Documentation',
             description: 'Complete API reference and JavaDoc',
             icon: '📚',
             href: 'https://javadoc.io/doc/io.github.dhruv1110/jcachex-spring',
-            badge: 'api'
+            badge: 'info'
         }
     ];
 
     return (
         <div className="spring-guide">
             {/* Header */}
-            <Section background="gradient" padding="large" centered>
+            <Section background="gradient" padding="lg" centered>
                 <div className="header-content">
                     <h1 className="page-title">Spring Boot Integration</h1>
                     <p className="page-subtitle">
@@ -449,7 +450,7 @@ public class CacheMetrics implements MeterBinder {
             </Section>
 
             {/* Installation */}
-            <Section padding="large">
+            <Section padding="lg">
                 <InstallationGuide
                     tabs={setupTabs}
                     title="1. Add Dependencies"
@@ -460,7 +461,7 @@ public class CacheMetrics implements MeterBinder {
             {/* Configuration */}
             <Section
                 background="light"
-                padding="large"
+                padding="lg"
                 title="2. Configuration"
                 subtitle="Configure JCacheX using Spring Boot properties"
                 centered
@@ -472,7 +473,7 @@ public class CacheMetrics implements MeterBinder {
 
             {/* Annotations */}
             <Section
-                padding="large"
+                padding="lg"
                 title="3. Annotations"
                 subtitle="Use JCacheX annotations to add caching to your methods"
                 centered
@@ -485,12 +486,12 @@ public class CacheMetrics implements MeterBinder {
             {/* Annotation Reference */}
             <Section
                 background="light"
-                padding="large"
+                padding="lg"
                 title="Annotation Reference"
                 subtitle="Available JCacheX annotations and their features"
                 centered
             >
-                <Grid columns={2} gap="large">
+                <Grid columns={2} gap="lg">
                     {annotations.map((annotation, index) => (
                         <FeatureCard
                             key={index}
@@ -506,7 +507,7 @@ public class CacheMetrics implements MeterBinder {
 
             {/* Monitoring */}
             <Section
-                padding="large"
+                padding="lg"
                 title="4. Monitoring & Observability"
                 subtitle="Monitor cache performance with Spring Boot Actuator"
                 centered
@@ -519,12 +520,12 @@ public class CacheMetrics implements MeterBinder {
             {/* Features */}
             <Section
                 background="light"
-                padding="large"
+                padding="lg"
                 title="Spring Boot Features"
                 subtitle="Key features of JCacheX Spring Boot integration"
                 centered
             >
-                <Grid columns={3} gap="large">
+                <Grid columns={3} gap="lg">
                     {features.map((feature, index) => (
                         <FeatureCard
                             key={index}
@@ -540,12 +541,12 @@ public class CacheMetrics implements MeterBinder {
 
             {/* Resources */}
             <Section
-                padding="large"
+                padding="lg"
                 title="Additional Resources"
                 subtitle="Learn more about JCacheX and Spring Boot integration"
                 centered
             >
-                <Grid columns={3} gap="large">
+                <Grid columns={3} gap="lg">
                     {resources.map((resource, index) => (
                         <div key={index} className="resource-card">
                             <div className="resource-icon">{resource.icon}</div>
@@ -566,7 +567,7 @@ public class CacheMetrics implements MeterBinder {
             </Section>
 
             {/* Next Steps */}
-            <Section background="gradient" padding="large" centered>
+            <Section background="gradient" padding="lg" centered>
                 <div className="next-steps">
                     <h2 className="next-steps-title">Ready to build?</h2>
                     <p className="next-steps-subtitle">

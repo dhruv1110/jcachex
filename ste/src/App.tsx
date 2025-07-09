@@ -5,18 +5,20 @@ import Home from './components/Home';
 import GettingStarted from './components/GettingStarted';
 import Examples from './components/Examples';
 import SpringGuide from './components/SpringGuide';
+import FAQ from './components/FAQ';
 import './styles/App.css';
 
-function App() {
+const App: React.FC = () => {
     return (
         <div className="App">
             <Navbar />
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/getting-started" element={<GettingStarted />} />
-                <Route path="/examples" element={<Examples />} />
+                <Route path="/examples/*" element={<Examples />} />
                 <Route path="/spring" element={<SpringGuide />} />
                 <Route path="/spring-boot" element={<SpringGuide />} />
+                <Route path="/faq" element={<FAQ />} />
                 <Route path="/docs/getting-started" element={<GettingStarted />} />
                 <Route path="/docs/examples" element={<Examples />} />
                 <Route path="/docs/spring" element={<SpringGuide />} />
@@ -24,6 +26,6 @@ function App() {
             </Routes>
         </div>
     );
-}
+};
 
 export default App;

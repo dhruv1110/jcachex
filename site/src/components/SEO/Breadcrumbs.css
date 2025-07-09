@@ -1,0 +1,107 @@
+.breadcrumbs {
+    margin: var(--space-md) 0;
+    padding: 0;
+}
+
+.breadcrumbs-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.breadcrumbs-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.breadcrumbs-link {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: var(--transition-fast);
+    border-radius: var(--border-radius-sm);
+    padding: var(--space-xs) var(--space-sm);
+    margin: calc(var(--space-xs) * -1) calc(var(--space-sm) * -1);
+}
+
+.breadcrumbs-link:hover {
+    color: var(--primary);
+    background-color: var(--surface-hover);
+    text-decoration: none;
+}
+
+.breadcrumbs-link:focus {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.breadcrumbs-text {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.breadcrumbs-item.current .breadcrumbs-text {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.breadcrumbs-separator {
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .breadcrumbs {
+        margin: var(--space-sm) 0;
+    }
+
+    .breadcrumbs-list {
+        font-size: 0.8125rem;
+        gap: var(--space-xs);
+    }
+
+    .breadcrumbs-link {
+        padding: var(--space-xs);
+        margin: calc(var(--space-xs) * -1);
+    }
+
+    .breadcrumbs-separator {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+/* Dark theme support */
+@media (prefers-color-scheme: dark) {
+    .breadcrumbs-link:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .breadcrumbs-link {
+        border: 1px solid transparent;
+    }
+
+    .breadcrumbs-link:hover,
+    .breadcrumbs-link:focus {
+        border-color: currentColor;
+    }
+}
+
+/* Print styles */
+@media print {
+    .breadcrumbs {
+        display: none;
+    }
+}

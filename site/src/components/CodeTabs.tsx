@@ -1,19 +1,29 @@
 import React, { useState, useEffect } from 'react';
+import type { CodeTab } from '../types';
 import './CodeTabs.css';
 
-const CodeTabs = ({ tabs, className = '' }) => {
-    const [activeTab, setActiveTab] = useState(tabs[0]?.id || '');
+interface CodeTabsProps {
+    tabs: CodeTab[];
+    className?: string;
+}
+
+const CodeTabs: React.FC<CodeTabsProps> = ({ tabs, className = '' }) => {
+    const [activeTab, setActiveTab] = useState<string>(tabs[0]?.id || '');
 
     useEffect(() => {
         // Load Prism.js for syntax highlighting
-        if (window.Prism) {
-            window.Prism.highlightAll();
+        if ((window as any).Prism) {
+            (window as any).Prism.highlightAll();
         }
     }, [activeTab]);
 
-    const handleTabClick = (tabId) => {
+    const handleTabClick = (tabId: string) => {
         setActiveTab(tabId);
     };
+
+    if (!tabs || tabs.length === 0) {
+        return null;
+    }
 
     return (
         <div className={`code-tabs ${className}`}>
@@ -23,6 +33,7 @@ const CodeTabs = ({ tabs, className = '' }) => {
                         key={tab.id}
                         className={`tab-button ${activeTab === tab.id ? 'active' : ''}`}
                         onClick={() => handleTabClick(tab.id)}
+                        type="button"
                     >
                         {tab.label}
                     </button>
