@@ -1,0 +1,172 @@
+// Badge component styles
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $border-radius-full;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    line-height: 1;
+    white-space: nowrap;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid transparent;
+
+    // Badge variants
+    &--primary {
+        background-color: $color-primary;
+        color: white;
+    }
+
+    &--secondary {
+        background-color: $color-secondary;
+        color: white;
+    }
+
+    &--success {
+        background-color: $color-success;
+        color: white;
+    }
+
+    &--warning {
+        background-color: $color-warning;
+        color: white;
+    }
+
+    &--error {
+        background-color: $color-error;
+        color: white;
+    }
+
+    &--info {
+        background-color: $color-info;
+        color: white;
+    }
+
+    &--neutral {
+        background-color: $color-bg-tertiary;
+        color: $color-text-secondary;
+        border-color: $color-border-primary;
+    }
+
+    // Outline variants
+    &--outline {
+        background-color: transparent;
+
+        &.badge--primary {
+            color: $color-primary;
+            border-color: $color-primary;
+        }
+
+        &.badge--secondary {
+            color: $color-secondary;
+            border-color: $color-secondary;
+        }
+
+        &.badge--success {
+            color: $color-success;
+            border-color: $color-success;
+        }
+
+        &.badge--warning {
+            color: $color-warning;
+            border-color: $color-warning;
+        }
+
+        &.badge--error {
+            color: $color-error;
+            border-color: $color-error;
+        }
+
+        &.badge--info {
+            color: $color-info;
+            border-color: $color-info;
+        }
+    }
+
+    // Badge sizes
+    &--sm {
+        padding: 0.25rem 0.5rem;
+        font-size: $font-size-xs;
+    }
+
+    &--md {
+        padding: 0.375rem 0.75rem;
+        font-size: $font-size-sm;
+    }
+
+    &--lg {
+        padding: 0.5rem 1rem;
+        font-size: $font-size-base;
+    }
+
+    // Badge with icon
+    &__icon {
+        width: 1em;
+        height: 1em;
+
+        &--left {
+            margin-right: 0.25rem;
+        }
+
+        &--right {
+            margin-left: 0.25rem;
+        }
+    }
+
+    // Removable badge
+    &__remove {
+        background: none;
+        border: none;
+        color: inherit;
+        padding: 0;
+        margin-left: 0.25rem;
+        cursor: pointer;
+        border-radius: $border-radius-full;
+        width: 1.25em;
+        height: 1.25em;
+        @include flex-center;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    }
+
+    // Dot badge (notification indicator)
+    &--dot {
+        padding: 0;
+        width: 0.75rem;
+        height: 0.75rem;
+        min-width: 0.75rem;
+
+        &.badge--sm {
+            width: 0.5rem;
+            height: 0.5rem;
+            min-width: 0.5rem;
+        }
+
+        &.badge--lg {
+            width: 1rem;
+            height: 1rem;
+            min-width: 1rem;
+        }
+    }
+
+    // Pulse animation for notifications
+    &--pulse {
+        animation: pulse 2s infinite;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba($color-primary, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba($color-primary, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba($color-primary, 0);
+    }
+}

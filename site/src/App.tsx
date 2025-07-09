@@ -7,25 +7,27 @@ import GettingStarted from './components/GettingStarted';
 import Examples from './components/Examples';
 import SpringGuide from './components/SpringGuide';
 import FAQPage from './components/FAQ';
-import './styles/App.css';
+import './styles/main.scss';
 
 const App: React.FC = () => {
     return (
         <HelmetProvider>
-            <div className="App">
+            <div className="app">
                 <Navbar />
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/getting-started" element={<GettingStarted />} />
-                    <Route path="/examples/*" element={<Examples />} />
-                    <Route path="/spring" element={<SpringGuide />} />
-                    <Route path="/spring-boot" element={<SpringGuide />} />
-                    <Route path="/faq" element={<FAQPage />} />
-                    <Route path="/docs/getting-started" element={<GettingStarted />} />
-                    <Route path="/docs/examples" element={<Examples />} />
-                    <Route path="/docs/spring" element={<SpringGuide />} />
-                    <Route path="*" element={<Home />} />
-                </Routes>
+                <main className="app__main">
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/getting-started" element={<GettingStarted />} />
+                        <Route path="/examples/*" element={<Examples />} />
+                        <Route path="/spring" element={<SpringGuide />} />
+                        <Route path="/spring-boot" element={<SpringGuide />} />
+                        <Route path="/faq" element={<FAQPage />} />
+                        <Route path="/docs/getting-started" element={<GettingStarted />} />
+                        <Route path="/docs/examples" element={<Examples />} />
+                        <Route path="/docs/spring" element={<SpringGuide />} />
+                        <Route path="*" element={<Home />} />
+                    </Routes>
+                </main>
             </div>
         </HelmetProvider>
     );

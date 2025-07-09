@@ -3,7 +3,7 @@ import type { FAQ } from '../types';
 import { Section } from './common';
 import { useSEO } from '../hooks';
 import { MetaTags } from './SEO';
-import './FAQ.css';
+
 
 const FAQ_DATA: FAQ[] = [
     {
@@ -247,21 +247,21 @@ const FAQPage: React.FC = () => {
                 </div>
             </Section>
 
-            {/* Support Section */}
+            {/* Footer CTA */}
             <Section background="gradient" padding="lg" centered>
-                <div className="faq-support">
-                    <h2 className="faq-support-title">Still need help?</h2>
-                    <p className="faq-support-subtitle">
+                <div className="faq-footer">
+                    <h3>Still need help?</h3>
+                    <p>
                         Our community and documentation are here to help you succeed with JCacheX.
                     </p>
-                    <div className="faq-support-actions">
-                        <a href="/docs" className="btn btn-primary">
+                    <div className="faq-footer-buttons">
+                        <a href="/getting-started" className="btn btn-primary">
                             View Documentation
                         </a>
                         <a href="https://github.com/dhruv1110/JCacheX/discussions" className="btn btn-secondary">
                             Join Discussions
                         </a>
-                        <a href="https://github.com/dhruv1110/JCacheX/issues" className="btn btn-secondary">
+                        <a href="https://github.com/dhruv1110/JCacheX/issues" className="btn btn-outline">
                             Report Issue
                         </a>
                     </div>

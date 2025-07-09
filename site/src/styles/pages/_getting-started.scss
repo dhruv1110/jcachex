@@ -1,0 +1,175 @@
+// Getting Started / Docs Page Styles
+@use '../abstracts' as *;
+
+.getting-started-page {
+    min-height: 100vh;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+
+    // Header section
+    .docs-header {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+
+        .docs-title {
+            @include heading-1;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: var(--space-lg);
+        }
+
+        .docs-subtitle {
+            @include text-lg;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: var(--space-xl);
+        }
+    }
+
+    // Installation section
+    .installation-section {
+        .installation-header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+
+            h2 {
+                @include heading-2;
+                color: var(--text-primary);
+                margin-bottom: var(--space-md);
+            }
+
+            p {
+                @include text-lg;
+                color: var(--text-secondary);
+                max-width: 600px;
+                margin: 0 auto;
+                line-height: 1.6;
+            }
+        }
+    }
+
+    // Quick start section
+    .quick-start-section {
+        .quick-start-header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+
+            h2 {
+                @include heading-2;
+                color: var(--text-primary);
+                margin-bottom: var(--space-md);
+            }
+
+            p {
+                @include text-lg;
+                color: var(--text-secondary);
+                max-width: 600px;
+                margin: 0 auto;
+                line-height: 1.6;
+            }
+        }
+    }
+
+    // Async section
+    .async-section {
+        .async-header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+
+            h2 {
+                @include heading-2;
+                color: var(--text-primary);
+                margin-bottom: var(--space-md);
+            }
+
+            p {
+                @include text-lg;
+                color: var(--text-secondary);
+                max-width: 600px;
+                margin: 0 auto;
+                line-height: 1.6;
+            }
+        }
+    }
+
+    // Spring configuration section
+    .spring-config-section {
+        .spring-config-header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+
+            h2 {
+                @include heading-2;
+                color: var(--text-primary);
+                margin-bottom: var(--space-md);
+            }
+
+            p {
+                @include text-lg;
+                color: var(--text-secondary);
+                max-width: 600px;
+                margin: 0 auto;
+                line-height: 1.6;
+            }
+        }
+    }
+
+    // Configuration options section
+    .config-options-section {
+        .config-options-header {
+            text-align: center;
+            margin-bottom: var(--space-xl);
+
+            h2 {
+                @include heading-2;
+                color: var(--text-primary);
+                margin-bottom: var(--space-md);
+            }
+
+            p {
+                @include text-lg;
+                color: var(--text-secondary);
+                max-width: 600px;
+                margin: 0 auto;
+                line-height: 1.6;
+            }
+        }
+    }
+
+    // Next steps CTA
+    .next-steps-cta {
+        text-align: center;
+        padding: var(--space-xl) 0;
+
+        h3 {
+            @include heading-3;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+        }
+
+        p {
+            @include text-lg;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-lg);
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+
+            @include mobile {
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
+        }
+    }
+}

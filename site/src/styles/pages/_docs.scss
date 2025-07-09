@@ -1,0 +1,348 @@
+// Documentation page styles
+.docs {
+    @include flex-column;
+    min-height: calc(100vh - 64px);
+
+    &__container {
+        @include container(xl);
+        @include flex-center;
+        flex: 1;
+        gap: $space-2xl;
+        align-items: flex-start;
+
+        @media (max-width: $breakpoint-lg) {
+            flex-direction: column;
+            gap: $space-lg;
+        }
+    }
+
+    &__sidebar {
+        width: 280px;
+        flex-shrink: 0;
+        position: sticky;
+        top: calc(64px + #{$space-lg});
+        max-height: calc(100vh - 64px - #{$space-2xl});
+        overflow-y: auto;
+
+        @media (max-width: $breakpoint-lg) {
+            position: static;
+            width: 100%;
+            max-height: none;
+            order: 2;
+        }
+    }
+
+    &__content {
+        flex: 1;
+        max-width: 800px;
+        min-width: 0; // Prevent flex item from overflowing
+    }
+}
+
+.sidebar {
+    &__section {
+        margin-bottom: $space-2xl;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__title {
+        @include text-small;
+        font-weight: $font-weight-bold;
+        color: $color-text-primary;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: $space-md;
+        padding: 0 $space-md;
+    }
+
+    &__nav {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    &__item {
+        margin-bottom: $space-xs;
+
+        &--nested {
+            margin-left: $space-lg;
+        }
+    }
+
+    &__link {
+        display: block;
+        padding: $space-sm $space-md;
+        color: $color-text-secondary;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-medium;
+        border-radius: $border-radius-md;
+        transition: all $transition-fast;
+        position: relative;
+
+        &:hover {
+            color: $color-text-primary;
+            background-color: $color-bg-hover;
+        }
+
+        &--active {
+            color: $color-primary;
+            background-color: rgba($color-primary, 0.1);
+
+            &::before {
+                content: '';
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                width: 3px;
+                background-color: $color-primary;
+                border-radius: 0 $border-radius-sm $border-radius-sm 0;
+            }
+        }
+    }
+}
+
+.doc-content {
+    &__header {
+        margin-bottom: $space-2xl;
+        padding-bottom: $space-lg;
+        border-bottom: 1px solid $color-border-primary;
+    }
+
+    &__title {
+        @include text-heading-1;
+        margin-bottom: $space-md;
+    }
+
+    &__subtitle {
+        @include text-body-large;
+        margin-bottom: $space-lg;
+    }
+
+    &__meta {
+        @include flex-center;
+        gap: $space-md;
+        @include text-small;
+        color: $color-text-tertiary;
+    }
+
+    &__body {
+        line-height: $line-height-relaxed;
+
+        // Enhanced typography for docs
+        h2 {
+            @include text-heading-2;
+            margin: $space-3xl 0 $space-lg 0;
+            padding-top: $space-lg;
+            border-top: 1px solid $color-border-primary;
+
+            &:first-child {
+                margin-top: 0;
+                padding-top: 0;
+                border-top: none;
+            }
+        }
+
+        h3 {
+            @include text-heading-3;
+            margin: $space-2xl 0 $space-md 0;
+        }
+
+        h4,
+        h5,
+        h6 {
+            margin: $space-xl 0 $space-sm 0;
+        }
+
+        p {
+            margin-bottom: $space-lg;
+        }
+
+        ul,
+        ol {
+            margin: $space-lg 0;
+            padding-left: $space-xl;
+
+            li {
+                margin-bottom: $space-sm;
+
+                &:last-child {
+                    margin-bottom: 0;
+                }
+            }
+        }
+
+        blockquote {
+            margin: $space-xl 0;
+            padding: $space-lg;
+            background-color: $color-bg-tertiary;
+            border-left: 4px solid $color-primary;
+            border-radius: $border-radius-md;
+
+            p:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        // Tables
+        table {
+            width: 100%;
+            margin: $space-xl 0;
+            border-collapse: collapse;
+            font-size: $font-size-sm;
+
+            th,
+            td {
+                padding: $space-md;
+                text-align: left;
+                border-bottom: 1px solid $color-border-primary;
+            }
+
+            th {
+                font-weight: $font-weight-semibold;
+                background-color: $color-bg-tertiary;
+                color: $color-text-primary;
+            }
+
+            tr:hover {
+                background-color: $color-bg-hover;
+            }
+        }
+
+        // Images
+        img {
+            max-width: 100%;
+            height: auto;
+            margin: $space-xl 0;
+            border-radius: $border-radius-md;
+            box-shadow: $shadow-md;
+        }
+    }
+
+    &__footer {
+        margin-top: $space-3xl;
+        padding-top: $space-lg;
+        border-top: 1px solid $color-border-primary;
+        @include flex-between;
+
+        @media (max-width: $breakpoint-sm) {
+            flex-direction: column;
+            gap: $space-md;
+            text-align: center;
+        }
+    }
+
+    &__nav-link {
+        @include flex-center;
+        gap: $space-sm;
+        color: $color-text-link;
+        font-weight: $font-weight-medium;
+
+        &:hover {
+            color: $color-text-link-hover;
+        }
+
+        &--prev {
+            .icon {
+                order: -1;
+            }
+        }
+    }
+}
+
+// Table of contents
+.toc {
+    background-color: $color-bg-tertiary;
+    border: 1px solid $color-border-primary;
+    border-radius: $border-radius-lg;
+    padding: $space-lg;
+    margin: $space-xl 0;
+
+    &__title {
+        @include text-small;
+        font-weight: $font-weight-bold;
+        color: $color-text-primary;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: $space-md;
+    }
+
+    &__list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+
+        li {
+            margin-bottom: $space-xs;
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        a {
+            display: block;
+            padding: $space-xs 0;
+            color: $color-text-secondary;
+            font-size: $font-size-sm;
+
+            &:hover {
+                color: $color-text-link;
+            }
+        }
+
+        // Nested items
+        ul {
+            margin-top: $space-xs;
+            margin-left: $space-md;
+        }
+    }
+}
+
+// Callout boxes
+.callout {
+    padding: $space-lg;
+    margin: $space-xl 0;
+    border-radius: $border-radius-md;
+    border-left: 4px solid;
+
+    &--info {
+        background-color: rgba($color-info, 0.1);
+        border-color: $color-info;
+        color: $color-info;
+    }
+
+    &--warning {
+        background-color: rgba($color-warning, 0.1);
+        border-color: $color-warning;
+        color: $color-warning;
+    }
+
+    &--error {
+        background-color: rgba($color-error, 0.1);
+        border-color: $color-error;
+        color: $color-error;
+    }
+
+    &--success {
+        background-color: rgba($color-success, 0.1);
+        border-color: $color-success;
+        color: $color-success;
+    }
+
+    &__title {
+        font-weight: $font-weight-semibold;
+        margin-bottom: $space-sm;
+    }
+
+    &__content {
+        color: $color-text-secondary;
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+    }
+}

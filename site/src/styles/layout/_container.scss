@@ -1,0 +1,30 @@
+// Container layout styles
+.container {
+    @include container();
+
+    &--sm {
+        @include container(sm);
+    }
+
+    &--md {
+        @include container(md);
+    }
+
+    &--lg {
+        @include container(lg);
+    }
+
+    &--xl {
+        @include container(xl);
+    }
+
+    &--fluid {
+        width: 100%;
+        margin: 0 auto;
+        padding: 0 $space-md;
+
+        @include respond-to(md) {
+            padding: 0 $space-lg;
+        }
+    }
+}

@@ -110,40 +110,40 @@ export const SPRING_INSTALLATION_TABS = [
 // Common features data
 export const FEATURES = [
     {
-        icon: '⚡',
-        title: 'High Performance',
-        description: 'Optimized for speed with minimal memory overhead, lock-free algorithms, and efficient data structures.',
-        details: ['10x faster than traditional caching', 'O(1) cache operations', 'Minimal GC pressure']
+        icon: 'performance',
+        title: 'Optimized Performance',
+        description: 'Efficient caching implementation with concurrent data structures and memory-conscious design.',
+        details: ['Concurrent HashMap-based storage', 'Configurable eviction policies', 'Minimal allocation overhead']
     },
     {
-        icon: '🔧',
-        title: 'Simple API',
-        description: 'Clean, intuitive API with fluent builders and comprehensive documentation.',
-        details: ['Fluent builder pattern', 'Type-safe operations', 'Extensive JavaDoc']
+        icon: 'api',
+        title: 'Developer-Friendly API',
+        description: 'Clean, type-safe interface with comprehensive configuration options and fluent builders.',
+        details: ['Fluent builder pattern', 'Generic type safety', 'Comprehensive documentation']
     },
     {
-        icon: '🔄',
-        title: 'Async Support',
-        description: 'Built-in asynchronous operations with CompletableFuture and Kotlin coroutines.',
-        details: ['CompletableFuture integration', 'Kotlin coroutines', 'Non-blocking operations']
+        icon: 'async',
+        title: 'Asynchronous Operations',
+        description: 'Non-blocking operations with CompletableFuture support and reactive programming compatibility.',
+        details: ['CompletableFuture integration', 'Non-blocking I/O', 'Reactive compatibility']
     },
     {
-        icon: '🍃',
-        title: 'Spring Integration',
-        description: 'Seamless integration with Spring Boot, annotations, and auto-configuration.',
-        details: ['@Cacheable support', 'Auto-configuration', 'Properties binding']
+        icon: 'spring',
+        title: 'Spring Framework Integration',
+        description: 'Native Spring Boot support with auto-configuration and declarative caching annotations.',
+        details: ['Auto-configuration', 'Annotation-driven caching', 'Properties configuration']
     },
     {
-        icon: '🌐',
-        title: 'Distributed Caching',
-        description: 'Scale across multiple nodes with consistency guarantees and automatic failover.',
-        details: ['Multi-node clustering', 'Consistency models', 'Automatic failover']
+        icon: 'distributed',
+        title: 'Distributed Architecture',
+        description: 'Multi-node caching support with configurable consistency models and network protocols.',
+        details: ['Node clustering', 'Configurable consistency', 'Network fault tolerance']
     },
     {
-        icon: '📊',
-        title: 'Monitoring',
-        description: 'Built-in metrics, statistics, and observability for production environments.',
-        details: ['Hit/miss ratios', 'Performance metrics', 'JMX support']
+        icon: 'monitoring',
+        title: 'Observability & Metrics',
+        description: 'Built-in performance monitoring with JMX support and integration-ready metrics collection.',
+        details: ['Performance statistics', 'JMX metric exposure', 'Health check endpoints']
     }
 ];
 
@@ -209,12 +209,12 @@ export const MODULES = [
     }
 ];
 
-// Performance stats
+// Performance stats - realistic and conservative
 export const PERFORMANCE_STATS = [
-    { label: 'Throughput', value: '1M+ ops/sec', description: 'Operations per second' },
-    { label: 'Latency', value: '<1ms', description: 'Average response time' },
-    { label: 'Memory', value: '90% efficient', description: 'Memory utilization' },
-    { label: 'CPU', value: '<5%', description: 'CPU overhead' }
+    { label: 'Latency', value: 'Sub-10ms', description: 'Typical in-memory access time' },
+    { label: 'Throughput', value: '100K+ ops/sec', description: 'Concurrent operations capacity' },
+    { label: 'Memory', value: 'Efficient', description: 'Optimized memory utilization' },
+    { label: 'Overhead', value: 'Minimal', description: 'Low computational overhead' }
 ];
 
 // Architecture components

@@ -1,0 +1,230 @@
+// Code block component styles
+.code-block {
+    position: relative;
+    background-color: $color-bg-tertiary;
+    border: 1px solid $color-border-primary;
+    border-radius: $border-radius-lg;
+    overflow: hidden;
+    margin-bottom: $space-lg;
+
+    &__header {
+        @include flex-between;
+        padding: $space-md $space-lg;
+        background-color: $color-bg-secondary;
+        border-bottom: 1px solid $color-border-primary;
+
+        &-info {
+            @include flex-center;
+            gap: $space-sm;
+        }
+
+        &-title {
+            font-family: $font-family-mono;
+            font-size: $font-size-sm;
+            color: $color-text-secondary;
+            margin: 0;
+        }
+
+        &-language {
+            @extend .badge;
+            @extend .badge--neutral;
+            @extend .badge--sm;
+        }
+
+        &-actions {
+            @include flex-center;
+            gap: $space-xs;
+        }
+    }
+
+    &__content {
+        position: relative;
+        overflow-x: auto;
+
+        pre {
+            margin: 0;
+            padding: $space-lg;
+            background: transparent;
+            border: none;
+            font-family: $font-family-mono;
+            font-size: $font-size-sm;
+            line-height: $line-height-relaxed;
+
+            code {
+                background: transparent;
+                padding: 0;
+                border: none;
+                font-size: inherit;
+                color: $color-text-primary;
+            }
+        }
+    }
+
+    &__copy {
+        position: absolute;
+        top: $space-md;
+        right: $space-md;
+        @include button-ghost;
+        @include button-sm;
+        opacity: 0;
+        transition: opacity $transition-fast;
+
+        &-icon {
+            width: 1rem;
+            height: 1rem;
+        }
+    }
+
+    &:hover &__copy {
+        opacity: 1;
+    }
+
+    // Line numbers
+    &--with-lines {
+        .code-block__content pre {
+            counter-reset: line;
+
+            code {
+                display: block;
+
+                .line {
+                    display: block;
+                    position: relative;
+                    padding-left: 4rem;
+
+                    &::before {
+                        counter-increment: line;
+                        content: counter(line);
+                        position: absolute;
+                        left: 0;
+                        width: 3rem;
+                        text-align: right;
+                        color: $color-text-tertiary;
+                        border-right: 1px solid $color-border-primary;
+                        padding-right: $space-sm;
+                        margin-right: $space-sm;
+                        user-select: none;
+                    }
+                }
+            }
+        }
+    }
+
+    // Highlighted lines
+    &__highlight {
+        background-color: rgba($color-primary, 0.1);
+        border-left: 3px solid $color-primary;
+        padding-left: calc(#{$space-sm} - 3px);
+        margin-left: -$space-sm;
+        margin-right: -$space-sm;
+        padding-right: $space-sm;
+    }
+
+    // Inline code block
+    &--inline {
+        display: inline-block;
+        background-color: $color-bg-hover;
+        border: 1px solid $color-border-primary;
+        border-radius: $border-radius-sm;
+        padding: 0.125rem 0.375rem;
+        font-family: $font-family-mono;
+        font-size: 0.875em;
+        color: $color-text-link;
+        margin: 0;
+        vertical-align: baseline;
+    }
+
+    // Terminal style
+    &--terminal {
+        background-color: #1a1a1a;
+        border-color: #333;
+
+        .code-block__header {
+            background-color: #2d2d2d;
+            border-color: #444;
+
+            &::before {
+                content: '';
+                display: flex;
+                gap: $space-xs;
+                margin-right: $space-md;
+
+                &::after {
+                    content: '● ● ●';
+                    color: #ff5f56;
+                    font-size: $font-size-xs;
+                    letter-spacing: 0.2em;
+                }
+            }
+        }
+
+        .code-block__content pre {
+            color: #00ff00;
+
+            .prompt {
+                color: #00bfff;
+
+                &::before {
+                    content: '$ ';
+                    color: #ff6b6b;
+                }
+            }
+        }
+    }
+}
+
+// Syntax highlighting (basic colors)
+.token {
+    &.comment {
+        color: $color-text-tertiary;
+        font-style: italic;
+    }
+
+    &.keyword,
+    &.control,
+    &.directive,
+    &.unit {
+        color: #ff79c6;
+        font-weight: $font-weight-medium;
+    }
+
+    &.string,
+    &.char {
+        color: #f1fa8c;
+    }
+
+    &.number {
+        color: #bd93f9;
+    }
+
+    &.function {
+        color: #50fa7b;
+    }
+
+    &.class-name,
+    &.type {
+        color: #8be9fd;
+    }
+
+    &.property,
+    &.attr-name {
+        color: #ff79c6;
+    }
+
+    &.operator,
+    &.punctuation {
+        color: $color-text-secondary;
+    }
+
+    &.variable {
+        color: #f8f8f2;
+    }
+
+    &.tag {
+        color: #ff79c6;
+    }
+
+    &.attr-value {
+        color: #f1fa8c;
+    }
+}

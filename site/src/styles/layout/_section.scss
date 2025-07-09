@@ -1,0 +1,128 @@
+// Section layout styles
+.section {
+    padding: $space-4xl 0;
+
+    @include respond-to(md) {
+        padding: $space-4xl 0;
+    }
+
+    // Section variants
+    &--sm {
+        padding: $space-2xl 0;
+
+        @include respond-to(md) {
+            padding: $space-3xl 0;
+        }
+    }
+
+    &--lg {
+        padding: $space-4xl 0;
+
+        @include respond-to(md) {
+            padding: 6rem 0;
+        }
+    }
+
+    &--xl {
+        padding: 6rem 0;
+
+        @include respond-to(md) {
+            padding: 8rem 0;
+        }
+    }
+
+    // Background variants
+    &--primary {
+        background-color: $color-bg-primary;
+    }
+
+    &--secondary {
+        background-color: $color-bg-secondary;
+    }
+
+    &--tertiary {
+        background-color: $color-bg-tertiary;
+    }
+
+    &--gradient {
+        @include gradient-primary;
+        color: white;
+
+        .section__title,
+        .section__subtitle {
+            color: white;
+        }
+    }
+
+    // Section header
+    &__header {
+        text-align: center;
+        margin-bottom: $space-3xl;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+
+        &--left {
+            text-align: left;
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        &--right {
+            text-align: right;
+            margin-left: auto;
+            margin-right: 0;
+        }
+    }
+
+    &__title {
+        @include text-heading-2;
+        margin-bottom: $space-md;
+
+        &--large {
+            @include text-heading-1;
+        }
+
+        &--gradient {
+            @include gradient-text;
+        }
+    }
+
+    &__subtitle {
+        @include text-body-large;
+        margin-bottom: 0;
+    }
+
+    &__description {
+        @include text-body;
+        margin-top: $space-md;
+        margin-bottom: 0;
+    }
+
+    // Section content
+    &__content {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    &__actions {
+        @include flex-center;
+        gap: $space-md;
+        margin-top: $space-xl;
+
+        @include respond-to(sm) {
+            flex-direction: row;
+        }
+
+        // On mobile, stack buttons
+        @media (max-width: $breakpoint-sm) {
+            flex-direction: column;
+            gap: $space-sm;
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    }
+}

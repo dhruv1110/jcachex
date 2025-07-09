@@ -1,0 +1,223 @@
+// Card component styles
+.card {
+    @include card-base;
+    padding: $space-lg;
+
+    // Card variants
+    &--interactive {
+        @include card-hover;
+        cursor: pointer;
+    }
+
+    &--minimal {
+        border: none;
+        box-shadow: none;
+        background-color: transparent;
+    }
+
+    &--elevated {
+        box-shadow: $shadow-lg;
+
+        &:hover {
+            box-shadow: $shadow-xl;
+        }
+    }
+
+    &--bordered {
+        border: 2px solid $color-border-accent;
+    }
+
+    // Card sizes
+    &--sm {
+        padding: $space-md;
+    }
+
+    &--lg {
+        padding: $space-xl;
+    }
+
+    &--xl {
+        padding: $space-2xl;
+    }
+
+    // Card layout
+    &__header {
+        margin-bottom: $space-md;
+        padding-bottom: $space-md;
+        border-bottom: 1px solid $color-border-primary;
+
+        &:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+    }
+
+    &__title {
+        @include text-heading-3;
+        margin-bottom: $space-xs;
+    }
+
+    &__subtitle {
+        @include text-small;
+        margin-bottom: 0;
+    }
+
+    &__content {
+        margin-bottom: $space-md;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        p:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__footer {
+        margin-top: $space-md;
+        padding-top: $space-md;
+        border-top: 1px solid $color-border-primary;
+        @include flex-between;
+
+        &:first-child {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+        }
+    }
+
+    &__actions {
+        @include flex-center;
+        gap: $space-sm;
+        margin-top: $space-md;
+
+        &:first-child {
+            margin-top: 0;
+        }
+    }
+
+    // Card media
+    &__media {
+        margin: (-$space-lg) (-$space-lg) $space-md (
+            -$space-lg
+        );
+    border-radius: $border-radius-lg $border-radius-lg 0 0;
+    overflow: hidden;
+
+    img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+
+    &--bottom {
+        margin: $space-md (
+            -$space-lg) (-$space-lg) (-$space-lg
+        );
+    border-radius: 0 0 $border-radius-lg $border-radius-lg;
+}
+}
+
+// Card icon
+&__icon {
+    width: 3rem;
+    height: 3rem;
+    @include flex-center;
+    background-color: $color-primary;
+    color: white;
+    border-radius: $border-radius-lg;
+    margin-bottom: $space-md;
+
+    &--sm {
+        width: 2rem;
+        height: 2rem;
+    }
+
+    &--lg {
+        width: 4rem;
+        height: 4rem;
+    }
+
+    &--secondary {
+        background-color: $color-secondary;
+    }
+
+    &--success {
+        background-color: $color-success;
+    }
+
+    &--warning {
+        background-color: $color-warning;
+    }
+
+    &--error {
+        background-color: $color-error;
+    }
+}
+}
+
+// Feature card (special variant)
+.feature-card {
+    @extend .card;
+    @include card-hover;
+    text-align: center;
+
+    &__icon {
+        @extend .card__icon;
+        margin: 0 auto $space-lg auto;
+    }
+
+    &__title {
+        @include text-heading-3;
+        margin-bottom: $space-sm;
+    }
+
+    &__description {
+        @include text-body;
+        margin-bottom: $space-lg;
+    }
+
+    &__link {
+        color: $color-text-link;
+        font-weight: $font-weight-medium;
+
+        &:hover {
+            color: $color-text-link-hover;
+        }
+    }
+}
+
+// Code card (for examples)
+.code-card {
+    @extend .card;
+    padding: 0;
+    overflow: hidden;
+
+    &__header {
+        padding: $space-md $space-lg;
+        background-color: $color-bg-secondary;
+        border-bottom: 1px solid $color-border-primary;
+        margin: 0;
+
+        &-title {
+            font-family: $font-family-mono;
+            font-size: $font-size-sm;
+            color: $color-text-secondary;
+            margin: 0;
+        }
+    }
+
+    &__content {
+        padding: $space-lg;
+        margin: 0;
+
+        pre {
+            margin: 0;
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+    }
+}

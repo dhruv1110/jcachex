@@ -1,0 +1,335 @@
+// Typography System inspired by gRPC
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+// Font stacks
+$font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$font-family-mono: 'JetBrains Mono', 'Fira Code', Consolas, 'Liberation Mono', monospace;
+
+body {
+    font-family: $font-family-sans;
+    font-size: $font-size-base;
+    font-weight: $font-weight-normal;
+    line-height: $line-height-normal;
+    color: $color-text-primary;
+    background-color: $color-bg-primary;
+
+    // Better font rendering
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+// Headings
+h1 {
+    @include text-heading-1;
+    margin-bottom: $space-lg;
+}
+
+h2 {
+    @include text-heading-2;
+    margin-bottom: $space-lg;
+}
+
+h3 {
+    @include text-heading-3;
+    margin-bottom: $space-md;
+}
+
+h4 {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    line-height: $line-height-tight;
+    color: $color-text-primary;
+    margin-bottom: $space-md;
+}
+
+h5 {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-medium;
+    line-height: $line-height-normal;
+    color: $color-text-primary;
+    margin-bottom: $space-sm;
+}
+
+h6 {
+    font-size: $font-size-base;
+    font-weight: $font-weight-medium;
+    line-height: $line-height-normal;
+    color: $color-text-secondary;
+    margin-bottom: $space-sm;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+// Body text
+p {
+    @include text-body;
+    margin-bottom: $space-md;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    &.lead {
+        @include text-body-large;
+    }
+
+    &.small {
+        @include text-small;
+    }
+}
+
+// Links
+a {
+    color: $color-text-link;
+    text-decoration: none;
+    transition: color $transition-fast;
+
+    &:hover {
+        color: $color-text-link-hover;
+        text-decoration: underline;
+    }
+
+    &:focus {
+        @include focus-outline;
+    }
+}
+
+// Code and preformatted text
+code {
+    font-family: $font-family-mono;
+    font-size: 0.875em;
+    background-color: $color-bg-hover;
+    color: $color-text-link;
+    padding: 0.125rem 0.25rem;
+    border-radius: $border-radius-sm;
+    border: 1px solid $color-border-primary;
+}
+
+pre {
+    font-family: $font-family-mono;
+    background-color: $color-bg-tertiary;
+    border: 1px solid $color-border-primary;
+    border-radius: $border-radius-md;
+    padding: $space-md;
+    overflow-x: auto;
+    margin-bottom: $space-md;
+
+    code {
+        background-color: transparent;
+        padding: 0;
+        border: none;
+        color: $color-text-primary;
+    }
+}
+
+// Lists
+ul,
+ol {
+    margin-bottom: $space-md;
+    padding-left: $space-lg;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+ul {
+    list-style-type: disc;
+
+    ul {
+        list-style-type: circle;
+        margin-bottom: 0;
+    }
+}
+
+ol {
+    list-style-type: decimal;
+
+    ol {
+        list-style-type: lower-alpha;
+        margin-bottom: 0;
+    }
+}
+
+li {
+    margin-bottom: $space-xs;
+    color: $color-text-secondary;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+// Blockquotes
+blockquote {
+    border-left: 4px solid $color-primary;
+    padding-left: $space-lg;
+    margin: $space-lg 0;
+    font-style: italic;
+    color: $color-text-secondary;
+
+    p:last-child {
+        margin-bottom: 0;
+    }
+
+    cite {
+        display: block;
+        margin-top: $space-sm;
+        font-size: $font-size-sm;
+        color: $color-text-tertiary;
+
+        &::before {
+            content: '— ';
+        }
+    }
+}
+
+// Tables
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: $space-lg;
+
+    th,
+    td {
+        padding: $space-sm $space-md;
+        text-align: left;
+        border-bottom: 1px solid $color-border-primary;
+    }
+
+    th {
+        font-weight: $font-weight-semibold;
+        color: $color-text-primary;
+        background-color: $color-bg-secondary;
+    }
+
+    td {
+        color: $color-text-secondary;
+    }
+
+    tr:hover {
+        background-color: $color-bg-hover;
+    }
+}
+
+// Utility classes
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-primary {
+    color: $color-text-primary;
+}
+
+.text-secondary {
+    color: $color-text-secondary;
+}
+
+.text-tertiary {
+    color: $color-text-tertiary;
+}
+
+.text-link {
+    color: $color-text-link;
+}
+
+.text-success {
+    color: $color-success;
+}
+
+.text-warning {
+    color: $color-warning;
+}
+
+.text-error {
+    color: $color-error;
+}
+
+.text-info {
+    color: $color-info;
+}
+
+.font-mono {
+    font-family: $font-family-mono;
+}
+
+.font-sans {
+    font-family: $font-family-sans;
+}
+
+.font-normal {
+    font-weight: $font-weight-normal;
+}
+
+.font-medium {
+    font-weight: $font-weight-medium;
+}
+
+.font-semibold {
+    font-weight: $font-weight-semibold;
+}
+
+.font-bold {
+    font-weight: $font-weight-bold;
+}
+
+.text-xs {
+    font-size: $font-size-xs;
+}
+
+.text-sm {
+    font-size: $font-size-sm;
+}
+
+.text-base {
+    font-size: $font-size-base;
+}
+
+.text-lg {
+    font-size: $font-size-lg;
+}
+
+.text-xl {
+    font-size: $font-size-xl;
+}
+
+.text-2xl {
+    font-size: $font-size-2xl;
+}
+
+.text-3xl {
+    font-size: $font-size-3xl;
+}
+
+.text-4xl {
+    font-size: $font-size-4xl;
+}
+
+.text-5xl {
+    font-size: $font-size-5xl;
+}
+
+.leading-tight {
+    line-height: $line-height-tight;
+}
+
+.leading-normal {
+    line-height: $line-height-normal;
+}
+
+.leading-relaxed {
+    line-height: $line-height-relaxed;
+}
+
+.gradient-text {
+    @include gradient-text;
+}

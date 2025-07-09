@@ -1,0 +1,346 @@
+// Display utilities
+.hidden {
+    display: none !important;
+}
+
+.block {
+    display: block;
+}
+
+.inline {
+    display: inline;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.flex {
+    display: flex;
+}
+
+.inline-flex {
+    display: inline-flex;
+}
+
+.grid {
+    display: grid;
+}
+
+.inline-grid {
+    display: inline-grid;
+}
+
+.table {
+    display: table;
+}
+
+.table-cell {
+    display: table-cell;
+}
+
+.table-row {
+    display: table-row;
+}
+
+// Visibility
+.visible {
+    visibility: visible;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+// Overflow
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.overflow-visible {
+    overflow: visible;
+}
+
+.overflow-scroll {
+    overflow: scroll;
+}
+
+.overflow-auto {
+    overflow: auto;
+}
+
+.overflow-x-hidden {
+    overflow-x: hidden;
+}
+
+.overflow-x-visible {
+    overflow-x: visible;
+}
+
+.overflow-x-scroll {
+    overflow-x: scroll;
+}
+
+.overflow-x-auto {
+    overflow-x: auto;
+}
+
+.overflow-y-hidden {
+    overflow-y: hidden;
+}
+
+.overflow-y-visible {
+    overflow-y: visible;
+}
+
+.overflow-y-scroll {
+    overflow-y: scroll;
+}
+
+.overflow-y-auto {
+    overflow-y: auto;
+}
+
+// Position
+.static {
+    position: static;
+}
+
+.relative {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+}
+
+.fixed {
+    position: fixed;
+}
+
+.sticky {
+    position: sticky;
+}
+
+// Position values
+.top-0 {
+    top: 0;
+}
+
+.right-0 {
+    right: 0;
+}
+
+.bottom-0 {
+    bottom: 0;
+}
+
+.left-0 {
+    left: 0;
+}
+
+.inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+// Z-index
+.z-auto {
+    z-index: auto;
+}
+
+.z-0 {
+    z-index: 0;
+}
+
+.z-10 {
+    z-index: 10;
+}
+
+.z-20 {
+    z-index: 20;
+}
+
+.z-30 {
+    z-index: 30;
+}
+
+.z-40 {
+    z-index: 40;
+}
+
+.z-50 {
+    z-index: 50;
+}
+
+.z-dropdown {
+    z-index: $z-dropdown;
+}
+
+.z-navbar {
+    z-index: $z-navbar;
+}
+
+.z-modal {
+    z-index: $z-modal;
+}
+
+.z-tooltip {
+    z-index: $z-tooltip;
+}
+
+.z-overlay {
+    z-index: $z-overlay;
+}
+
+// Float
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+}
+
+.float-none {
+    float: none;
+}
+
+.clearfix::after {
+    content: '';
+    display: table;
+    clear: both;
+}
+
+// Object fit
+.object-contain {
+    object-fit: contain;
+}
+
+.object-cover {
+    object-fit: cover;
+}
+
+.object-fill {
+    object-fit: fill;
+}
+
+.object-none {
+    object-fit: none;
+}
+
+.object-scale-down {
+    object-fit: scale-down;
+}
+
+// Object position
+.object-bottom {
+    object-position: bottom;
+}
+
+.object-center {
+    object-position: center;
+}
+
+.object-left {
+    object-position: left;
+}
+
+.object-left-bottom {
+    object-position: left bottom;
+}
+
+.object-left-top {
+    object-position: left top;
+}
+
+.object-right {
+    object-position: right;
+}
+
+.object-right-bottom {
+    object-position: right bottom;
+}
+
+.object-right-top {
+    object-position: right top;
+}
+
+.object-top {
+    object-position: top;
+}
+
+// Responsive visibility
+@include respond-to(sm) {
+    .hidden-sm {
+        display: none !important;
+    }
+
+    .block-sm {
+        display: block;
+    }
+
+    .flex-sm {
+        display: flex;
+    }
+
+    .grid-sm {
+        display: grid;
+    }
+}
+
+@include respond-to(md) {
+    .hidden-md {
+        display: none !important;
+    }
+
+    .block-md {
+        display: block;
+    }
+
+    .flex-md {
+        display: flex;
+    }
+
+    .grid-md {
+        display: grid;
+    }
+}
+
+@include respond-to(lg) {
+    .hidden-lg {
+        display: none !important;
+    }
+
+    .block-lg {
+        display: block;
+    }
+
+    .flex-lg {
+        display: flex;
+    }
+
+    .grid-lg {
+        display: grid;
+    }
+}
+
+@include respond-to(xl) {
+    .hidden-xl {
+        display: none !important;
+    }
+
+    .block-xl {
+        display: block;
+    }
+
+    .flex-xl {
+        display: flex;
+    }
+
+    .grid-xl {
+        display: grid;
+    }
+}

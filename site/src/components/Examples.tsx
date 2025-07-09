@@ -1,570 +1,815 @@
-import React from 'react';
-import { useVersion, useTabState, useSEO } from '../hooks';
-import { INSTALLATION_TABS, BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN, SPRING_USAGE } from '../constants';
-import { Section, Grid, FeatureCard, InstallationGuide, Badge } from './common';
+import React, { useState } from 'react';
+import { useSEO } from '../hooks';
+import { Section, Grid, FeatureCard, Badge } from './common';
 import { MetaTags } from './SEO';
 import CodeTabs from './CodeTabs';
-import { CodeTab, Feature, ExampleCategory, Resource } from '../types';
-import './Examples.css';
+import type { CodeTab } from '../types';
 
-const Examples: React.FC = () => {
-    const { version } = useVersion();
-    const { activeTab, setActiveTab } = useTabState('basic');
+// Define examples with better organization and explanations
+const BASIC_EXAMPLES: CodeTab[] = [
+    {
+        id: 'simple-cache',
+        label: 'Basic Cache Implementation',
+        language: 'java',
+        code: `// Basic cache configuration and usage
+import io.github.dhruv1110.jcachex.*;
+import java.time.Duration;
+
+public class BasicCacheExample {
+    public static void main(String[] args) {
+        // Configure cache with capacity and expiration
+        CacheConfig<String, String> config = CacheConfig.<String, String>builder()
+            .maximumSize(100L)  // Maximum 100 cached items
+            .expireAfterWrite(Duration.ofMinutes(10))  // Items expire after 10 minutes
+            .recordStats(true)  // Enable performance metrics
+            .build();
+
+        // Create cache instance
+        Cache<String, String> cache = new DefaultCache<>(config);
+
+        // Basic cache operations
+        cache.put("user:123", "Alice Johnson");
+        String cachedValue = cache.get("user:123");
+
+        System.out.println("Retrieved: " + cachedValue);
+        System.out.println("Cache size: " + cache.size());
+
+        // Check cache statistics
+        CacheStats stats = cache.stats();
+        System.out.println("Hit rate: " + stats.hitRate());
+    }
+}`
+    },
+    {
+        id: 'object-caching',
+        label: 'Object Serialization',
+        language: 'java',
+        code: `// Caching complex objects with proper serialization
+public class ObjectCacheExample {
+
+    // Domain object for caching
+    public static class UserProfile {
+        private final String userId;
+        private final String name;
+        private final String email;
+        private final Set<String> roles;
+
+        public UserProfile(String userId, String name, String email, Set<String> roles) {
+            this.userId = userId;
+            this.name = name;
+            this.email = email;
+            this.roles = Collections.unmodifiableSet(roles);
+        }
+
+        // Getters and proper equals/hashCode implementation
+        public String getUserId() { return userId; }
+        public String getName() { return name; }
+        public String getEmail() { return email; }
+        public Set<String> getRoles() { return roles; }
+    }
+
+    public static void main(String[] args) {
+        // Configure cache for user profiles
+        CacheConfig<String, UserProfile> config = CacheConfig.<String, UserProfile>builder()
+            .maximumSize(1000L)
+            .expireAfterWrite(Duration.ofHours(1))
+            .evictionStrategy(EvictionStrategy.LRU)
+            .recordStats(true)
+            .build();
+
+        Cache<String, UserProfile> userCache = new DefaultCache<>(config);
+
+        // Cache user profiles
+        Set<String> adminRoles = Set.of("ADMIN", "USER");
+        UserProfile admin = new UserProfile("123", "Alice Johnson", "alice@company.com", adminRoles);
+
+        userCache.put(admin.getUserId(), admin);
+
+        // Retrieve and validate
+        UserProfile cached = userCache.get("123");
+        if (cached != null) {
+            System.out.println("User: " + cached.getName() + " (" + cached.getEmail() + ")");
+            System.out.println("Roles: " + cached.getRoles());
+        }
+    }
+}`
+    },
+    {
+        id: 'kotlin-implementation',
+        label: 'Kotlin Integration',
+        language: 'kotlin',
+        code: `// JCacheX with Kotlin idiomatic patterns
+import io.github.dhruv1110.jcachex.kotlin.*
+import kotlin.time.Duration.Companion.minutes
+
+data class Product(
+    val id: String,
+    val name: String,
+    val price: BigDecimal,
+    val category: String
+)
+
+class ProductCacheService {
+
+    // Cache configuration using Kotlin DSL
+    private val productCache = cache<String, Product> {
+        maxSize = 500
+        expireAfterWrite = 30.minutes
+        evictionStrategy = EvictionStrategy.LRU
+        recordStats = true
+    }
+
+    // Cache operations with Kotlin idioms
+    suspend fun getProduct(productId: String): Product? {
+        return productCache[productId] ?: loadFromDatabase(productId)?.also { product ->
+            productCache[productId] = product
+        }
+    }
+
+    suspend fun updateProduct(product: Product) {
+        saveToDatabase(product)
+        productCache[product.id] = product // Update cache
+    }
+
+    fun evictProduct(productId: String) {
+        productCache.invalidate(productId)
+    }
+
+    // Simulated database operations
+    private suspend fun loadFromDatabase(productId: String): Product? {
+        // Database loading logic
+        return Product(productId, "Sample Product", BigDecimal("99.99"), "Electronics")
+    }
+
+    private suspend fun saveToDatabase(product: Product) {
+        // Database persistence logic
+    }
+
+    // Cache performance monitoring
+    fun getCacheMetrics(): String {
+        val stats = productCache.stats()
+        val hitRate = (stats.hitRate() * 100).toString().take(5)
+        return "Hit Rate: $hitRate% | " +
+               "Size: \${productCache.size()} | " +
+               "Evictions: \${stats.evictionCount()}"
+    }
+}`
+    }
+];
+
+const DATABASE_EXAMPLES: CodeTab[] = [
+    {
+        id: 'repository-pattern',
+        label: 'Repository Pattern Integration',
+        language: 'java',
+        code: `// Cache-aside pattern with repository layer
+@Repository
+public class ProductRepository {
+
+    private final JdbcTemplate jdbcTemplate;
+    private final Cache<String, Product> productCache;
+
+    public ProductRepository(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+
+        // Configure cache for database entities
+        CacheConfig<String, Product> config = CacheConfig.<String, Product>builder()
+            .maximumSize(10000L)
+            .expireAfterWrite(Duration.ofHours(2))
+            .evictionStrategy(EvictionStrategy.LRU)
+            .recordStats(true)
+            .eventListener(new LoggingCacheEventListener<>())
+            .build();
+
+        this.productCache = new DefaultCache<>(config);
+    }
+
+    public Optional<Product> findById(String productId) {
+        // Check cache first
+        Product cached = productCache.get(productId);
+        if (cached != null) {
+            return Optional.of(cached);
+        }
+
+        // Load from database
+        try {
+            Product product = jdbcTemplate.queryForObject(
+                "SELECT id, name, price, category FROM products WHERE id = ?",
+                new Object[]{productId},
+                (rs, rowNum) -> new Product(
+                    rs.getString("id"),
+                    rs.getString("name"),
+                    rs.getBigDecimal("price"),
+                    rs.getString("category")
+                )
+            );
+
+            // Cache the result
+            if (product != null) {
+                productCache.put(productId, product);
+            }
+
+            return Optional.ofNullable(product);
+
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
+    }
+
+    public Product save(Product product) {
+        // Save to database
+        jdbcTemplate.update(
+            "INSERT INTO products (id, name, price, category) VALUES (?, ?, ?, ?) " +
+            "ON DUPLICATE KEY UPDATE name = ?, price = ?, category = ?",
+            product.getId(), product.getName(), product.getPrice(), product.getCategory(),
+            product.getName(), product.getPrice(), product.getCategory()
+        );
+
+        // Update cache
+        productCache.put(product.getId(), product);
+
+        return product;
+    }
+
+    public void deleteById(String productId) {
+        jdbcTemplate.update("DELETE FROM products WHERE id = ?", productId);
+        productCache.invalidate(productId);
+    }
+
+    // Bulk operations with cache optimization
+    public List<Product> findByCategory(String category) {
+        return jdbcTemplate.query(
+            "SELECT id, name, price, category FROM products WHERE category = ?",
+            new Object[]{category},
+            (rs, rowNum) -> {
+                Product product = new Product(
+                    rs.getString("id"),
+                    rs.getString("name"),
+                    rs.getBigDecimal("price"),
+                    rs.getString("category")
+                );
+
+                // Cache individual products
+                productCache.put(product.getId(), product);
+                return product;
+            }
+        );
+    }
+}`
+    },
+    {
+        id: 'spring-annotations',
+        label: 'Spring Boot Annotations',
+        language: 'java',
+        code: `// Declarative caching with Spring Boot integration
+@Service
+@Transactional(readOnly = true)
+public class UserService {
+
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    // Cache method results with automatic key generation
+    @JCacheXCacheable(
+        cacheName = "users",
+        expireAfterWrite = 30,
+        expireAfterWriteUnit = TimeUnit.MINUTES,
+        maximumSize = 1000
+    )
+    public User findUserById(String userId) {
+        return userRepository.findById(userId)
+            .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
+    }
+
+    // Custom cache key with SpEL expression
+    @JCacheXCacheable(
+        cacheName = "usersByEmail",
+        key = "#email.toLowerCase()",
+        expireAfterWrite = 15,
+        expireAfterWriteUnit = TimeUnit.MINUTES
+    )
+    public Optional<User> findUserByEmail(String email) {
+        return userRepository.findByEmailIgnoreCase(email);
+    }
+
+    // Conditional caching based on method parameters
+    @JCacheXCacheable(
+        cacheName = "activeUsers",
+        condition = "#includeInactive == false",
+        expireAfterWrite = 10,
+        expireAfterWriteUnit = TimeUnit.MINUTES
+    )
+    public List<User> findUsers(boolean includeInactive) {
+        return includeInactive ?
+            userRepository.findAll() :
+            userRepository.findByActiveTrue();
+    }
+
+    // Cache eviction on data modification
+    @JCacheXCacheEvict(cacheName = "users")
+    @JCacheXCacheEvict(cacheName = "usersByEmail", key = "#user.email.toLowerCase()")
+    @Transactional
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
+
+    // Multiple cache eviction
+    @JCacheXCacheEvict(cacheName = "users")
+    @JCacheXCacheEvict(cacheName = "usersByEmail")
+    @JCacheXCacheEvict(cacheName = "activeUsers")
+    @Transactional
+    public void deleteUser(String userId) {
+        userRepository.deleteById(userId);
+    }
+
+    // Cache warming strategy
+    @EventListener(ApplicationReadyEvent.class)
+    public void warmUpCaches() {
+        // Pre-load frequently accessed data
+        List<User> activeUsers = userRepository.findTop100ByActiveOrderByLastLoginDesc(true);
+        // These calls will populate the cache
+        activeUsers.forEach(user -> findUserById(user.getId()));
+    }
+}`
+    }
+];
+
+const API_EXAMPLES: CodeTab[] = [
+    {
+        id: 'external-api-caching',
+        label: 'External API Integration',
+        language: 'java',
+        code: `// Caching external API responses with fallback strategies
+@Service
+public class ExternalApiService {
+
+    private final RestTemplate restTemplate;
+    private final Cache<String, ApiResponse> responseCache;
+    private final Cache<String, ApiResponse> staleCache;
+
+    public ExternalApiService(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+
+        // Primary cache with shorter TTL
+        CacheConfig<String, ApiResponse> primaryConfig = CacheConfig.<String, ApiResponse>builder()
+            .maximumSize(1000L)
+            .expireAfterWrite(Duration.ofMinutes(15))
+            .recordStats(true)
+            .build();
+        this.responseCache = new DefaultCache<>(primaryConfig);
+
+        // Stale cache with longer TTL for fallback
+        CacheConfig<String, ApiResponse> staleConfig = CacheConfig.<String, ApiResponse>builder()
+            .maximumSize(500L)
+            .expireAfterWrite(Duration.ofHours(24))
+            .build();
+        this.staleCache = new DefaultCache<>(staleConfig);
+    }
+
+    public ApiResponse fetchData(String endpoint, Map<String, String> parameters) {
+        String cacheKey = buildCacheKey(endpoint, parameters);
+
+        // Try primary cache first
+        ApiResponse cached = responseCache.get(cacheKey);
+        if (cached != null) {
+            return cached;
+        }
+
+        try {
+            // Make external API call
+            String url = buildUrl(endpoint, parameters);
+            ApiResponse response = restTemplate.getForObject(url, ApiResponse.class);
+
+            if (response != null && response.isSuccessful()) {
+                // Cache successful responses
+                responseCache.put(cacheKey, response);
+                staleCache.put(cacheKey, response); // Also store in stale cache
+                return response;
+            }
+
+        } catch (RestClientException e) {
+            // API call failed - try stale cache as fallback
+            ApiResponse stale = staleCache.get(cacheKey);
+            if (stale != null) {
+                // Return stale data with warning
+                return stale.withStaleWarning();
+            }
+
+            throw new ExternalApiException("API call failed and no cached data available", e);
+        }
+
+        throw new ExternalApiException("API returned unsuccessful response");
+    }
+
+    // Bulk API calls with intelligent caching
+    public List<ApiResponse> fetchMultiple(List<String> endpoints) {
+        Map<String, ApiResponse> results = new HashMap<>();
+        List<String> uncachedEndpoints = new ArrayList<>();
+
+        // Check cache for all endpoints
+        for (String endpoint : endpoints) {
+            String cacheKey = buildCacheKey(endpoint, Collections.emptyMap());
+            ApiResponse cached = responseCache.get(cacheKey);
+
+            if (cached != null) {
+                results.put(endpoint, cached);
+            } else {
+                uncachedEndpoints.add(endpoint);
+            }
+        }
+
+        // Batch fetch uncached endpoints
+        if (!uncachedEndpoints.isEmpty()) {
+            try {
+                List<ApiResponse> responses = batchApiCall(uncachedEndpoints);
+                for (int i = 0; i < uncachedEndpoints.size(); i++) {
+                    String endpoint = uncachedEndpoints.get(i);
+                    ApiResponse response = responses.get(i);
+
+                    if (response.isSuccessful()) {
+                        String cacheKey = buildCacheKey(endpoint, Collections.emptyMap());
+                        responseCache.put(cacheKey, response);
+                        staleCache.put(cacheKey, response);
+                    }
+
+                    results.put(endpoint, response);
+                }
+            } catch (RestClientException e) {
+                // Handle batch failure
+                throw new ExternalApiException("Batch API call failed", e);
+            }
+        }
+
+        return endpoints.stream()
+            .map(results::get)
+            .collect(Collectors.toList());
+    }
+
+    private String buildCacheKey(String endpoint, Map<String, String> parameters) {
+        return endpoint + ":" + parameters.entrySet().stream()
+            .sorted(Map.Entry.comparingByKey())
+            .map(entry -> entry.getKey() + "=" + entry.getValue())
+            .collect(Collectors.joining("&"));
+    }
+
+    private String buildUrl(String endpoint, Map<String, String> parameters) {
+        // URL building logic
+        return endpoint + "?" + parameters.entrySet().stream()
+            .map(entry -> entry.getKey() + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
+            .collect(Collectors.joining("&"));
+    }
+
+    private List<ApiResponse> batchApiCall(List<String> endpoints) {
+        // Batch API call implementation
+        return endpoints.stream()
+            .map(endpoint -> restTemplate.getForObject(endpoint, ApiResponse.class))
+            .collect(Collectors.toList());
+    }
+}`
+    }
+];
+
+const MONITORING_EXAMPLES: CodeTab[] = [
+    {
+        id: 'production-monitoring',
+        label: 'Production Monitoring',
+        language: 'java',
+        code: `// Comprehensive cache monitoring and alerting
+@Component
+public class CacheMonitoringService {
+
+    private final MeterRegistry meterRegistry;
+    private final List<Cache<?, ?>> monitoredCaches;
+    private final ScheduledExecutorService scheduler;
+
+    public CacheMonitoringService(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+        this.monitoredCaches = new CopyOnWriteArrayList<>();
+        this.scheduler = Executors.newScheduledThreadPool(2);
+
+        // Schedule periodic health checks
+        startHealthCheckMonitoring();
+        startPerformanceMetricsCollection();
+    }
+
+    public void registerCache(String name, Cache<?, ?> cache) {
+        monitoredCaches.add(cache);
+
+        // Create Micrometer gauges for cache metrics
+        Gauge.builder("cache.size")
+            .tag("cache", name)
+            .register(meterRegistry, cache, Cache::size);
+
+        Gauge.builder("cache.hit_rate")
+            .tag("cache", name)
+            .register(meterRegistry, cache, c -> c.stats().hitRate());
+
+        Gauge.builder("cache.miss_rate")
+            .tag("cache", name)
+            .register(meterRegistry, cache, c -> c.stats().missRate());
+
+        Gauge.builder("cache.eviction_count")
+            .tag("cache", name)
+            .register(meterRegistry, cache, c -> c.stats().evictionCount());
+    }
+
+    private void startHealthCheckMonitoring() {
+        scheduler.scheduleAtFixedRate(() -> {
+            for (Cache<?, ?> cache : monitoredCaches) {
+                CacheStats stats = cache.stats();
+                CacheHealthStatus health = evaluateCacheHealth(stats);
+
+                // Publish health metrics
+                meterRegistry.gauge("cache.health_score",
+                    Tags.of("cache", getCacheName(cache)),
+                    health.getScore());
+
+                // Trigger alerts for unhealthy caches
+                if (health.getScore() < 0.7) {
+                    sendAlert(getCacheName(cache), health);
+                }
+            }
+        }, 0, 1, TimeUnit.MINUTES);
+    }
+
+    private void startPerformanceMetricsCollection() {
+        scheduler.scheduleAtFixedRate(() -> {
+            for (Cache<?, ?> cache : monitoredCaches) {
+                String cacheName = getCacheName(cache);
+                CacheStats stats = cache.stats();
+
+                // Log detailed performance metrics
+                MDC.put("cache.name", cacheName);
+                MDC.put("cache.size", String.valueOf(cache.size()));
+                MDC.put("cache.hit_rate", String.valueOf(stats.hitRate()));
+                MDC.put("cache.average_load_time", String.valueOf(stats.averageLoadTime()));
+
+                if (stats.hitRate() < 0.5) {
+                    // Log warning for poor hit rates
+                    log.warn("Cache {} has low hit rate: {:.2f}%",
+                        cacheName, stats.hitRate() * 100);
+                }
+
+                MDC.clear();
+            }
+        }, 0, 5, TimeUnit.MINUTES);
+    }
+
+    public CacheHealthReport generateHealthReport() {
+        Map<String, CacheMetrics> cacheMetrics = new HashMap<>();
+
+        for (Cache<?, ?> cache : monitoredCaches) {
+            String name = getCacheName(cache);
+            CacheStats stats = cache.stats();
+
+            CacheMetrics metrics = CacheMetrics.builder()
+                .name(name)
+                .size(cache.size())
+                .hitRate(stats.hitRate())
+                .missRate(stats.missRate())
+                .evictionCount(stats.evictionCount())
+                .averageLoadTime(stats.averageLoadTime())
+                .requestCount(stats.requestCount())
+                .healthScore(evaluateCacheHealth(stats).getScore())
+                .build();
+
+            cacheMetrics.put(name, metrics);
+        }
+
+        return new CacheHealthReport(cacheMetrics, Instant.now());
+    }
+
+    private CacheHealthStatus evaluateCacheHealth(CacheStats stats) {
+        double score = 1.0;
+        List<String> issues = new ArrayList<>();
+
+        // Hit rate assessment
+        if (stats.hitRate() < 0.5) {
+            score -= 0.3;
+            issues.add("Low hit rate: " + Math.round(stats.hitRate() * 100) + "%");
+        } else if (stats.hitRate() < 0.7) {
+            score -= 0.1;
+        }
+
+        // Load time assessment
+        if (stats.averageLoadTime() > 100) {
+            score -= 0.2;
+            issues.add("High average load time: " + stats.averageLoadTime() + "ms");
+        }
+
+        // Eviction rate assessment
+        long totalRequests = stats.requestCount();
+        if (totalRequests > 0 && (stats.evictionCount() / (double) totalRequests) > 0.1) {
+            score -= 0.2;
+            issues.add("High eviction rate: " +
+                Math.round((stats.evictionCount() / (double) totalRequests) * 100) + "%");
+        }
+
+        return new CacheHealthStatus(Math.max(0, score), issues);
+    }
+
+    private void sendAlert(String cacheName, CacheHealthStatus health) {
+        // Integration with alerting system (PagerDuty, Slack, etc.)
+        log.error("Cache health alert for {}: score={:.2f}, issues={}",
+            cacheName, health.getScore(), health.getIssues());
+    }
+
+    private String getCacheName(Cache<?, ?> cache) {
+        // Extract cache name from cache instance
+        return cache.getClass().getSimpleName() + "@" +
+            Integer.toHexString(cache.hashCode());
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+    }
+}`
+    }
+];
+
+const ExamplesPage: React.FC = () => {
     const { getCurrentPageSEO } = useSEO();
     const seoData = getCurrentPageSEO();
 
-    const basicTabs: CodeTab[] = [
-        {
-            id: 'java',
-            label: 'Java',
-            language: 'java',
-            code: `import io.github.dhruv1110.jcachex.*;
+    const [activeSection, setActiveSection] = useState<string>('basic');
 
-// Create cache with comprehensive configuration
-CacheConfig<String, User> config = CacheConfig.<String, User>builder()
-    .maximumSize(1000L)
-    .expireAfterWrite(Duration.ofMinutes(30))
-    .expireAfterAccess(Duration.ofMinutes(10))
-    .evictionStrategy(EvictionStrategy.LRU)
-    .recordStats(true)
-    .build();
-
-Cache<String, User> cache = new DefaultCache<>(config);
-
-// Basic operations
-User alice = new User("Alice", "alice@example.com", 25);
-cache.put("user123", alice);
-User retrievedUser = cache.get("user123");
-
-// Bulk operations
-Map<String, User> users = Map.of(
-    "user1", new User("Bob", "bob@example.com", 30),
-    "user2", new User("Charlie", "charlie@example.com", 35)
-);
-cache.putAll(users);
-
-// Statistics
-CacheStats stats = cache.stats();
-System.out.println("Hit rate: " + stats.hitRate());`
-        },
-        {
-            id: 'kotlin',
-            label: 'Kotlin',
-            language: 'kotlin',
-            code: `import io.github.dhruv1110.jcachex.kotlin.*
-
-// Create cache with Kotlin DSL
-val cache = cache<String, User> {
-    maxSize = 1000
-    expireAfterWrite = 30.minutes
-    expireAfterAccess = 10.minutes
-    evictionStrategy = EvictionStrategy.LRU
-    recordStats = true
-}
-
-// Basic operations with operator overloading
-val alice = User("Alice", "alice@example.com", 25)
-cache["user123"] = alice
-val retrievedUser = cache["user123"]
-
-// Bulk operations
-val users = mapOf(
-    "user1" to User("Bob", "bob@example.com", 30),
-    "user2" to User("Charlie", "charlie@example.com", 35)
-)
-cache += users
-
-// Statistics
-val stats = cache.stats()
-println("Hit rate: \${stats.hitRate()}")`
-        }
+    const sections = [
+        { id: 'basic', label: 'Core Implementation', description: 'Fundamental caching patterns' },
+        { id: 'database', label: 'Database Integration', description: 'Repository and ORM patterns' },
+        { id: 'api', label: 'API Caching', description: 'External service integration' },
+        { id: 'monitoring', label: 'Production Monitoring', description: 'Observability and alerting' }
     ];
 
-    const asyncTabs: CodeTab[] = [
-        {
-            id: 'java',
-            label: 'Java Async',
-            language: 'java',
-            code: `import java.util.concurrent.CompletableFuture;
-
-// Async operations with CompletableFuture
-CompletableFuture<User> futureUser = cache.getAsync("user123");
-
-// Handle async result
-futureUser.thenAccept(user -> {
-    if (user != null) {
-        System.out.println("Found user: " + user.getName());
-        user.setLastAccess(Instant.now());
-        cache.putAsync("user123", user);
-    } else {
-        System.out.println("User not found, loading from database...");
-        loadUserFromDatabase("user123")
-            .thenAccept(dbUser -> cache.putAsync("user123", dbUser));
-    }
-});
-
-// Bulk async operations
-List<String> userIds = Arrays.asList("user1", "user2", "user3");
-List<CompletableFuture<User>> futures = userIds.stream()
-    .map(id -> cache.getAsync(id))
-    .collect(Collectors.toList());
-
-CompletableFuture<List<User>> allUsers = CompletableFuture.allOf(
-    futures.toArray(new CompletableFuture[0])
-).thenApply(v -> futures.stream()
-    .map(CompletableFuture::join)
-    .filter(Objects::nonNull)
-    .collect(Collectors.toList()));
-
-allUsers.thenAccept(users ->
-    System.out.println("Loaded " + users.size() + " users from cache"));`
-        },
-        {
-            id: 'kotlin',
-            label: 'Kotlin Coroutines',
-            language: 'kotlin',
-            code: `import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-
-// Coroutine-based async operations
-suspend fun getUserWithFallback(id: String): User? = withContext(Dispatchers.IO) {
-    cache.getAsync(id).await() ?: run {
-        println("User not found in cache, loading from database...")
-        loadUserFromDatabase(id)?.also { dbUser ->
-            cache.putAsync(id, dbUser).await()
+    const getSectionExamples = (sectionId: string) => {
+        switch (sectionId) {
+            case 'basic': return BASIC_EXAMPLES;
+            case 'database': return DATABASE_EXAMPLES;
+            case 'api': return API_EXAMPLES;
+            case 'monitoring': return MONITORING_EXAMPLES;
+            default: return BASIC_EXAMPLES;
         }
-    }
-}
+    };
 
-// Bulk async operations with Flow
-suspend fun loadUsersFlow(userIds: List<String>): Flow<User> = flow {
-    userIds.forEach { id ->
-        val user = cache.getAsync(id).await()
-        if (user != null) {
-            emit(user)
+    const getSectionInfo = (sectionId: string) => {
+        switch (sectionId) {
+            case 'basic':
+                return {
+                    title: 'Core Implementation Patterns',
+                    description: 'Essential caching patterns and configuration strategies for production applications.',
+                    keyPoints: [
+                        'Cache configuration and lifecycle management',
+                        'Object serialization and type safety',
+                        'Performance monitoring and statistics',
+                        'Memory management and eviction policies'
+                    ],
+                    useCases: 'Session management, user preferences, configuration data, frequently accessed entities'
+                };
+            case 'database':
+                return {
+                    title: 'Database Integration Strategies',
+                    description: 'Production-ready patterns for caching database queries and managing data consistency.',
+                    keyPoints: [
+                        'Cache-aside pattern implementation',
+                        'Repository layer integration',
+                        'Declarative caching with annotations',
+                        'Bulk operations and cache warming'
+                    ],
+                    useCases: 'User profiles, product catalogs, reference data, complex query results'
+                };
+            case 'api':
+                return {
+                    title: 'External API Integration',
+                    description: 'Strategies for caching external service responses with fault tolerance and fallback mechanisms.',
+                    keyPoints: [
+                        'Multi-tier cache architecture',
+                        'Fallback and stale data strategies',
+                        'Batch API call optimization',
+                        'Circuit breaker pattern integration'
+                    ],
+                    useCases: 'Weather data, payment processing, geolocation services, third-party content'
+                };
+            case 'monitoring':
+                return {
+                    title: 'Production Monitoring',
+                    description: 'Comprehensive monitoring, alerting, and performance optimization for production environments.',
+                    keyPoints: [
+                        'Real-time performance metrics',
+                        'Health checks and alerting',
+                        'Integration with monitoring systems',
+                        'Automated performance optimization'
+                    ],
+                    useCases: 'Production deployment, capacity planning, performance tuning, incident response'
+                };
+            default:
+                return {
+                    title: 'Core Implementation Patterns',
+                    description: 'Essential caching patterns and configuration strategies for production applications.',
+                    keyPoints: [
+                        'Cache configuration and lifecycle management',
+                        'Object serialization and type safety',
+                        'Performance monitoring and statistics',
+                        'Memory management and eviction policies'
+                    ],
+                    useCases: 'Session management, user preferences, configuration data, frequently accessed entities'
+                };
         }
-    }
-}.flowOn(Dispatchers.IO)
+    };
 
-// Usage
-runBlocking {
-    val userIds = listOf("user1", "user2", "user3")
-    loadUsersFlow(userIds).collect { user ->
-        println("Loaded user: \${user.name}")
-    }
-}`
-        }
-    ];
-
-    const springTabs: CodeTab[] = [
-        {
-            id: 'service',
-            label: 'Service Layer',
-            language: 'java',
-            code: `@Service
-@Transactional
-public class UserService {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    // Basic caching
-    @JCacheXCacheable(cacheName = "users")
-    public User findById(Long id) {
-        return userRepository.findById(id)
-            .orElseThrow(() -> new UserNotFoundException("User not found: " + id));
-    }
-
-    // Custom cache configuration
-    @JCacheXCacheable(
-        cacheName = "userProfiles",
-        expireAfterWrite = 30,
-        expireAfterWriteUnit = TimeUnit.MINUTES
-    )
-    public UserProfile getUserProfile(String userId) {
-        return buildUserProfile(userId);
-    }
-
-    // Cache eviction
-    @JCacheXCacheEvict(cacheName = "users")
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
-    }
-
-    // Clear all cache entries
-    @JCacheXCacheEvict(cacheName = "users", allEntries = true)
-    public void clearAllUsers() {
-        userRepository.deleteAll();
-    }
-}`
-        },
-        {
-            id: 'controller',
-            label: 'REST Controller',
-            language: 'java',
-            code: `@RestController
-@RequestMapping("/api/users")
-public class UserController {
-
-    @Autowired
-    private UserService userService;
-
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable Long id) {
-        User user = userService.findById(id);
-        return ResponseEntity.ok(user);
-    }
-
-    @GetMapping("/{id}/profile")
-    public ResponseEntity<UserProfile> getUserProfile(@PathVariable String id) {
-        UserProfile profile = userService.getUserProfile(id);
-        return ResponseEntity.ok(profile);
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/clear-cache")
-    public ResponseEntity<Void> clearCache() {
-        userService.clearAllUsers();
-        return ResponseEntity.ok().build();
-    }
-}`
-        }
-    ];
-
-    const distributedTabs: CodeTab[] = [
-        {
-            id: 'setup',
-            label: 'Distributed Setup',
-            language: 'java',
-            code: `import io.github.dhruv1110.jcachex.distributed.*;
-
-// Create distributed cache configuration
-DistributedCacheConfig<String, User> config = DistributedCacheConfig.<String, User>builder()
-    .maximumSize(10000L)
-    .expireAfterWrite(Duration.ofHours(1))
-    .evictionStrategy(EvictionStrategy.LRU)
-    .consistencyModel(ConsistencyModel.EVENTUAL)
-    .nodes(Arrays.asList("node1:8080", "node2:8080", "node3:8080"))
-    .replicationFactor(2)
-    .build();
-
-// Create distributed cache
-DistributedCache<String, User> distributedCache = new DefaultDistributedCache<>(config);
-
-// Operations work the same as local cache
-distributedCache.put("user123", new User("Alice", "alice@example.com"));
-User user = distributedCache.get("user123");
-
-// Monitor cluster health
-ClusterHealth health = distributedCache.getClusterHealth();
-System.out.println("Active nodes: " + health.getActiveNodes());
-System.out.println("Cluster status: " + health.getStatus());`
-        },
-        {
-            id: 'consistency',
-            label: 'Consistency Models',
-            language: 'java',
-            code: `// Strong consistency - all nodes must agree
-DistributedCacheConfig<String, User> strongConfig = DistributedCacheConfig.<String, User>builder()
-    .consistencyModel(ConsistencyModel.STRONG)
-    .writeQuorum(3)
-    .readQuorum(2)
-    .build();
-
-// Eventual consistency - best performance
-DistributedCacheConfig<String, User> eventualConfig = DistributedCacheConfig.<String, User>builder()
-    .consistencyModel(ConsistencyModel.EVENTUAL)
-    .asyncReplication(true)
-    .build();
-
-// Session consistency - read-your-writes
-DistributedCacheConfig<String, User> sessionConfig = DistributedCacheConfig.<String, User>builder()
-    .consistencyModel(ConsistencyModel.SESSION)
-    .stickySession(true)
-    .build();
-
-// Choose based on your requirements:
-// - STRONG: Banking, financial data
-// - EVENTUAL: User profiles, product catalogs
-// - SESSION: Shopping carts, user sessions`
-        }
-    ];
-
-    const monitoringTabs: CodeTab[] = [
-        {
-            id: 'metrics',
-            label: 'Micrometer Metrics',
-            language: 'java',
-            code: `@Configuration
-public class MetricsConfig {
-
-    @Bean
-    public MeterRegistryCustomizer<MeterRegistry> cacheMetricsCustomizer() {
-        return registry -> {
-            // Register JCacheX metrics
-            JCacheXMetrics.monitor(registry, cache, "user-cache");
-
-            // Custom metrics
-            Gauge.builder("cache.size")
-                .description("Current cache size")
-                .register(registry, cache, Cache::size);
-
-            Timer.builder("cache.load.time")
-                .description("Time to load cache entries")
-                .register(registry);
-        };
-    }
-}
-
-// Usage in service
-@Service
-public class UserService {
-
-    @Autowired
-    private MeterRegistry meterRegistry;
-
-    @Timed("user.cache.access")
-    public User findUser(String id) {
-        return cache.get(id);
-    }
-
-    @Counted("user.cache.miss")
-    public User loadFromDatabase(String id) {
-        return userRepository.findById(id);
-    }
-}`
-        },
-        {
-            id: 'actuator',
-            label: 'Actuator Endpoints',
-            language: 'yaml',
-            code: `# application.yml
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,caches,jcachex
-  endpoint:
-    health:
-      show-details: always
-    caches:
-      enabled: true
-    jcachex:
-      enabled: true
-  metrics:
-    export:
-      prometheus:
-        enabled: true
-    distribution:
-      percentiles-histogram:
-        cache: true
-
-# Access endpoints:
-# GET /actuator/health - Application health
-# GET /actuator/metrics - All metrics
-# GET /actuator/caches - Cache information
-# GET /actuator/jcachex - JCacheX specific metrics`
-        }
-    ];
-
-    const exampleCategories: ExampleCategory[] = [
-        {
-            id: 'basic',
-            icon: '🚀',
-            title: 'Basic Operations',
-            description: 'Essential cache operations with Java and Kotlin examples',
-            tabs: basicTabs
-        },
-        {
-            id: 'async',
-            icon: '⚡',
-            title: 'Async Operations',
-            description: 'Asynchronous caching with CompletableFuture and coroutines',
-            tabs: asyncTabs
-        },
-        {
-            id: 'spring',
-            icon: '🍃',
-            title: 'Spring Boot Integration',
-            description: 'Complete Spring Boot integration with annotations',
-            tabs: springTabs
-        },
-        {
-            id: 'distributed',
-            icon: '🌐',
-            title: 'Distributed Caching',
-            description: 'Multi-node caching with consistency models',
-            tabs: distributedTabs
-        },
-        {
-            id: 'monitoring',
-            icon: '📊',
-            title: 'Monitoring & Observability',
-            description: 'Metrics, health checks, and monitoring integration',
-            tabs: monitoringTabs
-        }
-    ];
-
-    const performanceTips: Feature[] = [
-        {
-            icon: '⚡',
-            title: 'Batch Operations',
-            description: 'Use putAll() and getAll() for better performance',
-            details: ['Reduced network calls', 'Better throughput', 'Atomic operations']
-        },
-        {
-            icon: '🔄',
-            title: 'Async Loading',
-            description: 'Leverage async operations for I/O-bound workloads',
-            details: ['Non-blocking operations', 'Better resource utilization', 'Improved scalability']
-        },
-        {
-            icon: '📊',
-            title: 'Monitor Metrics',
-            description: 'Track cache performance and optimize accordingly',
-            details: ['Hit rate monitoring', 'Eviction tracking', 'Memory usage analysis']
-        }
-    ];
-
-    const resources: Resource[] = [
-        {
-            title: 'Spring Boot Guide',
-            description: 'Complete guide for Spring Boot integration',
-            icon: '🍃',
-            href: '/spring',
-            badge: 'spring'
-        },
-        {
-            title: 'API Documentation',
-            description: 'Comprehensive API reference and JavaDoc',
-            icon: '📖',
-            href: 'https://javadoc.io/doc/io.github.dhruv1110/jcachex-core',
-            badge: 'java'
-        },
-        {
-            title: 'GitHub Repository',
-            description: 'Source code, issues, and contributions',
-            icon: '🔗',
-            href: 'https://github.com/dhruv1110/JCacheX',
-            badge: 'github'
-        }
-    ];
+    const currentSection = getSectionInfo(activeSection);
 
     return (
-        <div className="examples">
+        <div className="examples-page">
             <MetaTags seo={seoData} />
 
             {/* Header */}
             <Section background="gradient" padding="lg" centered>
-                <div className="header-content">
-                    <h1 className="page-title">JCacheX Examples</h1>
-                    <p className="page-subtitle">
-                        Explore comprehensive examples and learn how to integrate JCacheX into your applications
+                <div className="examples-header">
+                    <h1 className="examples-title">Implementation Examples</h1>
+                    <p className="examples-subtitle">
+                        Production-ready code examples and integration patterns for enterprise applications.
+                        Comprehensive implementations covering core functionality through advanced monitoring.
                     </p>
                 </div>
             </Section>
 
-            {/* Installation */}
-            <Section padding="lg">
-                <InstallationGuide
-                    tabs={INSTALLATION_TABS}
-                    title="Quick Setup"
-                    description="Get started with JCacheX in your project:"
-                />
-            </Section>
-
-            {/* Example Categories */}
-            <Section
-                background="light"
-                padding="lg"
-                title="Example Categories"
-                subtitle="Choose from different categories based on your needs"
-                centered
-            >
-                <div className="examples-grid">
-                    {exampleCategories.map((category, index) => (
-                        <div key={category.id} className="example-category">
-                            <div className="category-header">
-                                <div className="category-icon">{category.icon}</div>
-                                <h3 className="category-title">{category.title}</h3>
-                                <p className="category-description">{category.description}</p>
-                            </div>
-                            <div className="category-content">
-                                <CodeTabs tabs={category.tabs} />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </Section>
-
-            {/* Performance Tips */}
-            <Section
-                padding="lg"
-                title="Performance Tips"
-                subtitle="Best practices for optimal cache performance"
-                centered
-            >
-                <Grid columns={3} gap="lg">
-                    {performanceTips.map((tip, index) => (
-                        <FeatureCard
-                            key={index}
-                            icon={tip.icon}
-                            title={tip.title}
-                            description={tip.description}
-                            details={tip.details}
-                            variant="compact"
-                        />
-                    ))}
-                </Grid>
-            </Section>
-
-            {/* Resources */}
-            <Section
-                background="light"
-                padding="lg"
-                title="Additional Resources"
-                subtitle="Learn more about JCacheX and get support"
-                centered
-            >
-                <Grid columns={3} gap="lg">
-                    {resources.map((resource, index) => (
-                        <div key={index} className="resource-card">
-                            <div className="resource-icon">{resource.icon}</div>
-                            <h3 className="resource-title">{resource.title}</h3>
-                            <p className="resource-description">{resource.description}</p>
-                            <div className="resource-action">
-                                <Badge
-                                    variant={resource.badge}
-                                    href={resource.href}
-                                    target={resource.href.startsWith('http') ? '_blank' : '_self'}
+            {/* Examples Navigation */}
+            <Section background="dark" padding="lg">
+                <nav className="examples-nav">
+                    <ul className="examples-nav-list">
+                        {sections.map((section) => (
+                            <li key={section.id} className="examples-nav-item">
+                                <button
+                                    className={`examples-nav-link ${activeSection === section.id ? 'active' : ''}`}
+                                    onClick={() => setActiveSection(section.id)}
                                 >
-                                    {resource.href.startsWith('http') ? 'Open' : 'View'}
-                                </Badge>
+                                    <div className="nav-content">
+                                        <span className="nav-label">{section.label}</span>
+                                        <span className="nav-description">{section.description}</span>
+                                    </div>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </nav>
+            </Section>
+
+            {/* Current Section Content */}
+            <Section background="primary" padding="lg">
+                <div className="examples-section">
+                    <div className="examples-section-header">
+                        <h2>{currentSection.title}</h2>
+                        <p>{currentSection.description}</p>
+                    </div>
+
+                    <Grid>
+                        <div className="example-category">
+                            <div className="category-header">
+                                <h3>Key Implementation Points</h3>
+                                <ul>
+                                    {currentSection.keyPoints.map((point, index) => (
+                                        <li key={index}>{point}</li>
+                                    ))}
+                                </ul>
+
+                                <h4>Common Use Cases</h4>
+                                <p>{currentSection.useCases}</p>
                             </div>
+
+                            <CodeTabs tabs={getSectionExamples(activeSection)} />
                         </div>
-                    ))}
-                </Grid>
+                    </Grid>
+                </div>
             </Section>
 
             {/* Next Steps */}
-            <Section background="gradient" padding="lg" centered>
-                <div className="next-steps">
-                    <h2 className="next-steps-title">Ready to implement?</h2>
-                    <p className="next-steps-subtitle">
-                        Start building with JCacheX in your application
+            <Section background="dark" padding="lg">
+                <div className="next-steps-cta">
+                    <h3>Ready to implement?</h3>
+                    <p>
+                        Continue your implementation with comprehensive documentation and framework-specific guides.
                     </p>
-                    <div className="next-steps-buttons">
-                        <Badge variant="primary" size="large" href="/getting-started">
-                            Get Started
-                        </Badge>
-                        <Badge variant="default" size="large" href="/spring">
-                            Spring Boot Guide
-                        </Badge>
+                    <div className="cta-buttons">
+                        <a href="/getting-started" className="btn btn-primary">
+                            View Documentation
+                        </a>
+                        <a href="/spring" className="btn btn-secondary">
+                            Spring Guide
+                        </a>
+                        <a href="/faq" className="btn btn-outline">
+                            FAQ
+                        </a>
                     </div>
                 </div>
             </Section>
@@ -572,4 +817,4 @@ management:
     );
 };
 
-export default Examples;
+export default ExamplesPage;
