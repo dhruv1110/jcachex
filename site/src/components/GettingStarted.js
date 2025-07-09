@@ -1,66 +1,344 @@
 import React from 'react';
+import { useVersion } from '../hooks';
+import { INSTALLATION_TABS, BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN } from '../constants';
+import { Section, Grid, FeatureCard, InstallationGuide } from './common';
+import CodeTabs from './CodeTabs';
 import './GettingStarted.css';
 
 const GettingStarted = () => {
-    const version = process.env.REACT_APP_VERSION || '1.0.0';
+    const { version } = useVersion();
+
+    const basicUsageTabs = [
+        {
+            id: 'java',
+            label: 'Java',
+            language: 'java',
+            code: BASIC_USAGE_JAVA
+        },
+        {
+            id: 'kotlin',
+            label: 'Kotlin',
+            language: 'kotlin',
+            code: BASIC_USAGE_KOTLIN
+        }
+    ];
+
+    const asyncTabs = [
+        {
+            id: 'java',
+            label: 'Java',
+            language: 'java',
+            code: `import java.util.concurrent.CompletableFuture;
+
+// Async operations with CompletableFuture
+CompletableFuture<User> futureUser = cache.getAsync("user123");
+
+// Handle result
+futureUser.thenAccept(user -> {
+    if (user != null) {
+        System.out.println("User found: " + user.getName());
+    } else {
+        System.out.println("User not found");
+    }
+});
+
+// Async put operation
+CompletableFuture<Void> putFuture = cache.putAsync("user456", new User("Bob", "bob@example.com"));
+
+// Combine async operations
+CompletableFuture<String> combined = cache.getAsync("user123")
+    .thenCompose(user -> {
+        if (user != null) {
+            return CompletableFuture.completedFuture(user.getName());
+        } else {
+            return cache.putAsync("user123", new User("Default", "default@example.com"))
+                .thenApply(v -> "Default");
+        }
+    });`
+        },
+        {
+            id: 'kotlin',
+            label: 'Kotlin',
+            language: 'kotlin',
+            code: `import kotlinx.coroutines.*
+
+// Async operations with coroutines
+suspend fun getUserAsync(id: String): User? {
+    return cache.getAsync(id).await()
+}
+
+// Usage in coroutine
+runBlocking {
+    val user = getUserAsync("user123")
+    if (user != null) {
+        println("User found: \${user.name}")
+    } else {
+        println("User not found")
+    }
+}
+
+// Async put operation
+runBlocking {
+    cache.putAsync("user456", User("Bob", "bob@example.com")).await()
+    println("User stored successfully")
+}
+
+// Combine async operations
+suspend fun getOrCreate(id: String): User = withContext(Dispatchers.IO) {
+    cache.getAsync(id).await() ?: run {
+        val newUser = User("Default", "default@example.com")
+        cache.putAsync(id, newUser).await()
+        newUser
+    }
+}`
+        }
+    ];
+
+    const springConfigTabs = [
+        {
+            id: 'yaml',
+            label: 'application.yml',
+            language: 'yaml',
+            code: `# JCacheX Configuration
+jcachex:
+  enabled: true
+  default:
+    maximum-size: 1000
+    expire-after-write-seconds: 1800
+    eviction-strategy: LRU
+    record-stats: true
+
+  caches:
+    users:
+      maximum-size: 5000
+      expire-after-write-seconds: 3600
+      eviction-strategy: LFU
+
+    products:
+      maximum-size: 10000
+      expire-after-write-seconds: 7200
+      eviction-strategy: LRU`
+        },
+        {
+            id: 'properties',
+            label: 'application.properties',
+            language: 'properties',
+            code: `# JCacheX Configuration
+jcachex.enabled=true
+jcachex.default.maximum-size=1000
+jcachex.default.expire-after-write-seconds=1800
+jcachex.default.eviction-strategy=LRU
+jcachex.default.record-stats=true
+
+# Named caches
+jcachex.caches.users.maximum-size=5000
+jcachex.caches.users.expire-after-write-seconds=3600
+jcachex.caches.users.eviction-strategy=LFU
+
+jcachex.caches.products.maximum-size=10000
+jcachex.caches.products.expire-after-write-seconds=7200
+jcachex.caches.products.eviction-strategy=LRU`
+        },
+        {
+            id: 'java',
+            label: 'Java Config',
+            language: 'java',
+            code: `@Configuration
+@EnableCaching
+public class CacheConfig {
+
+    @Bean
+    public CacheManager cacheManager() {
+        return new JCacheXCacheManager();
+    }
+
+    @Bean
+    public CacheConfigurer cacheConfigurer() {
+        return new CacheConfigurer() {
+            @Override
+            public CacheManager cacheManager() {
+                return new JCacheXCacheManager(
+                    CacheConfig.<String, Object>builder()
+                        .maximumSize(1000L)
+                        .expireAfterWrite(Duration.ofMinutes(30))
+                        .evictionStrategy(EvictionStrategy.LRU)
+                        .recordStats(true)
+                        .build()
+                );
+            }
+        };
+    }
+}`
+        }
+    ];
+
+    const configurationOptions = [
+        {
+            icon: '⚙️',
+            title: 'Size Limits',
+            description: 'Control cache size with maximum entries and memory-based limits',
+            details: ['Maximum size', 'Weighted size', 'Memory-based eviction']
+        },
+        {
+            icon: '⏰',
+            title: 'Expiration',
+            description: 'Configure time-based expiration policies',
+            details: ['Expire after write', 'Expire after access', 'Custom TTL']
+        },
+        {
+            icon: '🔄',
+            title: 'Eviction Strategies',
+            description: 'Choose from multiple eviction algorithms',
+            details: ['LRU', 'LFU', 'FIFO', 'Weight-based']
+        },
+        {
+            icon: '📊',
+            title: 'Monitoring',
+            description: 'Built-in statistics and metrics collection',
+            details: ['Hit/miss ratios', 'Access patterns', 'Performance metrics']
+        }
+    ];
+
+    const bestPractices = [
+        {
+            icon: '🎯',
+            title: 'Cache Strategy',
+            description: 'Choose appropriate cache patterns for your use case',
+            details: ['Cache-aside', 'Write-through', 'Write-behind', 'Refresh-ahead']
+        },
+        {
+            icon: '🔧',
+            title: 'Configuration',
+            description: 'Optimize cache settings for your workload',
+            details: ['Right-size your cache', 'Choose appropriate eviction', 'Monitor performance']
+        },
+        {
+            icon: '⚡',
+            title: 'Performance',
+            description: 'Maximize cache effectiveness',
+            details: ['Batch operations', 'Async loading', 'Preloading strategies']
+        }
+    ];
 
     return (
         <div className="getting-started">
-            <div className="container">
-                <header className="docs-header">
-                    <nav className="breadcrumb">
-                        <a href="/">Home</a>
-                        <span>/</span>
-                        <span>Getting Started</span>
-                    </nav>
-                    <h1>Getting Started with JCacheX</h1>
-                    <p className="lead">Learn how to integrate JCacheX into your Java or Kotlin application and start caching data efficiently.</p>
-                </header>
+            {/* Header */}
+            <Section background="gradient" padding="large" centered>
+                <div className="header-content">
+                    <h1 className="page-title">Getting Started with JCacheX</h1>
+                    <p className="page-subtitle">
+                        Learn how to integrate JCacheX into your Java or Kotlin application in just a few minutes
+                    </p>
+                </div>
+            </Section>
 
-                <main className="docs-content">
-                    <section className="docs-section">
-                        <h2>Installation</h2>
-                        <p>JCacheX is available on Maven Central. Visit <a href="https://central.sonatype.com/artifact/io.github.dhruv1110/jcachex-core" target="_blank" rel="noopener noreferrer">Maven Central</a> to find the latest version.</p>
+            {/* Installation */}
+            <Section padding="large">
+                <InstallationGuide
+                    tabs={INSTALLATION_TABS}
+                    title="1. Installation"
+                    description="Add JCacheX to your project using your preferred build tool:"
+                />
+            </Section>
 
-                        <h3>Maven</h3>
-                        <pre><code className="language-xml">{`<dependency>
-    <groupId>io.github.dhruv1110</groupId>
-    <artifactId>jcachex-core</artifactId>
-    <version>${version}</version>
-</dependency>`}</code></pre>
+            {/* Basic Usage */}
+            <Section
+                background="light"
+                padding="large"
+                title="2. Basic Usage"
+                subtitle="Create and use caches with simple, intuitive API"
+                centered
+            >
+                <div className="code-section">
+                    <CodeTabs tabs={basicUsageTabs} />
+                </div>
+            </Section>
 
-                        <h3>Gradle</h3>
-                        <pre><code className="language-gradle">implementation 'io.github.dhruv1110:jcachex-core:${version}'</code></pre>
-                    </section>
+            {/* Asynchronous Operations */}
+            <Section
+                padding="large"
+                title="3. Asynchronous Operations"
+                subtitle="Leverage async capabilities for better performance"
+                centered
+            >
+                <div className="code-section">
+                    <CodeTabs tabs={asyncTabs} />
+                </div>
+            </Section>
 
-                    <section className="docs-section">
-                        <h2>Basic Usage</h2>
-                        <p>Get started with JCacheX using these simple examples:</p>
+            {/* Spring Boot Configuration */}
+            <Section
+                background="light"
+                padding="large"
+                title="4. Spring Boot Configuration"
+                subtitle="Configure JCacheX in your Spring Boot application"
+                centered
+            >
+                <div className="code-section">
+                    <CodeTabs tabs={springConfigTabs} />
+                </div>
+            </Section>
 
-                        <pre><code className="language-java">{`import io.github.dhruv1110.jcachex.*;
+            {/* Configuration Options */}
+            <Section
+                padding="large"
+                title="Configuration Options"
+                subtitle="Customize cache behavior to match your requirements"
+                centered
+            >
+                <Grid columns={2} gap="large">
+                    {configurationOptions.map((option, index) => (
+                        <FeatureCard
+                            key={index}
+                            icon={option.icon}
+                            title={option.title}
+                            description={option.description}
+                            details={option.details}
+                            variant="horizontal"
+                        />
+                    ))}
+                </Grid>
+            </Section>
 
-// Create a simple cache
-CacheConfig<String, String> config = CacheConfig.<String, String>builder()
-    .maximumSize(1000L)
-    .build();
+            {/* Best Practices */}
+            <Section
+                background="light"
+                padding="large"
+                title="Best Practices"
+                subtitle="Tips for getting the most out of JCacheX"
+                centered
+            >
+                <Grid columns={3} gap="large">
+                    {bestPractices.map((practice, index) => (
+                        <FeatureCard
+                            key={index}
+                            icon={practice.icon}
+                            title={practice.title}
+                            description={practice.description}
+                            details={practice.details}
+                            variant="compact"
+                        />
+                    ))}
+                </Grid>
+            </Section>
 
-Cache<String, String> cache = new DefaultCache<>(config);
-
-// Basic operations
-cache.put("key1", "value1");
-String value = cache.get("key1");
-System.out.println("Value: " + value); // Output: Value: value1`}</code></pre>
-                    </section>
-
-                    <section className="docs-section">
-                        <h2>Next Steps</h2>
-                        <div className="callout callout-info">
-                            <h4>📚 More Documentation</h4>
-                            <p>This is a placeholder for the full documentation. Check out our <a href="/examples">examples page</a> for more code samples.</p>
-                        </div>
-                    </section>
-                </main>
-            </div>
+            {/* Next Steps */}
+            <Section background="gradient" padding="large" centered>
+                <div className="next-steps">
+                    <h2 className="next-steps-title">Next Steps</h2>
+                    <p className="next-steps-subtitle">
+                        Ready to explore more advanced features?
+                    </p>
+                    <div className="next-steps-buttons">
+                        <a href="/examples" className="btn btn-primary">
+                            View Examples
+                        </a>
+                        <a href="/spring" className="btn btn-secondary">
+                            Spring Boot Guide
+                        </a>
+                    </div>
+                </div>
+            </Section>
         </div>
     );
 };

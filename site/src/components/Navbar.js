@@ -3,51 +3,93 @@ import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
 const Navbar = () => {
-    const [isOpen, setIsOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const location = useLocation();
 
     const toggleMenu = () => {
-        setIsOpen(!isOpen);
+        setIsMenuOpen(!isMenuOpen);
+    };
+
+    const closeMenu = () => {
+        setIsMenuOpen(false);
     };
 
     const isActive = (path) => {
-        if (path === '/') {
-            return location.pathname === '/';
-        }
-        return location.pathname.startsWith(path);
+        return location.pathname === path;
     };
 
     return (
-        <header className="header">
-            <nav className="navbar">
-                <div className="container">
-                    <div className="navbar-brand">
-                        <Link to="/">
-                            <img src="/logo.svg" alt="JCacheX Logo" className="logo" />
-                            <span>JCacheX</span>
-                        </Link>
-                    </div>
-                    <ul className={`navbar-nav ${isOpen ? 'active' : ''}`}>
-                        <li><Link to="/" className={isActive('/') ? 'active' : ''}>Home</Link></li>
-                        <li><a href="#features" className={isActive('/') ? 'active' : ''}>Features</a></li>
-                        <li><a href="#quick-start" className={isActive('/') ? 'active' : ''}>Quick Start</a></li>
-                        <li><Link to="/docs/getting-started" className={isActive('/docs') ? 'active' : ''}>Documentation</Link></li>
-                        <li><Link to="/examples" className={isActive('/examples') ? 'active' : ''}>Examples</Link></li>
-                        <li><a href="https://javadoc.io/doc/io.github.dhruv1110/jcachex-core/latest/index.html" target="_blank" rel="noopener noreferrer">API Reference</a></li>
-                        <li><a href="https://github.com/dhruv1110/JCacheX" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-                    </ul>
-                    <button
-                        className={`mobile-menu-toggle ${isOpen ? 'active' : ''}`}
-                        onClick={toggleMenu}
-                        aria-label="Toggle mobile menu"
-                    >
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
+        <nav className="navbar">
+            <div className="container">
+                <div className="navbar-brand">
+                    <Link to="/" className="brand-link" onClick={closeMenu}>
+                        <img src="/logo.svg" alt="JCacheX" className="brand-logo" />
+                        <span className="brand-text">JCacheX</span>
+                    </Link>
                 </div>
-            </nav>
-        </header>
+
+                <div className={`navbar-menu ${isMenuOpen ? 'active' : ''}`}>
+                    <div className="navbar-nav">
+                        <Link
+                            to="/"
+                            className={`nav-link ${isActive('/') ? 'active' : ''}`}
+                            onClick={closeMenu}
+                        >
+                            Home
+                        </Link>
+                        <Link
+                            to="/getting-started"
+                            className={`nav-link ${isActive('/getting-started') ? 'active' : ''}`}
+                            onClick={closeMenu}
+                        >
+                            Getting Started
+                        </Link>
+                        <Link
+                            to="/examples"
+                            className={`nav-link ${isActive('/examples') ? 'active' : ''}`}
+                            onClick={closeMenu}
+                        >
+                            Examples
+                        </Link>
+                        <Link
+                            to="/spring"
+                            className={`nav-link ${isActive('/spring') || isActive('/spring-boot') ? 'active' : ''}`}
+                            onClick={closeMenu}
+                        >
+                            Spring Boot
+                        </Link>
+                        <a
+                            href="https://javadoc.io/doc/io.github.dhruv1110/jcachex-core"
+                            className="nav-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={closeMenu}
+                        >
+                            API Docs
+                        </a>
+                        <a
+                            href="https://github.com/dhruv1110/JCacheX"
+                            className="nav-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={closeMenu}
+                        >
+                            GitHub
+                        </a>
+                    </div>
+                </div>
+
+                <button
+                    className={`navbar-toggle ${isMenuOpen ? 'active' : ''}`}
+                    onClick={toggleMenu}
+                    aria-label="Toggle navigation"
+                >
+                    <span className="toggle-bar"></span>
+                    <span className="toggle-bar"></span>
+                    <span className="toggle-bar"></span>
+                </button>
+            </div>
+        </nav>
     );
 };
 

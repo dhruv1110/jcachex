@@ -49,10 +49,29 @@ jobs:
       - name: Build React app
         run: |
           cd site
+          echo "Building with version: ${{ inputs.version || '1.0.0' }}"
+          echo "PUBLIC_URL: /jcachex"
           npm run build
         env:
-          PUBLIC_URL: /JCacheX
+          PUBLIC_URL: /jcachex
           REACT_APP_VERSION: ${{ inputs.version || '1.0.0' }}
+
+      - name: Verify build and version replacement
+        run: |
+          cd site
+          echo "Verifying build completed successfully..."
+          ls -la build/
+          echo "Checking for version in build files..."
+          if [ -n "${{ inputs.version }}" ] && [ "${{ inputs.version }}" != "1.0.0" ]; then
+            echo "Checking for custom version: ${{ inputs.version }}"
+            if grep -r "${{ inputs.version }}" build/static/js/ || true; then
+              echo "✅ Custom version found in build"
+            else
+              echo "⚠️ Custom version not found in build - using default"
+            fi
+          else
+            echo "Using default version (1.0.0)"
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v4

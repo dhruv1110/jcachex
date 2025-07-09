@@ -7,6 +7,11 @@
     "scripts": {
         "start": "react-scripts start",
         "build": "react-scripts build",
+        "build:local": "GENERATE_SOURCEMAP=false PUBLIC_URL=. react-scripts build",
+        "serve": "serve -s build -l 3001",
+        "test:local": "npm run build:local && npm run serve",
+        "test:version": "GENERATE_SOURCEMAP=false PUBLIC_URL=. npm run build && npm run serve",
+        "verify:version": "node verify-version.js",
         "test": "react-scripts test",
         "eject": "react-scripts eject"
     },
@@ -18,7 +23,8 @@
     },
     "devDependencies": {
         "@types/react": "^18.0.28",
-        "@types/react-dom": "^18.0.11"
+        "@types/react-dom": "^18.0.11",
+        "serve": "^14.2.4"
     },
     "browserslist": {
         "production": [

@@ -1,5 +1,5 @@
-/* Examples component specific styles */
-.examples {
+/* Spring Guide component specific styles */
+.spring-guide {
     min-height: 100vh;
 }
 
@@ -25,54 +25,10 @@
     margin-bottom: 0;
 }
 
-/* Examples Grid */
-.examples-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 3rem;
-    max-width: 1200px;
+/* Code Sections */
+.code-section {
+    max-width: 900px;
     margin: 0 auto;
-}
-
-.example-category {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 2rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e2e8f0;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.example-category:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-
-.category-header {
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.category-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-}
-
-.category-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #1e293b;
-    margin-bottom: 0.5rem;
-}
-
-.category-description {
-    color: #64748b;
-    line-height: 1.6;
-    margin-bottom: 0;
-}
-
-.category-content {
-    max-width: 100%;
 }
 
 /* Resource Cards */
@@ -158,10 +114,6 @@
     .next-steps-title {
         font-size: 2rem;
     }
-
-    .category-icon {
-        font-size: 2.5rem;
-    }
 }
 
 @media (max-width: 768px) {
@@ -186,22 +138,6 @@
         align-items: center;
     }
 
-    .examples-grid {
-        gap: 2rem;
-    }
-
-    .example-category {
-        padding: 1.5rem;
-    }
-
-    .category-header {
-        margin-bottom: 1.5rem;
-    }
-
-    .category-icon {
-        font-size: 2rem;
-    }
-
     .resource-card {
         padding: 1.5rem;
     }
@@ -218,18 +154,6 @@
 
     .next-steps-title {
         font-size: 1.5rem;
-    }
-
-    .examples-grid {
-        gap: 1.5rem;
-    }
-
-    .example-category {
-        padding: 1rem;
-    }
-
-    .category-header {
-        margin-bottom: 1rem;
     }
 
     .resource-card {

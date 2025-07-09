@@ -1,127 +1,151 @@
-/* GettingStarted Styles */
+/* Getting Started component specific styles */
 .getting-started {
-    padding-top: 100px;
     min-height: 100vh;
-    background-color: var(--background-color);
 }
 
-.docs-header {
-    text-align: center;
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.breadcrumb {
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
-    color: var(--text-light);
-}
-
-.breadcrumb a {
-    color: var(--primary-color);
-    text-decoration: none;
-}
-
-.breadcrumb a:hover {
-    text-decoration: underline;
-}
-
-.breadcrumb span {
-    margin: 0 0.5rem;
-}
-
-.docs-header h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-    color: var(--text-color);
-}
-
-.docs-header .lead {
-    font-size: 1.125rem;
-    color: var(--text-light);
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-.docs-content {
+/* Header Section */
+.header-content {
     max-width: 800px;
     margin: 0 auto;
+    text-align: center;
 }
 
-.docs-section {
-    margin-bottom: 3rem;
+.page-title {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.docs-section h2 {
-    font-size: 2rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    color: var(--text-color);
-    border-bottom: 3px solid var(--primary-color);
-    padding-bottom: 0.5rem;
-}
-
-.docs-section h3 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 2rem 0 1rem 0;
-    color: var(--text-color);
-}
-
-.docs-section p {
-    margin-bottom: 1.5rem;
+.page-subtitle {
+    font-size: 1.25rem;
+    color: #e2e8f0;
     line-height: 1.6;
-    color: var(--text-light);
+    margin-bottom: 0;
 }
 
-.callout {
-    padding: 1.5rem;
-    border-radius: var(--border-radius);
-    margin: 2rem 0;
-    border-left: 4px solid;
+/* Code Sections */
+.code-section {
+    max-width: 900px;
+    margin: 0 auto;
 }
 
-.callout-info {
-    background-color: rgba(59, 130, 246, 0.1);
-    border-left-color: var(--primary-color);
+/* Next Steps Section */
+.next-steps {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
 }
 
-.callout h4 {
-    margin: 0 0 0.5rem 0;
-    color: var(--text-color);
-    font-size: 1.125rem;
+.next-steps-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 1rem;
 }
 
-.callout p {
-    margin: 0;
-    color: var(--text-light);
+.next-steps-subtitle {
+    font-size: 1.2rem;
+    color: #e2e8f0;
+    margin-bottom: 2rem;
 }
 
-/* Mobile Styles */
-@media (max-width: 768px) {
-    .getting-started {
-        padding-top: 80px;
+.next-steps-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Button Styles */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn-primary {
+    background: #6366f1;
+    color: #ffffff;
+    border-color: #6366f1;
+}
+
+.btn-primary:hover {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #ffffff;
+    border-color: #ffffff;
+}
+
+.btn-secondary:hover {
+    background: #ffffff;
+    color: #6366f1;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .page-title {
+        font-size: 2.5rem;
     }
 
-    .docs-header h1 {
+    .page-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .next-steps-title {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-title {
         font-size: 2rem;
     }
 
-    .docs-header .lead {
+    .page-subtitle {
         font-size: 1rem;
     }
 
-    .docs-section h2 {
+    .next-steps-title {
+        font-size: 1.75rem;
+    }
+
+    .next-steps-subtitle {
+        font-size: 1rem;
+    }
+
+    .next-steps-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .btn {
+        width: 100%;
+        max-width: 300px;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 1.75rem;
+    }
+
+    .next-steps-title {
         font-size: 1.5rem;
-    }
-
-    .docs-section h3 {
-        font-size: 1.25rem;
-    }
-
-    .callout {
-        padding: 1rem;
     }
 }
