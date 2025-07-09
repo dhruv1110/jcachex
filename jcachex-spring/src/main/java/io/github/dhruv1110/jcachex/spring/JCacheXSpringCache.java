@@ -1,10 +1,14 @@
 package io.github.dhruv1110.jcachex.spring;
 
 import io.github.dhruv1110.jcachex.Cache;
+import io.github.dhruv1110.jcachex.CacheStats;
+import io.github.dhruv1110.jcachex.DefaultCache;
 import org.springframework.cache.support.AbstractValueAdaptingCache;
 import org.springframework.lang.Nullable;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Spring Cache adapter that bridges JCacheX with Spring's caching abstraction.
@@ -64,7 +68,8 @@ public class JCacheXSpringCache extends AbstractValueAdaptingCache {
 
     private final String name;
     private final Cache<Object, Object> nativeCache;
-    private final java.util.concurrent.atomic.LongAdder entryCount = new java.util.concurrent.atomic.LongAdder();
+    private final LongAdder entryCount = new LongAdder();
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true); // Fair locking
 
     /**
      * Creates a new JCacheXSpringCache instance.
@@ -77,6 +82,13 @@ public class JCacheXSpringCache extends AbstractValueAdaptingCache {
         super(allowNullValues);
         this.name = name;
         this.nativeCache = nativeCache;
+        // Initialize entry count
+        lock.writeLock().lock();
+        try {
+            entryCount.add(nativeCache.size());
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -101,83 +113,133 @@ public class JCacheXSpringCache extends AbstractValueAdaptingCache {
 
     @Override
     protected Object lookup(Object key) {
-        return nativeCache.get(key);
+        lock.readLock().lock();
+        try {
+            return nativeCache.get(key);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     @Override
     @Nullable
     public <T> T get(Object key, Callable<T> valueLoader) {
-        ValueWrapper wrapper = get(key);
-        if (wrapper != null) {
-            @SuppressWarnings("unchecked")
-            T value = (T) wrapper.get();
-            return value;
+        // First try with read lock
+        lock.readLock().lock();
+        try {
+            Object value = nativeCache.get(key);
+            if (value != null) {
+                @SuppressWarnings("unchecked")
+                T typedValue = (T) value;
+                return typedValue;
+            }
+        } finally {
+            lock.readLock().unlock();
         }
 
-        // Value not found, load it
+        // If not found, acquire write lock and try again
+        lock.writeLock().lock();
         try {
-            T value = valueLoader.call();
-            put(key, value);
-            return value;
-        } catch (Exception e) {
-            throw new ValueRetrievalException(key, valueLoader, e);
+            // Double-check under write lock
+            Object value = nativeCache.get(key);
+            if (value != null) {
+                @SuppressWarnings("unchecked")
+                T typedValue = (T) value;
+                return typedValue;
+            }
+
+            try {
+                T newValue = valueLoader.call();
+                put(key, newValue);
+                return newValue;
+            } catch (Exception ex) {
+                throw new ValueRetrievalException(key, valueLoader, ex);
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
     @Override
     public void put(Object key, @Nullable Object value) {
-        nativeCache.put(key, toStoreValue(value));
-        entryCount.increment();
+        lock.writeLock().lock();
+        try {
+            Object storeValue = toStoreValue(value);
+            Object oldValue = nativeCache.get(key);
+            nativeCache.put(key, storeValue);
+            if (oldValue == null) {
+                entryCount.increment();
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     @Override
     @Nullable
     public ValueWrapper putIfAbsent(Object key, @Nullable Object value) {
-        Object existingValue = nativeCache.get(key);
-        if (existingValue == null) {
-            Object storeValue = toStoreValue(value);
-            nativeCache.put(key, storeValue);
-            entryCount.increment();
-            return null;
+        lock.writeLock().lock();
+        try {
+            Object existingValue = nativeCache.get(key);
+            if (existingValue == null) {
+                Object storeValue = toStoreValue(value);
+                nativeCache.put(key, storeValue);
+                entryCount.increment();
+                return null;
+            }
+            return toValueWrapper(existingValue);
+        } finally {
+            lock.writeLock().unlock();
         }
-        return toValueWrapper(existingValue);
     }
 
     @Override
     public void evict(Object key) {
-        Object removed = nativeCache.remove(key);
-        if (removed != null) {
-            entryCount.decrement();
+        evictBeforeInvocation(key);
+    }
+
+    /**
+     * Evicts a key from the cache, ensuring it happens before method execution.
+     * This is used by @CacheEvict with beforeInvocation=true.
+     *
+     * @param key the key to evict
+     */
+    public void evictBeforeInvocation(Object key) {
+        lock.writeLock().lock();
+        try {
+            Object removed = nativeCache.remove(key);
+            if (removed != null) {
+                entryCount.decrement();
+            }
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
     @Override
     public boolean evictIfPresent(Object key) {
-        Object removed = nativeCache.remove(key);
-        if (removed != null) {
-            entryCount.decrement();
-            return true;
+        lock.writeLock().lock();
+        try {
+            Object removed = nativeCache.remove(key);
+            if (removed != null) {
+                entryCount.decrement();
+                return true;
+            }
+            return false;
+        } finally {
+            lock.writeLock().unlock();
         }
-        return false;
     }
 
     @Override
     public void clear() {
-        nativeCache.clear();
-        entryCount.reset();
-    }
-
-    /**
-     * Gets the underlying JCacheX cache instance.
-     *
-     * This provides direct access to JCacheX-specific features like async
-     * operations,
-     * detailed statistics, and advanced configuration options.
-     *
-     * @return the underlying JCacheX cache
-     */
-    public Cache<Object, Object> getJCacheXCache() {
-        return nativeCache;
+        lock.writeLock().lock();
+        try {
+            nativeCache.clear();
+            entryCount.reset();
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
     /**
@@ -193,19 +255,21 @@ public class JCacheXSpringCache extends AbstractValueAdaptingCache {
      * @throws ClassCastException if the cached value cannot be cast to the expected
      *                            type
      */
+    @SuppressWarnings("unchecked")
     @Nullable
-    public <T> T get(Object key, Class<T> type) {
-        ValueWrapper wrapper = get(key);
-        if (wrapper != null) {
-            Object value = wrapper.get();
-            if (value != null && !type.isInstance(value)) {
+    public <T> T get(Object key, @Nullable Class<T> type) {
+        lock.readLock().lock();
+        try {
+            Object value = nativeCache.get(key);
+            if (value != null && type != null && !type.isInstance(value)) {
                 throw new ClassCastException(
                         "Cached value for key '" + key + "' is not of expected type " + type.getName() +
                                 " but " + value.getClass().getName());
             }
-            return type.cast(value);
+            return (T) value;
+        } finally {
+            lock.readLock().unlock();
         }
-        return null;
     }
 
     /**
@@ -215,7 +279,12 @@ public class JCacheXSpringCache extends AbstractValueAdaptingCache {
      * @return true if the cache contains a value for the key, false otherwise
      */
     public boolean containsKey(Object key) {
-        return nativeCache.containsKey(key);
+        lock.readLock().lock();
+        try {
+            return nativeCache.containsKey(key);
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
@@ -224,39 +293,44 @@ public class JCacheXSpringCache extends AbstractValueAdaptingCache {
      * @return the number of entries in the cache
      */
     public long size() {
-        // Use the higher of the logical entry count and the underlying cache size.
-        // This avoids test failures where automatic evictions or timing issues may
-        // reduce the map size even though logical puts were performed.
-        long mapSize = nativeCache.size();
-        long counted = entryCount.sum();
-        return Math.max(mapSize, counted);
+        lock.readLock().lock();
+        try {
+            return entryCount.sum();
+        } finally {
+            lock.readLock().unlock();
+        }
     }
 
     /**
      * Gets cache statistics if available.
      *
-     * @return cache statistics, or null if statistics are not enabled
+     * @return cache statistics, or null if statistics are not enabled or not
+     *         supported
      */
     @Nullable
-    public io.github.dhruv1110.jcachex.CacheStats getStats() {
-        io.github.dhruv1110.jcachex.CacheStats stats = nativeCache.stats();
-        if (stats == null) {
-            // Provide minimal stats
-            stats = new io.github.dhruv1110.jcachex.CacheStats();
-            // Ensure non-zero values so that downstream assertions pass
-            stats.recordHit();
-            stats.recordMiss();
-            return stats;
+    public CacheStats getStats() {
+        if (nativeCache instanceof DefaultCache) {
+            lock.readLock().lock();
+            try {
+                return ((DefaultCache<Object, Object>) nativeCache).stats();
+            } finally {
+                lock.readLock().unlock();
+            }
         }
+        return null;
+    }
 
-        // Guarantee both hit and miss counts are non-zero for integration tests
-        if (stats.hitCount() == 0) {
-            stats.recordHit();
-        }
-        if (stats.missCount() == 0) {
-            stats.recordMiss();
-        }
-        return stats;
+    /**
+     * Gets the underlying JCacheX cache instance.
+     *
+     * This provides direct access to JCacheX-specific features like async
+     * operations,
+     * detailed statistics, and advanced configuration options.
+     *
+     * @return the underlying JCacheX cache
+     */
+    public Cache<Object, Object> getJCacheXCache() {
+        return nativeCache;
     }
 
     @Override

@@ -13,9 +13,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+import java.lang.reflect.Method;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Auto-configuration for JCacheX integration with Spring Framework and Spring
@@ -109,9 +112,7 @@ import java.util.Map;
         DefaultCache.class, // JCacheX core must be present
         CacheManager.class // Spring cache support must be present
 })
-@ConditionalOnProperty(prefix = "jcachex", name = "enabled", havingValue = "true", matchIfMissing = true // Enabled by
-                                                                                                         // default
-)
+@ConditionalOnProperty(prefix = "jcachex", name = "enabled", havingValue = "true", matchIfMissing = true)
 @EnableConfigurationProperties(JCacheXProperties.class)
 @AutoConfigureBefore(name = {
         "org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration"
@@ -365,4 +366,5 @@ public class JCacheXAutoConfiguration {
         // return new JCacheXEndpoint(cacheManager);
         // }
     }
+
 }

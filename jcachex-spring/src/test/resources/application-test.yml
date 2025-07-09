@@ -23,12 +23,13 @@ jcachex:
       expireAfterAccessSeconds: 1800
       enableStatistics: true
       evictionStrategy: LRU
+    statistics:
+      maximumSize: 100
+      expireAfterSeconds: 300
+      enableStatistics: true
+      evictionStrategy: LRU
 
 logging:
   level:
     io.github.dhruv1110.jcachex: DEBUG
     org.springframework.cache: DEBUG
-
-spring:
-  cache:
-    type: none  # Disable Spring's default cache configuration

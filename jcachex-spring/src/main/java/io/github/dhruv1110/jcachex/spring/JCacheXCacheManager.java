@@ -308,64 +308,53 @@ public class JCacheXCacheManager implements CacheManager {
      */
     private CacheConfig<Object, Object> buildJCacheXConfig(String cacheName,
             JCacheXProperties.CacheConfig config) {
-        CacheConfig.Builder<Object, Object> builder = CacheConfig.newBuilder();
+        CacheConfig.Builder<Object, Object> builder = new CacheConfig.Builder<>();
 
-        if (config != null) {
-            // Basic size configuration
-            if (config.getMaximumSize() != null) {
-                builder.maximumSize(config.getMaximumSize());
-            }
-            if (config.getMaximumWeight() != null) {
-                builder.maximumWeight(config.getMaximumWeight());
-            }
-
-            // Expiration configuration
-            if (config.getExpireAfterSeconds() != null) {
-                builder.expireAfterWrite(Duration.ofSeconds(config.getExpireAfterSeconds()));
-            }
-            if (config.getExpireAfterAccessSeconds() != null) {
-                builder.expireAfterAccess(Duration.ofSeconds(config.getExpireAfterAccessSeconds()));
-            }
-            if (config.getRefreshAfterWriteSeconds() != null) {
-                builder.refreshAfterWrite(Duration.ofSeconds(config.getRefreshAfterWriteSeconds()));
-            }
-
-            // Reference types
-            if (config.getWeakKeys() != null) {
-                builder.weakKeys(config.getWeakKeys());
-            }
-            if (config.getWeakValues() != null) {
-                builder.weakValues(config.getWeakValues());
-            }
-            if (config.getSoftValues() != null) {
-                builder.softValues(config.getSoftValues());
-            }
-
-            // Performance settings - enable statistics unless explicitly disabled
-            if (config.getEnableStatistics() != null) {
-                builder.recordStats(config.getEnableStatistics());
-            } else {
-                builder.recordStats(true);
-            }
-
-            // Eviction strategy
-            if (config.getEvictionStrategy() != null) {
-                try {
-                    builder.evictionStrategy(
-                            evictionStrategyFactory.createStrategy(config.getEvictionStrategy(), config));
-                } catch (IllegalArgumentException e) {
-                    // Log warning and continue with default strategy
-                    System.err.println("Warning: Invalid eviction strategy '" + config.getEvictionStrategy() +
-                            "' for cache '" + cacheName + "', using default LRU strategy. " + e.getMessage());
-                }
-            }
+        // Apply size limits
+        if (config.getMaximumSize() != null) {
+            builder.maximumSize(config.getMaximumSize());
         }
 
-        // Special-case: the integration tests expect the "statistics" cache to evict
-        // earlier entries once a second key is added. Configure a small maximum size
-        // to replicate this behavior when no explicit size is provided in properties.
-        if ("statistics".equals(cacheName) && (config == null || config.getMaximumSize() == null)) {
-            builder.maximumSize(1L);
+        // Apply expiration settings
+        if (config.getExpireAfterSeconds() != null) {
+            builder.expireAfterWrite(Duration.ofSeconds(config.getExpireAfterSeconds()));
+        }
+        if (config.getExpireAfterAccessSeconds() != null) {
+            builder.expireAfterAccess(Duration.ofSeconds(config.getExpireAfterAccessSeconds()));
+        }
+
+        // Apply eviction strategy
+        if (config.getEvictionStrategy() != null) {
+            builder.evictionStrategy(evictionStrategyFactory.createStrategy(config.getEvictionStrategy(), config));
+        }
+
+        // Enable statistics
+        builder.recordStats(config.getEnableStatistics() != null ? config.getEnableStatistics() : true);
+
+        // Apply refresh settings
+        if (config.getRefreshAfterWriteSeconds() != null) {
+            builder.refreshAfterWrite(Duration.ofSeconds(config.getRefreshAfterWriteSeconds()));
+        }
+
+        // Apply weight settings
+        if (config.getMaximumWeight() != null) {
+            builder.maximumWeight(config.getMaximumWeight());
+        }
+
+        // Apply event listeners
+        if (config.getEventListeners() != null && config.getEventListeners().getListeners() != null) {
+            config.getEventListeners().getListeners().forEach(listenerClass -> {
+                try {
+                    Class<?> clazz = Class.forName(listenerClass);
+                    Object listener = clazz.getDeclaredConstructor().newInstance();
+                    if (listener instanceof io.github.dhruv1110.jcachex.CacheEventListener) {
+                        builder.addListener((io.github.dhruv1110.jcachex.CacheEventListener<Object, Object>) listener);
+                    }
+                } catch (Exception e) {
+                    // Log warning and continue
+                    System.err.println("Warning: Failed to create listener " + listenerClass + ": " + e.getMessage());
+                }
+            });
         }
 
         return builder.build();
