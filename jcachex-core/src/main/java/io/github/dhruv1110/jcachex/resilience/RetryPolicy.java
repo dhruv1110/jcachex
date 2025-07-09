@@ -2,6 +2,7 @@ package io.github.dhruv1110.jcachex.resilience;
 
 import io.github.dhruv1110.jcachex.exceptions.CacheException;
 
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
@@ -18,6 +19,7 @@ import java.util.function.Supplier;
  * <li>Exponential backoff with jitter</li>
  * <li>Selective retry based on exception types</li>
  * <li>Circuit breaker integration</li>
+ * <li>Configurable random number generator for jitter</li>
  * </ul>
  *
  * <h3>Usage Examples:</h3>
@@ -40,6 +42,12 @@ import java.util.function.Supplier;
  * CompletableFuture<String> future = retryPolicy.executeAsync(() -> {
  *     return cache.getAsync(key);
  * });
+ *
+ * // With secure random for security-sensitive environments
+ * RetryPolicy secureRetryPolicy = RetryPolicy.builder()
+ *         .maxAttempts(3)
+ *         .secureRandom(true) // Uses SecureRandom instead of ThreadLocalRandom
+ *         .build();
  * }</pre>
  *
  * @since 1.0.0
@@ -53,6 +61,7 @@ public class RetryPolicy {
     private final double jitterFactor;
     private final Predicate<Throwable> retryPredicate;
     private final Function<Integer, Duration> delayFunction;
+    private final Supplier<Double> randomSupplier;
 
     private RetryPolicy(Builder builder) {
         this.maxAttempts = builder.maxAttempts;
@@ -62,6 +71,7 @@ public class RetryPolicy {
         this.jitterFactor = builder.jitterFactor;
         this.retryPredicate = builder.retryPredicate;
         this.delayFunction = builder.delayFunction;
+        this.randomSupplier = builder.randomSupplier;
     }
 
     /**
@@ -179,7 +189,9 @@ public class RetryPolicy {
 
         // Apply jitter to avoid thundering herd
         if (jitterFactor > 0) {
-            double jitter = ThreadLocalRandom.current().nextDouble(-jitterFactor, jitterFactor);
+            // Use configurable random supplier for jitter calculation
+            double randomValue = randomSupplier.get();
+            double jitter = (randomValue * 2 - 1) * jitterFactor; // Convert [0,1] to [-jitterFactor, jitterFactor]
             clampedDelay = (long) (clampedDelay * (1 + jitter));
         }
 
@@ -197,6 +209,7 @@ public class RetryPolicy {
         private double jitterFactor = 0.1;
         private Predicate<Throwable> retryPredicate = throwable -> true;
         private Function<Integer, Duration> delayFunction = null;
+        private Supplier<Double> randomSupplier = () -> ThreadLocalRandom.current().nextDouble();
 
         /**
          * Sets the maximum number of retry attempts.
@@ -307,6 +320,44 @@ public class RetryPolicy {
          */
         public Builder delayFunction(Function<Integer, Duration> delayFunction) {
             this.delayFunction = delayFunction;
+            return this;
+        }
+
+        /**
+         * Configures the retry policy to use SecureRandom for jitter calculation.
+         * <p>
+         * This is useful in security-sensitive environments where predictable
+         * random numbers could be a concern. Note that SecureRandom is slower
+         * than ThreadLocalRandom, so only use this when security is a priority.
+         * </p>
+         *
+         * @param useSecureRandom true to use SecureRandom, false to use
+         *                        ThreadLocalRandom (default)
+         * @return this builder
+         */
+        public Builder secureRandom(boolean useSecureRandom) {
+            if (useSecureRandom) {
+                SecureRandom secureRandom = new SecureRandom();
+                this.randomSupplier = secureRandom::nextDouble;
+            } else {
+                this.randomSupplier = () -> ThreadLocalRandom.current().nextDouble();
+            }
+            return this;
+        }
+
+        /**
+         * Sets a custom random number supplier for jitter calculation.
+         * <p>
+         * This allows for complete control over the random number generation
+         * used in jitter calculations. The supplier should return values
+         * between 0.0 (inclusive) and 1.0 (exclusive).
+         * </p>
+         *
+         * @param randomSupplier the random number supplier
+         * @return this builder
+         */
+        public Builder randomSupplier(Supplier<Double> randomSupplier) {
+            this.randomSupplier = randomSupplier;
             return this;
         }
 

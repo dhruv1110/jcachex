@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
@@ -306,5 +307,120 @@ class RetryPolicyTest {
         });
 
         assertEquals(1, counter.get());
+    }
+
+    @Test
+    @DisplayName("Should use SecureRandom when configured")
+    void shouldUseSecureRandomWhenConfigured() throws Exception {
+        // Test that SecureRandom option works without throwing exceptions
+        RetryPolicy retryPolicy = RetryPolicy.builder()
+                .maxAttempts(2)
+                .initialDelay(Duration.ofMillis(10))
+                .jitterFactor(0.5)
+                .secureRandom(true)
+                .build();
+
+        AtomicInteger attempts = new AtomicInteger(0);
+
+        assertThrows(Exception.class, () -> {
+            retryPolicy.execute(() -> {
+                attempts.incrementAndGet();
+                throw new RuntimeException("Test exception");
+            });
+        });
+
+        assertEquals(2, attempts.get(), "Should have attempted 2 times");
+    }
+
+    @Test
+    @DisplayName("Should use custom random supplier when configured")
+    void shouldUseCustomRandomSupplierWhenConfigured() throws Exception {
+        // Use a predictable random supplier for testing
+        AtomicInteger callCount = new AtomicInteger(0);
+        Supplier<Double> predictableRandom = () -> {
+            callCount.incrementAndGet();
+            return 0.5; // Always return 0.5
+        };
+
+        RetryPolicy retryPolicy = RetryPolicy.builder()
+                .maxAttempts(2)
+                .initialDelay(Duration.ofMillis(10))
+                .jitterFactor(0.2)
+                .randomSupplier(predictableRandom)
+                .build();
+
+        AtomicInteger attempts = new AtomicInteger(0);
+
+        assertThrows(Exception.class, () -> {
+            retryPolicy.execute(() -> {
+                attempts.incrementAndGet();
+                throw new RuntimeException("Test exception");
+            });
+        });
+
+        assertEquals(2, attempts.get(), "Should have attempted 2 times");
+        assertEquals(1, callCount.get(), "Custom random supplier should have been called once for jitter");
+    }
+
+    @Test
+    @DisplayName("Should work with zero jitter factor")
+    void shouldWorkWithZeroJitterFactor() throws Exception {
+        // Test that random supplier is not called when jitter factor is 0
+        AtomicInteger randomCallCount = new AtomicInteger(0);
+        Supplier<Double> trackingRandom = () -> {
+            randomCallCount.incrementAndGet();
+            return 0.5;
+        };
+
+        RetryPolicy retryPolicy = RetryPolicy.builder()
+                .maxAttempts(2)
+                .initialDelay(Duration.ofMillis(10))
+                .jitterFactor(0.0) // No jitter
+                .randomSupplier(trackingRandom)
+                .build();
+
+        AtomicInteger attempts = new AtomicInteger(0);
+
+        assertThrows(Exception.class, () -> {
+            retryPolicy.execute(() -> {
+                attempts.incrementAndGet();
+                throw new RuntimeException("Test exception");
+            });
+        });
+
+        assertEquals(2, attempts.get(), "Should have attempted 2 times");
+        assertEquals(0, randomCallCount.get(), "Random supplier should not be called when jitter factor is 0");
+    }
+
+    @Test
+    @DisplayName("Should handle edge cases in custom random supplier")
+    void shouldHandleEdgeCasesInCustomRandomSupplier() throws Exception {
+        // Test with random supplier that returns edge values
+        AtomicBoolean useMinValue = new AtomicBoolean(true);
+        Supplier<Double> edgeValueRandom = () -> {
+            if (useMinValue.getAndSet(false)) {
+                return 0.0; // Minimum value
+            } else {
+                return 0.99999; // Near maximum value
+            }
+        };
+
+        RetryPolicy retryPolicy = RetryPolicy.builder()
+                .maxAttempts(3)
+                .initialDelay(Duration.ofMillis(10))
+                .jitterFactor(0.5)
+                .randomSupplier(edgeValueRandom)
+                .build();
+
+        AtomicInteger attempts = new AtomicInteger(0);
+
+        assertThrows(Exception.class, () -> {
+            retryPolicy.execute(() -> {
+                attempts.incrementAndGet();
+                throw new RuntimeException("Test exception");
+            });
+        });
+
+        assertEquals(3, attempts.get(), "Should have attempted 3 times even with edge random values");
     }
 }
