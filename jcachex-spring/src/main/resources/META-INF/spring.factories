@@ -1,0 +1,3 @@
+# Auto-configuration for JCacheX
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+io.github.dhruv1110.jcachex.spring.JCacheXAutoConfiguration

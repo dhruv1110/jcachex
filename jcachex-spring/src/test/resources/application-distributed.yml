@@ -1,0 +1,39 @@
+jcachex:
+  enabled: true
+  autoCreateCaches: true
+  distributed:
+    enabled: true
+    clusterName: "test-cluster"
+    nodes:
+      - "localhost:8080"
+      - "localhost:8081"
+    replicationFactor: 2
+    consistencyLevel: "EVENTUAL"
+    networkProtocol: "TCP"
+    port: 8080
+    timeoutSeconds: 5
+    autoDiscovery: false
+    heartbeatIntervalSeconds: 5
+    maxRetries: 2
+  default:
+    maximumSize: 100
+    expireAfterSeconds: 300
+    enableStatistics: true
+    network:
+      protocol: "TCP"
+      serialization: "KRYO"
+      compression: "LZ4"
+      encryption: false
+      port: 8080
+  caches:
+    distributed-cache:
+      maximumSize: 500
+      expireAfterSeconds: 1800
+      distributed:
+        enabled: true
+        replicationFactor: 3
+        consistencyLevel: "STRONG"
+
+logging:
+  level:
+    io.github.dhruv1110.jcachex: DEBUG

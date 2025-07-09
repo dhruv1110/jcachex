@@ -1,0 +1,35 @@
+jcachex:
+  enabled: true
+  autoCreateCaches: true
+  default:
+    maximumSize: 100
+    expireAfterSeconds: 300
+    enableStatistics: true
+    enableJmx: false
+    evictionStrategy: LRU
+  caches:
+    users:
+      maximumSize: 50
+      expireAfterSeconds: 600
+      enableStatistics: true
+      evictionStrategy: LFU
+    products:
+      maximumSize: 200
+      expireAfterSeconds: 1800
+      enableStatistics: false
+      evictionStrategy: FIFO
+    sessions:
+      maximumSize: 1000
+      expireAfterAccessSeconds: 1800
+      enableStatistics: true
+      evictionStrategy: LRU
+    statistics:
+      maximumSize: 100
+      expireAfterSeconds: 300
+      enableStatistics: true
+      evictionStrategy: LRU
+
+logging:
+  level:
+    io.github.dhruv1110.jcachex: DEBUG
+    org.springframework.cache: DEBUG
