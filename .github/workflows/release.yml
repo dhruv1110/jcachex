@@ -357,46 +357,13 @@ jobs:
     outputs:
       new_version: ${{ steps.new_version.outputs.new_version }}
 
-  update-documentation:
-    runs-on: ubuntu-latest
+  deploy-website:
+    uses: ./.github/workflows/pages.yml
     needs: release
     permissions:
       contents: read
       pages: write
       id-token: write
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        ref: main
-        fetch-depth: 0
-
-    - name: Create documentation site
-      run: |
-        # Convert README to HTML using the template
-        RELEASE_VERSION=${{ needs.release.outputs.new_version }} \
-        python3 .github/scripts/convert-readme.py README.md .github/templates/index.html docs/index.html
-
-    - name: Setup Pages
-      uses: actions/configure-pages@v5
-
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: docs/
-
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
-
-    - name: Update documentation summary
-      run: |
-        echo "## 📚 Documentation Updated" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 🌐 Live Documentation" >> $GITHUB_STEP_SUMMARY
-        echo "- **Homepage**: https://dhruv1110.github.io/jcachex/" >> $GITHUB_STEP_SUMMARY
-        echo "- **API Documentation**: https://javadoc.io/doc/io.github.dhruv1110/" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### 📦 Latest Version" >> $GITHUB_STEP_SUMMARY
-        echo "**${{ needs.release.outputs.new_version }}** - Released $(date '+%Y-%m-%d')" >> $GITHUB_STEP_SUMMARY
+    with:
+      version: ${{ needs.release.outputs.new_version }}
+    secrets: inherit
