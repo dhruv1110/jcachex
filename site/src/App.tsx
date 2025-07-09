@@ -10,6 +10,7 @@ import ExamplesPage from './components/Examples';
 import SpringGuide from './components/SpringGuide';
 import FAQPage from './components/FAQ';
 import DocumentationPage from './components/DocumentationPage';
+import NotFoundPage from './components/NotFound';
 import lightTheme from './theme';
 import './styles/modern.scss';
 
@@ -30,7 +31,7 @@ const App: React.FC = () => {
                     <Route path="/docs/getting-started" element={<GettingStarted />} />
                     <Route path="/docs/examples" element={<ExamplesPage />} />
                     <Route path="/docs/spring" element={<SpringGuide />} />
-                    <Route path="*" element={<Home />} />
+                    <Route path="*" element={<NotFoundPage />} />
                 </Routes>
             </ThemeProvider>
         </HelmetProvider>

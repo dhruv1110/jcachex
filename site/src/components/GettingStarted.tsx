@@ -45,6 +45,7 @@ import {
 } from '@mui/icons-material';
 import CodeTabs from './CodeTabs';
 import Layout from './Layout';
+import { Breadcrumbs } from './SEO';
 
 const GettingStarted: React.FC = () => {
     const theme = useTheme();
@@ -205,6 +206,11 @@ CompletableFuture<String> result = cache.getAsync("key1")
 
     return (
         <Layout sidebarConfig={sidebarConfig}>
+            <Breadcrumbs items={[
+                { label: 'Home', path: '/' },
+                { label: 'Getting Started', path: '/getting-started', current: true }
+            ]} />
+
             <Container
                 maxWidth="lg"
                 sx={{

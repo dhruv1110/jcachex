@@ -67,6 +67,15 @@ const MetaTags: React.FC<MetaTagsProps> = ({ seo, structuredData }) => {
             <meta name="googlebot" content="index, follow" />
             <meta name="bingbot" content="index, follow" />
 
+            {/* Accessibility and Structure */}
+            <meta name="rating" content="general" />
+            <meta name="distribution" content="global" />
+            <meta name="revisit-after" content="1 week" />
+            <meta name="subject" content="Java caching library" />
+            <meta name="classification" content="Software Development" />
+            <meta name="coverage" content="Worldwide" />
+            <meta name="target" content="software developers" />
+
             {/* Language and Content */}
             <meta httpEquiv="content-language" content="en" />
             <meta name="language" content="en" />
@@ -76,9 +85,24 @@ const MetaTags: React.FC<MetaTagsProps> = ({ seo, structuredData }) => {
             <meta name="mobile-web-app-capable" content="yes" />
             <meta name="apple-mobile-web-app-capable" content="yes" />
             <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+            <meta name="apple-mobile-web-app-title" content="JCacheX" />
+            <meta name="apple-touch-fullscreen" content="yes" />
+            <meta name="msapplication-tap-highlight" content="no" />
+            <meta name="mobile-web-app-title" content="JCacheX" />
+            <meta name="application-name" content="JCacheX" />
+            <meta name="msapplication-TileColor" content="#1976d2" />
+            <meta name="msapplication-config" content="browserconfig.xml" />
+            <meta name="msapplication-navbutton-color" content="#1976d2" />
 
             {/* Performance and Caching */}
-            <meta httpEquiv="cache-control" content="public, max-age=31536000" />
+            <meta httpEquiv="cache-control" content="public, max-age=31536000, immutable" />
+            <meta httpEquiv="expires" content="31536000" />
+            <meta httpEquiv="pragma" content="cache" />
+            <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+            <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+            <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+            <link rel="preconnect" href="https://fonts.googleapis.com" crossOrigin="anonymous" />
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
             {/* Structured Data */}
             {structuredData && (

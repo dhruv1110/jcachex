@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+
+# Block access to admin or private areas if any
+Disallow: /admin/
+Disallow: /private/
+Disallow: /*.json$
+Disallow: /api/
+
+# Allow all CSS, JS, and image files
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.svg$
+Allow: /*.webp$
+Allow: /*.ico$
+
+# Sitemap location
+Sitemap: https://dhruv1110.github.io/jcachex/sitemap.xml
+
+# Crawl delay (optional - helps prevent overloading)
+Crawl-delay: 1
