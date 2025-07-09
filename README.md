@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/dhruv1110/JCacheX/branch/main/graph/badge.svg)](https://codecov.io/gh/dhruv1110/JCacheX)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dhruv1110_jcachex&metric=alert_status)](https://sonarcloud.io/project/overview?id=dhruv1110_jcachex)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.dhruv1110/jcachex-core)](https://maven-badges.herokuapp.com/maven-central/io.github.dhruv1110/jcachex-core)
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dhruv1110.github.io/JCacheX/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dhruv1110.github.io/jcachex/)
 [![javadoc](https://javadoc.io/badge2/io.github.dhruv1110/jcachex-core/javadoc.svg)](https://javadoc.io/doc/io.github.dhruv1110/jcachex-core)
 
 **JCacheX** is a high-performance, lightweight caching library for modern Java and Kotlin applications. Built for simplicity and performance, it provides a clean API for both synchronous and asynchronous caching operations.
@@ -107,7 +107,7 @@ System.out.println("Total requests: " + stats.requestCount());
 
 ## 📖 Documentation
 
-- [**Website**](https://dhruv1110.github.io/JCacheX/) - Complete documentation with examples
+- [**Website**](https://dhruv1110.github.io/jcachex/) - Complete documentation with examples
 - [**API Reference**](https://javadoc.io/doc/io.github.dhruv1110/jcachex-core) - Javadoc API documentation
 - [**Examples**](example/) - Code samples and usage examples
 
@@ -121,4 +121,4 @@ JCacheX is licensed under the [MIT License](LICENSE).
 
 ---
 
-**[Visit our website](https://dhruv1110.github.io/JCacheX/) for detailed documentation, examples, and guides.**
+**[Visit our website](https://dhruv1110.github.io/jcachex/) for detailed documentation, examples, and guides.**
