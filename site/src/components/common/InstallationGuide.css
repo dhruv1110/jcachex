@@ -1,0 +1,63 @@
+.installation-guide {
+    background: #f8fafc;
+    padding: 3rem 2rem;
+    border-radius: 16px;
+    margin: 2rem 0;
+    border: 1px solid #e2e8f0;
+}
+
+.installation-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.installation-header h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+}
+
+.installation-header p {
+    color: #64748b;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.installation-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Compact variant */
+.installation-guide.compact {
+    padding: 2rem 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.installation-guide.compact .installation-header h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.installation-guide.compact .installation-header p {
+    font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .installation-guide {
+        padding: 2rem 1rem;
+        margin: 1rem 0;
+    }
+
+    .installation-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .installation-header p {
+        font-size: 1rem;
+    }
+}
