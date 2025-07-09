@@ -1,13 +1,17 @@
 import React from 'react';
 import type { CodeTab } from '../types';
-import { useVersion } from '../hooks';
+import { useVersion, useSEO } from '../hooks';
 import { INSTALLATION_TABS, FEATURES, EVICTION_STRATEGIES, MODULES, PERFORMANCE_STATS, ARCHITECTURE, BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN, SPRING_USAGE } from '../constants';
 import { Section, Grid, FeatureCard, InstallationGuide, Badge } from './common';
+import { MetaTags } from './SEO';
 import CodeTabs from './CodeTabs';
 import './Home.css';
 
 const Home: React.FC = () => {
     const { version } = useVersion();
+
+    const { getCurrentPageSEO } = useSEO();
+    const seoData = getCurrentPageSEO();
 
     const heroCodeTabs: CodeTab[] = [
         {
@@ -32,6 +36,8 @@ const Home: React.FC = () => {
 
     return (
         <div className="home">
+            <MetaTags seo={seoData} />
+
             {/* Hero Section */}
             <Section background="gradient" padding="lg" centered>
                 <div className="hero-content">

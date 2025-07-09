@@ -1,13 +1,16 @@
 import React from 'react';
-import { useVersion } from '../hooks';
+import { useVersion, useSEO } from '../hooks';
 import { INSTALLATION_TABS, BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN } from '../constants';
 import { Section, Grid, FeatureCard, InstallationGuide } from './common';
 import CodeTabs from './CodeTabs';
 import { CodeTab, Feature } from '../types';
+import { MetaTags } from './SEO';
 import './GettingStarted.css';
 
 const GettingStarted: React.FC = () => {
     const { version } = useVersion();
+    const { getCurrentPageSEO } = useSEO();
+    const seoData = getCurrentPageSEO();
 
     const basicUsageTabs: CodeTab[] = [
         {
@@ -223,6 +226,8 @@ public class CacheConfig {
 
     return (
         <div className="getting-started">
+            <MetaTags seo={seoData} />
+
             {/* Header */}
             <Section background="gradient" padding="lg" centered>
                 <div className="header-content">

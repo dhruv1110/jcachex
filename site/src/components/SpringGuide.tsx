@@ -1,13 +1,17 @@
 import React from 'react';
-import { useVersion } from '../hooks';
+import { useVersion, useTabState, useSEO } from '../hooks';
 import { SPRING_USAGE } from '../constants';
 import { Section, Grid, FeatureCard, InstallationGuide, Badge } from './common';
+import { MetaTags } from './SEO';
 import CodeTabs from './CodeTabs';
 import { CodeTab, Feature, Resource } from '../types';
 import './SpringGuide.css';
 
 const SpringGuide: React.FC = () => {
     const { version } = useVersion();
+    const { activeTab, setActiveTab } = useTabState('maven');
+    const { getCurrentPageSEO } = useSEO();
+    const seoData = getCurrentPageSEO();
 
     const setupTabs: CodeTab[] = [
         {
@@ -439,6 +443,8 @@ public class CacheMetrics implements MeterBinder {
 
     return (
         <div className="spring-guide">
+            <MetaTags seo={seoData} />
+
             {/* Header */}
             <Section background="gradient" padding="lg" centered>
                 <div className="header-content">

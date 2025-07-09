@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { FAQ } from '../types';
 import { Section } from './common';
+import { useSEO } from '../hooks';
+import { MetaTags } from './SEO';
 import './FAQ.css';
 
 const FAQ_DATA: FAQ[] = [
@@ -146,6 +148,9 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq, isOpen, onToggle }) => {
 };
 
 const FAQPage: React.FC = () => {
+    const { getCurrentPageSEO } = useSEO();
+    const seoData = getCurrentPageSEO();
+
     const [openItems, setOpenItems] = useState<Set<string>>(new Set());
     const [selectedCategory, setSelectedCategory] = useState<string>('All');
     const [searchTerm, setSearchTerm] = useState<string>('');
@@ -169,6 +174,8 @@ const FAQPage: React.FC = () => {
 
     return (
         <div className="faq-page">
+            <MetaTags seo={seoData} />
+
             {/* Header */}
             <Section background="gradient" padding="lg" centered>
                 <div className="faq-header">

@@ -1,13 +1,17 @@
 import React from 'react';
-import { useVersion } from '../hooks';
+import { useVersion, useTabState, useSEO } from '../hooks';
 import { INSTALLATION_TABS, BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN, SPRING_USAGE } from '../constants';
 import { Section, Grid, FeatureCard, InstallationGuide, Badge } from './common';
+import { MetaTags } from './SEO';
 import CodeTabs from './CodeTabs';
 import { CodeTab, Feature, ExampleCategory, Resource } from '../types';
 import './Examples.css';
 
 const Examples: React.FC = () => {
     const { version } = useVersion();
+    const { activeTab, setActiveTab } = useTabState('basic');
+    const { getCurrentPageSEO } = useSEO();
+    const seoData = getCurrentPageSEO();
 
     const basicTabs: CodeTab[] = [
         {
@@ -453,6 +457,8 @@ management:
 
     return (
         <div className="examples">
+            <MetaTags seo={seoData} />
+
             {/* Header */}
             <Section background="gradient" padding="lg" centered>
                 <div className="header-content">
