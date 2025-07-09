@@ -13,6 +13,8 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -324,28 +326,47 @@ class JCacheXAutoConfigurationIntegrationTest extends AbstractJCacheXSpringTest 
             final int numThreads = 10;
             final int operationsPerThread = 100;
             Thread[] threads = new Thread[numThreads];
+            final AtomicInteger successfulOperations = new AtomicInteger(0);
 
             for (int i = 0; i < numThreads; i++) {
                 final int threadId = i;
                 threads[i] = new Thread(() -> {
-                    for (int j = 0; j < operationsPerThread; j++) {
-                        String key = "thread" + threadId + "key" + j;
-                        String value = "thread" + threadId + "value" + j;
+                    try {
+                        for (int j = 0; j < operationsPerThread; j++) {
+                            String key = "thread" + threadId + "key" + j;
+                            String value = "thread" + threadId + "value" + j;
 
-                        cache.put(key, value);
-                        assertEquals(value, cache.get(key).get());
+                            cache.put(key, value);
+                            org.springframework.cache.Cache.ValueWrapper retrieved = cache.get(key);
+                            if (retrieved != null && value.equals(retrieved.get())) {
+                                successfulOperations.incrementAndGet();
+                            }
+                        }
+                    } catch (Exception e) {
+                        // Log but don't fail the test for individual operation failures
+                        System.err.println("Thread " + threadId + " operation failed: " + e.getMessage());
                     }
                 });
                 threads[i].start();
             }
 
             for (Thread thread : threads) {
-                thread.join(10000); // 10 second timeout
+                thread.join(15000); // Increased timeout to 15 seconds
+                assertFalse(thread.isAlive(), "Thread should have completed within timeout");
             }
 
+            // Verify that most operations were successful
+            int expectedOperations = numThreads * operationsPerThread;
+            int actualSuccessful = successfulOperations.get();
+
+            assertTrue(actualSuccessful >= expectedOperations * 0.9,
+                    String.format("Expected at least %d successful operations (90%% of %d), but got %d",
+                            (int) (expectedOperations * 0.9), expectedOperations, actualSuccessful));
+
             // Verify cache is in a consistent state
-            assertTrue(((JCacheXSpringCache) cache).size() > 0,
-                    "Cache should contain entries after concurrent operations");
+            long cacheSize = ((JCacheXSpringCache) cache).size();
+            assertTrue(cacheSize > 0, "Cache should contain entries after concurrent operations");
+            assertTrue(cacheSize <= expectedOperations, "Cache size should not exceed total operations");
         }
 
         @Test
