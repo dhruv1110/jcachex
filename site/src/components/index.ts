@@ -5,6 +5,7 @@ export { default as Footer } from './Footer';
 
 // Navigation
 export { default as Navbar } from './Navbar';
+export { default as MobileSidebar } from './MobileSidebar';
 
 // Page components
 export { default as Home } from './Home';
@@ -12,6 +13,7 @@ export { default as GettingStarted } from './GettingStarted';
 export { default as Examples } from './Examples';
 export { default as SpringGuide } from './SpringGuide';
 export { default as FAQ } from './FAQ';
+export { default as DocumentationPage } from './DocumentationPage';
 
 // Common components
 export * from './common';

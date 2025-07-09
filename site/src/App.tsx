@@ -8,6 +8,7 @@ import GettingStarted from './components/GettingStarted';
 import Examples from './components/Examples';
 import SpringGuide from './components/SpringGuide';
 import FAQPage from './components/FAQ';
+import DocumentationPage from './components/DocumentationPage';
 import lightTheme from './theme';
 import './styles/modern.scss';
 
@@ -23,6 +24,8 @@ const App: React.FC = () => {
                     <Route path="/spring" element={<SpringGuide />} />
                     <Route path="/spring-boot" element={<SpringGuide />} />
                     <Route path="/faq" element={<FAQPage />} />
+                    <Route path="/docs" element={<DocumentationPage />} />
+                    <Route path="/documentation" element={<DocumentationPage />} />
                     <Route path="/docs/getting-started" element={<GettingStarted />} />
                     <Route path="/docs/examples" element={<Examples />} />
                     <Route path="/docs/spring" element={<SpringGuide />} />
