@@ -9,6 +9,7 @@ import Examples from './components/Examples';
 import SpringGuide from './components/SpringGuide';
 import FAQPage from './components/FAQ';
 import lightTheme from './theme';
+import './styles/modern.scss';
 
 const App: React.FC = () => {
     return (
