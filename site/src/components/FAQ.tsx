@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { FAQ } from '../types';
 import { Section } from './common';
 import PageWrapper from './PageWrapper';
+import './FAQ.css';
 
 
 const FAQ_DATA: FAQ[] = [

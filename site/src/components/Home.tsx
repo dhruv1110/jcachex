@@ -6,6 +6,7 @@ import type { CodeTab, Module } from '../types';
 import { useVersion } from '../hooks';
 import { BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN, SPRING_USAGE, INSTALLATION_TABS, MODULES, FEATURES } from '../constants';
 import PageWrapper from './PageWrapper';
+import Layout from './Layout';
 import CodeTabs from './CodeTabs';
 
 const HomeComponent: React.FC = () => {
@@ -49,12 +50,7 @@ const HomeComponent: React.FC = () => {
     };
 
     return (
-        <PageWrapper
-            title="JCacheX - High Performance Java Caching Framework"
-            description="JCacheX is a modern, high-performance Java caching framework with advanced features like distributed caching, smart eviction strategies, and Spring Boot integration."
-            keywords="Java, cache, caching, framework, performance, distributed, spring boot"
-            className="home"
-        >
+        <Layout>
             {/* Hero Section */}
             <Box
                 sx={{
@@ -380,7 +376,7 @@ const HomeComponent: React.FC = () => {
                     </Box>
                 </Container>
             </Box>
-        </PageWrapper>
+        </Layout>
     );
 };
 

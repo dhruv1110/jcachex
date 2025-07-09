@@ -1,5 +1,6 @@
 import React from 'react';
 import type { GridColumns, GridGap } from '../../types';
+import './Grid.css';
 
 interface GridProps {
     children: React.ReactNode;
