@@ -1,302 +1,609 @@
 import React from 'react';
-import { useVersion } from '../hooks';
-import { INSTALLATION_TABS, BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN } from '../constants';
-import { Section, Grid, FeatureCard, InstallationGuide } from './common';
+import {
+    Box,
+    Container,
+    Typography,
+    Card,
+    CardContent,
+    Button,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Stepper,
+    Step,
+    StepLabel,
+    Alert,
+    Chip,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    useTheme,
+    useMediaQuery,
+} from '@mui/material';
+import {
+    GetApp as GetAppIcon,
+    Build as BuildIcon,
+    PlayArrow as PlayArrowIcon,
+    Check as CheckIcon,
+    Code as CodeIcon,
+    Settings as SettingsIcon,
+    Dashboard as DashboardIcon,
+    Launch as LaunchIcon,
+    BookmarkBorder as BookmarkIcon,
+    School as SchoolIcon,
+    Speed as SpeedIcon,
+    Coffee as JavaIcon,
+    Extension as ExtensionIcon,
+    Api as ApiIcon,
+    ExpandMore as ExpandMoreIcon,
+    CloudDownload as CloudDownloadIcon,
+    RocketLaunch as RocketLaunchIcon,
+    IntegrationInstructions as IntegrationInstructionsIcon,
+    Security as SecurityIcon,
+    Verified as VerifiedIcon,
+} from '@mui/icons-material';
 import CodeTabs from './CodeTabs';
-import { CodeTab, Feature } from '../types';
-import PageWrapper from './PageWrapper';
+import Layout from './Layout';
 
 const GettingStarted: React.FC = () => {
-    const { version } = useVersion();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-    const basicUsageTabs: CodeTab[] = [
+    const steps = [
+        'Add Dependency',
+        'Configure Cache',
+        'Start Using',
+        'Explore Features'
+    ];
+
+    const installationMethods = [
         {
-            id: 'java',
-            label: 'Java',
-            language: 'java',
-            code: BASIC_USAGE_JAVA
+            title: 'Maven',
+            icon: <BuildIcon />,
+            description: 'Add to your pom.xml',
+            code: `<dependency>
+    <groupId>io.github.dhruv1110</groupId>
+    <artifactId>jcachex-core</artifactId>
+    <version>1.0.0</version>
+</dependency>`
         },
         {
-            id: 'kotlin',
-            label: 'Kotlin',
-            language: 'kotlin',
-            code: BASIC_USAGE_KOTLIN
+            title: 'Gradle',
+            icon: <BuildIcon />,
+            description: 'Add to your build.gradle',
+            code: `implementation 'io.github.dhruv1110:jcachex-core:1.0.0'`
+        },
+        {
+            title: 'Gradle (Kotlin DSL)',
+            icon: <ExtensionIcon />,
+            description: 'Add to your build.gradle.kts',
+            code: `implementation("io.github.dhruv1110:jcachex-core:1.0.0")`
         }
     ];
 
-    const asyncTabs: CodeTab[] = [
+    const quickExamples = [
         {
-            id: 'java',
-            label: 'Java',
-            language: 'java',
-            code: `import java.util.concurrent.CompletableFuture;
+            title: 'Basic Cache',
+            description: 'Simple in-memory cache with size limits',
+            code: `import io.github.dhruv1110.jcachex.*;
+import java.time.Duration;
 
-// Async operations with CompletableFuture
-CompletableFuture<User> futureUser = cache.getAsync("user123");
+public class FirstCache {
+    public static void main(String[] args) {
+        // Create cache configuration
+        CacheConfig<String, String> config = CacheConfig.<String, String>builder()
+            .maximumSize(1000L)
+            .expireAfterWrite(Duration.ofMinutes(30))
+            .recordStats(true)
+            .build();
 
-// Handle result
-futureUser.thenAccept(user -> {
-    if (user != null) {
-        System.out.println("User found: " + user.getName());
-    } else {
-        System.out.println("User not found");
+        // Create cache instance
+        Cache<String, String> cache = new DefaultCache<>(config);
+
+        // Basic operations
+        cache.put("user:123", "John Doe");
+        String user = cache.get("user:123");
+        System.out.println("User: " + user);
+
+        // Check cache stats
+        CacheStats stats = cache.stats();
+        System.out.println("Hit rate: " + stats.hitRate());
     }
-});
+}`
+        },
+        {
+            title: 'Async Operations',
+            description: 'Non-blocking cache operations',
+            code: `// Async operations
+CompletableFuture<String> future = cache.getAsync("key1");
+CompletableFuture<Void> putFuture = cache.putAsync("key2", "value2");
 
-// Async put operation
-CompletableFuture<Void> putFuture = cache.putAsync("user456", new User("Bob", "bob@example.com"));
-
-// Combine async operations
-CompletableFuture<String> combined = cache.getAsync("user123")
-    .thenCompose(user -> {
-        if (user != null) {
-            return CompletableFuture.completedFuture(user.getName());
-        } else {
-            return cache.putAsync("user123", new User("Default", "default@example.com"))
-                .thenApply(v -> "Default");
+// Chain operations
+CompletableFuture<String> result = cache.getAsync("key1")
+    .thenCompose(value -> {
+        if (value == null) {
+            return cache.putAsync("key1", "default").thenApply(v -> "default");
         }
+        return CompletableFuture.completedFuture(value);
     });`
-        },
-        {
-            id: 'kotlin',
-            label: 'Kotlin',
-            language: 'kotlin',
-            code: `import kotlinx.coroutines.*
-
-// Async operations with coroutines
-suspend fun getUserAsync(id: String): User? {
-    return cache.getAsync(id).await()
-}
-
-// Usage in coroutine
-runBlocking {
-    val user = getUserAsync("user123")
-    if (user != null) {
-        println("User found: \${user.name}")
-    } else {
-        println("User not found")
-    }
-}
-
-// Async put operation
-runBlocking {
-    cache.putAsync("user456", User("Bob", "bob@example.com")).await()
-    println("User stored successfully")
-}
-
-// Combine async operations
-suspend fun getOrCreate(id: String): User = withContext(Dispatchers.IO) {
-    cache.getAsync(id).await() ?: run {
-        val newUser = User("Default", "default@example.com")
-        cache.putAsync(id, newUser).await()
-        newUser
-    }
-}`
         }
     ];
 
-    const springConfigTabs: CodeTab[] = [
+    const bestPractices = [
         {
-            id: 'yaml',
-            label: 'application.yml',
-            language: 'yaml',
-            code: `# JCacheX Configuration
-jcachex:
-  enabled: true
-  default:
-    maximum-size: 1000
-    expire-after-write-seconds: 1800
-    eviction-strategy: LRU
-    record-stats: true
-
-  caches:
-    users:
-      maximum-size: 5000
-      expire-after-write-seconds: 3600
-      eviction-strategy: LFU
-
-    products:
-      maximum-size: 10000
-      expire-after-write-seconds: 7200
-      eviction-strategy: LRU`
+            title: 'Choose the Right Size',
+            description: 'Set appropriate maximum size based on your available memory',
+            tip: 'Monitor memory usage and adjust cache size accordingly'
         },
         {
-            id: 'properties',
-            label: 'application.properties',
-            language: 'properties',
-            code: `# JCacheX Configuration
-jcachex.enabled=true
-jcachex.default.maximum-size=1000
-jcachex.default.expire-after-write-seconds=1800
-jcachex.default.eviction-strategy=LRU
-jcachex.default.record-stats=true
-
-# Named caches
-jcachex.caches.users.maximum-size=5000
-jcachex.caches.users.expire-after-write-seconds=3600
-jcachex.caches.users.eviction-strategy=LFU
-
-jcachex.caches.products.maximum-size=10000
-jcachex.caches.products.expire-after-write-seconds=7200
-jcachex.caches.products.eviction-strategy=LRU`
+            title: 'Use Expiration Policies',
+            description: 'Set expiration times to prevent stale data',
+            tip: 'Consider both write and access-based expiration'
         },
         {
-            id: 'java',
-            label: 'Java Config',
-            language: 'java',
-            code: `@Configuration
-@EnableCaching
-public class CacheConfig {
-
-    @Bean
-    public CacheManager cacheManager() {
-        return new JCacheXCacheManager();
-    }
-
-    @Bean
-    public CacheConfigurer cacheConfigurer() {
-        return new CacheConfigurer() {
-            @Override
-            public CacheManager cacheManager() {
-                return new JCacheXCacheManager(
-                    CacheConfig.<String, Object>builder()
-                        .maximumSize(1000L)
-                        .expireAfterWrite(Duration.ofMinutes(30))
-                        .evictionStrategy(EvictionStrategy.LRU)
-                        .recordStats(true)
-                        .build()
-                );
-            }
-        };
-    }
-}`
+            title: 'Monitor Cache Performance',
+            description: 'Enable statistics to track hit rates and performance',
+            tip: 'Use cache.stats() to monitor effectiveness'
+        },
+        {
+            title: 'Handle Null Values',
+            description: 'Decide how to handle null or missing values',
+            tip: 'Use Optional<T> for better null safety'
         }
     ];
 
-    const configurationOptions = [
+    // Define navigation items for the sidebar
+    const navigationItems = [
         {
-            icon: 'config',
-            title: 'Size Limits',
-            description: 'Control cache size with maximum entries and memory-based limits',
-            details: ['Maximum size', 'Weighted size', 'Memory-based eviction']
+            id: 'getting-started-intro',
+            title: 'Getting Started',
+            icon: <RocketLaunchIcon />,
+            children: [
+                { id: 'installation', title: 'Installation', icon: <CloudDownloadIcon /> },
+                { id: 'first-cache', title: 'Your First Cache', icon: <CodeIcon /> },
+                { id: 'quick-examples', title: 'Quick Examples', icon: <PlayArrowIcon /> },
+            ],
         },
         {
-            icon: 'time',
-            title: 'Expiration Policies',
-            description: 'Configure time-based expiration policies',
-            details: ['Expire after write', 'Expire after access', 'Custom TTL']
+            id: 'configuration',
+            title: 'Configuration',
+            icon: <SettingsIcon />,
+            children: [
+                { id: 'basic-config', title: 'Basic Configuration', icon: <ApiIcon /> },
+                { id: 'advanced-config', title: 'Advanced Options', icon: <BuildIcon /> },
+                { id: 'eviction-setup', title: 'Eviction Setup', icon: <DashboardIcon /> },
+            ],
         },
         {
-            icon: 'strategy',
-            title: 'Eviction Strategies',
-            description: 'Choose from multiple eviction algorithms',
-            details: ['LRU', 'LFU', 'FIFO', 'Weight-based']
+            id: 'best-practices',
+            title: 'Best Practices',
+            icon: <SecurityIcon />,
+            children: [
+                { id: 'sizing-guidelines', title: 'Sizing Guidelines', icon: <SettingsIcon /> },
+                { id: 'monitoring', title: 'Monitoring', icon: <DashboardIcon /> },
+                { id: 'troubleshooting', title: 'Troubleshooting', icon: <BuildIcon /> },
+            ],
         },
         {
-            icon: 'monitoring',
-            title: 'Performance Monitoring',
-            description: 'Built-in metrics and monitoring capabilities',
-            details: ['Hit/miss ratios', 'Performance metrics', 'Health checks']
-        }
+            id: 'next-steps',
+            title: 'Next Steps',
+            icon: <LaunchIcon />,
+            children: [
+                { id: 'advanced-features', title: 'Advanced Features', icon: <BuildIcon /> },
+                { id: 'spring-integration', title: 'Spring Integration', icon: <SpeedIcon /> },
+                { id: 'examples', title: 'More Examples', icon: <SchoolIcon /> },
+            ],
+        },
     ];
+
+    const sidebarConfig = {
+        title: "Getting Started",
+        navigationItems: navigationItems,
+        expandedByDefault: true
+    };
 
     return (
-        <PageWrapper
-            title="Getting Started - JCacheX Documentation"
-            description="Get up and running with JCacheX in minutes. Learn installation, basic usage, and advanced configuration for Java and Kotlin projects."
-            keywords="JCacheX, getting started, installation, documentation, Java cache, Kotlin"
-            className="getting-started-page"
-        >
-
-            {/* Header */}
-            <Section background="gradient" padding="lg" centered>
-                <div className="docs-header">
-                    <h1 className="docs-title">Getting Started</h1>
-                    <p className="docs-subtitle">
-                        Get up and running with JCacheX in minutes. This guide covers installation,
-                        basic usage, and advanced configuration options for both Java and Kotlin projects.
-                    </p>
-                </div>
-            </Section>
-
-            {/* Installation */}
-            <Section background="dark" padding="lg" className="installation-section">
-                <div className="installation-header">
-                    <h2>Installation</h2>
-                    <p>Add JCacheX to your project with your preferred build tool</p>
-                </div>
-                <InstallationGuide
-                    tabs={INSTALLATION_TABS}
-                    title="Installation"
-                    description="Add JCacheX to your project with your preferred build tool"
-                />
-            </Section>
-
-            {/* Quick Start */}
-            <Section background="primary" padding="lg" className="quick-start-section">
-                <div className="quick-start-header">
-                    <h2>Quick Start</h2>
-                    <p>Basic cache setup and operations in Java and Kotlin</p>
-                </div>
-                <CodeTabs tabs={basicUsageTabs} />
-            </Section>
-
-            {/* Async Operations */}
-            <Section background="dark" padding="lg" className="async-section">
-                <div className="async-header">
-                    <h2>Async Operations</h2>
-                    <p>Leverage async capabilities for high-performance applications</p>
-                </div>
-                <CodeTabs tabs={asyncTabs} />
-            </Section>
-
-            {/* Spring Configuration */}
-            <Section background="primary" padding="lg" className="spring-config-section">
-                <div className="spring-config-header">
-                    <h2>Spring Boot Configuration</h2>
-                    <p>Configure JCacheX in your Spring Boot application</p>
-                </div>
-                <CodeTabs tabs={springConfigTabs} />
-            </Section>
-
-            {/* Configuration Options */}
-            <Section background="dark" padding="lg" className="config-options-section">
-                <div className="config-options-header">
-                    <h2>Configuration Options</h2>
-                    <p>Customize JCacheX behavior for your specific needs</p>
-                </div>
-                <Grid>
-                    {configurationOptions.map((option, index) => (
-                        <FeatureCard
-                            key={index}
-                            icon={option.icon}
-                            title={option.title}
-                            description={option.description}
-                            details={option.details}
+        <Layout sidebarConfig={sidebarConfig}>
+            <Container
+                maxWidth="lg"
+                sx={{
+                    py: 4,
+                    px: { xs: 2, sm: 3, md: 4 },
+                    ml: { xs: 0, md: 0 },
+                    mt: { xs: 1, md: 0 },
+                    minHeight: { xs: 'calc(100vh - 80px)', md: 'auto' },
+                }}
+            >
+                {/* Header */}
+                <Box sx={{ textAlign: 'center', mb: 6 }}>
+                    <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
+                        Getting Started with JCacheX
+                    </Typography>
+                    <Typography variant="h5" color="text.secondary" sx={{ mb: 4 }}>
+                        Get up and running with JCacheX in minutes
+                    </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+                        <Chip
+                            icon={<RocketLaunchIcon />}
+                            label="Quick Setup"
+                            color="primary"
+                            sx={{ px: 2, py: 1 }}
                         />
-                    ))}
-                </Grid>
-            </Section>
+                        <Chip
+                            icon={<CodeIcon />}
+                            label="Code Examples"
+                            color="secondary"
+                            sx={{ px: 2, py: 1 }}
+                        />
+                        <Chip
+                            icon={<VerifiedIcon />}
+                            label="Best Practices"
+                            color="success"
+                            sx={{ px: 2, py: 1 }}
+                        />
+                    </Box>
+                </Box>
 
-            {/* Next Steps */}
-            <Section background="gradient" padding="lg" centered>
-                <div className="next-steps-cta">
-                    <h3>Ready to Explore More?</h3>
-                    <p>
-                        Check out our comprehensive examples and framework-specific guides
-                        to master JCacheX in your applications.
-                    </p>
-                    <div className="cta-buttons">
-                        <a href="/examples" className="btn btn-primary">
-                            View Examples
-                        </a>
-                        <a href="/spring" className="btn btn-secondary">
-                            Spring Guide
-                        </a>
-                    </div>
-                </div>
-            </Section>
-        </PageWrapper>
+                {/* Progress Stepper */}
+                <Box sx={{ mb: 6 }}>
+                    <Stepper activeStep={0} alternativeLabel={!isMobile}>
+                        {steps.map((label) => (
+                            <Step key={label}>
+                                <StepLabel>{label}</StepLabel>
+                            </Step>
+                        ))}
+                    </Stepper>
+                </Box>
+
+                {/* Installation Section */}
+                <Box id="installation" sx={{ mb: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                        <CloudDownloadIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Installation
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                        Choose your preferred build tool and add JCacheX to your project.
+                        All artifacts are available on Maven Central.
+                    </Typography>
+
+                    <Box sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+                        gap: 3
+                    }}>
+                        {installationMethods.map((method, index) => (
+                            <Card key={index} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                <CardContent sx={{ flex: 1 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                        <Box sx={{ color: 'primary.main', mr: 1 }}>
+                                            {method.icon}
+                                        </Box>
+                                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                            {method.title}
+                                        </Typography>
+                                    </Box>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                        {method.description}
+                                    </Typography>
+                                    <Box component="pre" sx={{
+                                        backgroundColor: 'grey.100',
+                                        p: 2,
+                                        borderRadius: 1,
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace'
+                                    }}>
+                                        {method.code}
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </Box>
+                </Box>
+
+                {/* First Cache Section */}
+                <Box id="first-cache" sx={{ mb: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                        <CodeIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Your First Cache
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                        Create your first cache with just a few lines of code. This example shows the basic
+                        configuration and usage patterns.
+                    </Typography>
+
+                    <CodeTabs
+                        tabs={[
+                            {
+                                id: 'java-basic',
+                                label: 'Java',
+                                language: 'java',
+                                code: `import io.github.dhruv1110.jcachex.*;
+import java.time.Duration;
+
+public class FirstCache {
+    public static void main(String[] args) {
+        // Create cache configuration
+        CacheConfig<String, String> config = CacheConfig.<String, String>builder()
+            .maximumSize(1000L)
+            .expireAfterWrite(Duration.ofMinutes(30))
+            .recordStats(true)
+            .build();
+
+        // Create cache instance
+        Cache<String, String> cache = new DefaultCache<>(config);
+
+        // Basic operations
+        cache.put("user:123", "John Doe");
+        String user = cache.get("user:123");
+        System.out.println("User: " + user);
+
+        // Check cache stats
+        CacheStats stats = cache.stats();
+        System.out.println("Hit rate: " + stats.hitRate());
+    }
+}`
+                            },
+                            {
+                                id: 'kotlin-basic',
+                                label: 'Kotlin',
+                                language: 'kotlin',
+                                code: `import io.github.dhruv1110.jcachex.kotlin.*
+import java.time.Duration
+
+fun main() {
+    // Create cache with DSL
+    val cache = createCache<String, String> {
+        maximumSize(1000L)
+        expireAfterWrite(Duration.ofMinutes(30))
+        recordStats(true)
+    }
+
+    // Use operator overloading
+    cache["user:123"] = "John Doe"
+    val user = cache["user:123"]
+    println("User: " + user)
+
+    // Check cache stats
+    val stats = cache.stats()
+    println("Hit rate: " + stats.hitRate())
+}`
+                            }
+                        ]}
+                    />
+                </Box>
+
+                {/* Quick Examples Section */}
+                <Box id="quick-examples" sx={{ mb: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                        <PlayArrowIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Quick Examples
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                        Here are some common usage patterns to get you started quickly.
+                    </Typography>
+
+                    <Box sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                        gap: 3
+                    }}>
+                        {quickExamples.map((example, index) => (
+                            <Card key={index} sx={{ height: '100%' }}>
+                                <CardContent>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                                        {example.title}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                        {example.description}
+                                    </Typography>
+                                    <Box component="pre" sx={{
+                                        backgroundColor: 'grey.100',
+                                        p: 2,
+                                        borderRadius: 1,
+                                        fontSize: '0.875rem',
+                                        overflow: 'auto',
+                                        fontFamily: 'monospace'
+                                    }}>
+                                        {example.code}
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </Box>
+                </Box>
+
+                {/* Configuration Section */}
+                <Box id="configuration" sx={{ mb: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                        Configuration
+                    </Typography>
+
+                    <Box id="basic-config" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            Basic Configuration
+                        </Typography>
+                        <Typography variant="body1" sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                            Essential configuration options for most use cases.
+                        </Typography>
+                        <List dense>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="maximumSize"
+                                    secondary="Set the maximum number of entries the cache can hold"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="expireAfterWrite"
+                                    secondary="Entries expire after being written to the cache"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="expireAfterAccess"
+                                    secondary="Entries expire after being accessed"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="recordStats"
+                                    secondary="Enable statistics collection for monitoring"
+                                />
+                            </ListItem>
+                        </List>
+                    </Box>
+
+                    <Box id="advanced-config" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            Advanced Options
+                        </Typography>
+                        <Typography variant="body1" sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                            Additional configuration for fine-tuning cache behavior.
+                        </Typography>
+                        <List dense>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="initialCapacity"
+                                    secondary="Set initial capacity to avoid resizing during startup"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="concurrencyLevel"
+                                    secondary="Configure concurrency for multi-threaded access"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="weigher"
+                                    secondary="Custom weight calculation for entries"
+                                />
+                            </ListItem>
+                        </List>
+                    </Box>
+                </Box>
+
+                {/* Best Practices Section */}
+                <Box id="best-practices" sx={{ mb: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                        <SecurityIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Best Practices
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                        Follow these recommendations for optimal cache performance and reliability.
+                    </Typography>
+
+                    <Box sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                        gap: 3
+                    }}>
+                        {bestPractices.map((practice, index) => (
+                            <Card key={index} sx={{ height: '100%' }}>
+                                <CardContent>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                                        {practice.title}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mb: 2 }}>
+                                        {practice.description}
+                                    </Typography>
+                                    <Alert severity="info" sx={{ mt: 2 }}>
+                                        <strong>Tip:</strong> {practice.tip}
+                                    </Alert>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </Box>
+                </Box>
+
+                {/* Next Steps Section */}
+                <Box id="next-steps" sx={{ mb: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                        <LaunchIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Next Steps
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                        Now that you have JCacheX up and running, explore these advanced features and integrations.
+                    </Typography>
+
+                    <Box sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
+                        gap: 3
+                    }}>
+                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                            <CardContent sx={{ flex: 1 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                    <BuildIcon color="primary" sx={{ mr: 1 }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                        Advanced Features
+                                    </Typography>
+                                </Box>
+                                <Typography variant="body2" sx={{ mb: 2 }}>
+                                    Explore distributed caching, custom eviction strategies, and async operations.
+                                </Typography>
+                                <Button
+                                    variant="outlined"
+                                    href="/documentation"
+                                    sx={{ mt: 'auto' }}
+                                >
+                                    Read Documentation
+                                </Button>
+                            </CardContent>
+                        </Card>
+                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                            <CardContent sx={{ flex: 1 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                    <SpeedIcon color="secondary" sx={{ mr: 1 }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                        Spring Integration
+                                    </Typography>
+                                </Box>
+                                <Typography variant="body2" sx={{ mb: 2 }}>
+                                    Learn about Spring Boot auto-configuration and annotation-based caching.
+                                </Typography>
+                                <Button
+                                    variant="outlined"
+                                    href="/spring-guide"
+                                    sx={{ mt: 'auto' }}
+                                >
+                                    Spring Guide
+                                </Button>
+                            </CardContent>
+                        </Card>
+                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                            <CardContent sx={{ flex: 1 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                    <SchoolIcon color="success" sx={{ mr: 1 }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                        More Examples
+                                    </Typography>
+                                </Box>
+                                <Typography variant="body2" sx={{ mb: 2 }}>
+                                    Browse complete examples for Java, Kotlin, and Spring Boot applications.
+                                </Typography>
+                                <Button
+                                    variant="outlined"
+                                    href="/examples"
+                                    sx={{ mt: 'auto' }}
+                                >
+                                    View Examples
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </Box>
+                </Box>
+            </Container>
+        </Layout>
     );
 };
 

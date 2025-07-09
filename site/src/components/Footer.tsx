@@ -85,6 +85,7 @@ const Footer: React.FC = () => {
                 color: 'grey.100',
                 mt: 'auto',
                 py: 6,
+                zIndex: 10000,
             }}
         >
             <Container maxWidth="lg">

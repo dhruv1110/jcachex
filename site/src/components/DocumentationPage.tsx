@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     Box,
     Container,
@@ -18,7 +18,6 @@ import {
     TableRow,
     Paper,
     Alert,
-    Fab,
     useTheme,
     useMediaQuery,
     Button,
@@ -49,21 +48,16 @@ import {
     Extension as ExtensionIcon,
     Speed as SpeedIcon,
     Dashboard as DashboardIcon,
-    Menu as MenuIcon,
     Settings as SettingsIcon,
+    Code as CodeIcon,
 } from '@mui/icons-material';
 import CodeTabs from './CodeTabs';
-import MobileSidebar from './MobileSidebar';
 import PageWrapper from './PageWrapper';
+import Layout from './Layout';
 
 const DocumentationPage: React.FC = () => {
-    const [sidebarOpen, setSidebarOpen] = useState(false);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-    const handleSidebarToggle = () => {
-        setSidebarOpen(!sidebarOpen);
-    };
 
     const platformsData = [
         {
@@ -200,37 +194,91 @@ const DocumentationPage: React.FC = () => {
             ]
         },
         {
-            name: 'DSL Builder',
-            description: 'Type-safe configuration with Kotlin DSL',
+            name: 'DSL Configuration',
+            description: 'Kotlin DSL for fluent configuration',
             examples: [
-                'val config = cacheConfig<String, User> { ... }',
-                'maximumSize(1000L)',
-                'expireAfterWrite(Duration.ofMinutes(30))'
+                'val cache = createCache<String, User> {',
+                '    maximumSize(1000L)',
+                '    expireAfterWrite(Duration.ofMinutes(30))',
+                '}'
             ]
         }
     ];
 
-    return (
-        <PageWrapper>
-            <MobileSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+    // Define navigation items for the sidebar
+    const navigationItems = [
+        {
+            id: 'introduction',
+            title: 'Introduction',
+            icon: <InfoIcon />,
+            children: [
+                { id: 'what-is-jcachex', title: 'What is JCacheX?', icon: <InfoIcon /> },
+                { id: 'supported-platforms', title: 'Supported Platforms', icon: <AndroidIcon /> },
+                { id: 'quick-start', title: '1 Minute Quick Start', icon: <RocketIcon /> },
+            ],
+        },
+        {
+            id: 'advanced-configurations',
+            title: 'Advanced Configurations',
+            icon: <SettingsIcon />,
+            children: [
+                { id: 'eviction-strategies', title: 'Eviction Strategies', icon: <DashboardIcon /> },
+                { id: 'all-configuration-options', title: 'All Configuration Options', icon: <ApiIcon /> },
+                { id: 'kotlin-extensions', title: 'Kotlin Extensions', icon: <ExtensionIcon /> },
+            ],
+        },
+        {
+            id: 'java-configuration',
+            title: 'Java Configuration',
+            icon: <JavaIcon />,
+            children: [
+                { id: 'java-basic-usage', title: 'Basic Usage', icon: <CodeIcon /> },
+                { id: 'java-advanced-features', title: 'Advanced Features', icon: <BuildIcon /> },
+                { id: 'java-best-practices', title: 'Best Practices', icon: <SecurityIcon /> },
+            ],
+        },
+        {
+            id: 'kotlin-configuration',
+            title: 'Kotlin Configuration',
+            icon: <ExtensionIcon />,
+            children: [
+                { id: 'kotlin-dsl', title: 'DSL Configuration', icon: <CodeIcon /> },
+                { id: 'kotlin-coroutines', title: 'Coroutine Support', icon: <CloudSyncIcon /> },
+                { id: 'kotlin-operators', title: 'Operator Overloading', icon: <ApiIcon /> },
+            ],
+        },
+        {
+            id: 'spring-boot-configuration',
+            title: 'Spring Boot Configuration',
+            icon: <SpeedIcon />,
+            children: [
+                { id: 'spring-annotations', title: 'Annotations', icon: <CodeIcon /> },
+                { id: 'spring-properties', title: 'Properties Configuration', icon: <SettingsIcon /> },
+                { id: 'spring-auto-configuration', title: 'Auto Configuration', icon: <BuildIcon /> },
+            ],
+        },
+    ];
 
-            <Container maxWidth="lg" sx={{ py: 4 }}>
-                {/* Mobile FAB */}
-                {isMobile && (
-                    <Fab
-                        color="primary"
-                        aria-label="open documentation menu"
-                        onClick={handleSidebarToggle}
-                        sx={{
-                            position: 'fixed',
-                            bottom: 16,
-                            right: 16,
-                            zIndex: 1000,
-                        }}
-                    >
-                        <MenuIcon />
-                    </Fab>
-                )}
+    const sidebarConfig = {
+        title: "Documentation",
+        navigationItems: navigationItems,
+        expandedByDefault: true
+    };
+
+    return (
+        <Layout sidebarConfig={sidebarConfig}>
+            <Container
+                maxWidth={false}
+                sx={{
+                    py: 4,
+                    px: { xs: 2, sm: 3, md: 0 }, // Remove horizontal padding on desktop since Layout handles sidebar offset
+                    pr: { xs: 2, sm: 3, md: 4 }, // Keep right padding on desktop
+                    pl: { xs: 2, sm: 3, md: 0 }, // Remove left padding on desktop
+                    ml: { xs: 0, md: 0 }, // No extra margin on mobile
+                    mt: { xs: 1, md: 0 }, // Small top margin on mobile to avoid FAB overlap
+                    minHeight: { xs: 'calc(100vh - 80px)', md: 'auto' }, // Ensure full height on mobile
+                }}
+            >
 
                 {/* Header */}
                 <Box sx={{ textAlign: 'center', mb: 6 }}>
@@ -240,11 +288,38 @@ const DocumentationPage: React.FC = () => {
                     <Typography variant="h5" color="text.secondary" sx={{ mb: 4 }}>
                         Comprehensive guide to high-performance caching in Java and Kotlin
                     </Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
-                        <Chip icon={<RocketIcon />} label="High Performance" color="primary" />
-                        <Chip icon={<ApiIcon />} label="Simple API" color="secondary" />
-                        <Chip icon={<CloudSyncIcon />} label="Async Support" color="success" />
-                        <Chip icon={<SpeedIcon />} label="Spring Integration" color="info" />
+                    <Box sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr 1fr', sm: '1fr 1fr 1fr 1fr' },
+                        gap: 2,
+                        justifyItems: 'center',
+                        maxWidth: '600px',
+                        mx: 'auto'
+                    }}>
+                        <Chip
+                            icon={<RocketIcon />}
+                            label="High Performance"
+                            color="primary"
+                            sx={{ px: 2, py: 1 }}
+                        />
+                        <Chip
+                            icon={<ApiIcon />}
+                            label="Simple API"
+                            color="secondary"
+                            sx={{ px: 2, py: 1 }}
+                        />
+                        <Chip
+                            icon={<CloudSyncIcon />}
+                            label="Async Support"
+                            color="success"
+                            sx={{ px: 2, py: 1 }}
+                        />
+                        <Chip
+                            icon={<SpeedIcon />}
+                            label="Spring Integration"
+                            color="info"
+                            sx={{ px: 2, py: 1 }}
+                        />
                     </Box>
                 </Box>
 
@@ -260,64 +335,80 @@ const DocumentationPage: React.FC = () => {
                             <InfoIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                             What is JCacheX?
                         </Typography>
-                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
-                            <Box sx={{ flex: 1 }}>
-                                <Card>
-                                    <CardContent>
-                                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                                            <RocketIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                                            Core Features
-                                        </Typography>
-                                        <List dense>
-                                            <ListItem>
-                                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                                <ListItemText primary="High Performance" secondary="Optimized for speed with minimal overhead" />
-                                            </ListItem>
-                                            <ListItem>
-                                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                                <ListItemText primary="Simple API" secondary="Intuitive, fluent interface that's easy to learn" />
-                                            </ListItem>
-                                            <ListItem>
-                                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                                <ListItemText primary="Async Support" secondary="Built-in CompletableFuture and Kotlin Coroutines support" />
-                                            </ListItem>
-                                            <ListItem>
-                                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                                <ListItemText primary="Spring Integration" secondary="Seamless Spring Boot integration with annotations" />
-                                            </ListItem>
-                                        </List>
-                                    </CardContent>
-                                </Card>
-                            </Box>
-                            <Box sx={{ flex: 1 }}>
-                                <Card>
-                                    <CardContent>
-                                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                                            <BuildIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                                            Enterprise Features
-                                        </Typography>
-                                        <List dense>
-                                            <ListItem>
-                                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                                <ListItemText primary="Distributed Caching" secondary="Multi-node clustering with consistency guarantees" />
-                                            </ListItem>
-                                            <ListItem>
-                                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                                <ListItemText primary="Comprehensive Monitoring" secondary="Built-in metrics and observability" />
-                                            </ListItem>
-                                            <ListItem>
-                                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                                <ListItemText primary="Flexible Configuration" secondary="Multiple eviction strategies and policies" />
-                                            </ListItem>
-                                            <ListItem>
-                                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                                <ListItemText primary="Production Ready" secondary="Circuit breakers, warming, and resilience" />
-                                            </ListItem>
-                                        </List>
-                                    </CardContent>
-                                </Card>
-                            </Box>
-                        </Box>
+                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                            JCacheX is a high-performance, modern caching library for Java and Kotlin applications.
+                            It provides a simple, intuitive API while offering enterprise-grade features for production use.
+                        </Typography>
+
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                            <RocketIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                            Core Features
+                        </Typography>
+                        <List dense sx={{ mb: 3 }}>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="High Performance"
+                                    secondary="Optimized for speed with minimal overhead and efficient memory usage"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="Simple API"
+                                    secondary="Intuitive, fluent interface that's easy to learn and use"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="Async Support"
+                                    secondary="Built-in CompletableFuture and Kotlin Coroutines support for non-blocking operations"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="Spring Integration"
+                                    secondary="Seamless Spring Boot integration with annotations and auto-configuration"
+                                />
+                            </ListItem>
+                        </List>
+
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                            <BuildIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                            Enterprise Features
+                        </Typography>
+                        <List dense sx={{ mb: 3 }}>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="Distributed Caching"
+                                    secondary="Multi-node clustering with consistency guarantees and automatic failover"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="Comprehensive Monitoring"
+                                    secondary="Built-in metrics, observability, and health checks for production monitoring"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="Flexible Configuration"
+                                    secondary="Multiple eviction strategies, expiration policies, and custom cache loaders"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                <ListItemText
+                                    primary="Production Ready"
+                                    secondary="Circuit breakers, cache warming, graceful degradation, and resilience patterns"
+                                />
+                            </ListItem>
+                        </List>
                     </Box>
 
                     {/* Supported Platforms */}
@@ -326,30 +417,135 @@ const DocumentationPage: React.FC = () => {
                             <AndroidIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                             Supported Platforms
                         </Typography>
-                        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, flexWrap: 'wrap', gap: 3 }}>
+                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                            JCacheX is designed to work seamlessly across different platforms and frameworks.
+                            Below are the officially supported platforms with their version requirements:
+                        </Typography>
+
+                        <Stack spacing={2} sx={{ mb: 4 }}>
                             {platformsData.map((platform, index) => (
-                                <Box key={index} sx={{ flex: { xs: '1 1 100%', sm: '1 1 45%', md: '1 1 22%' } }}>
-                                    <Card sx={{ height: '100%' }}>
-                                        <CardContent sx={{ textAlign: 'center' }}>
-                                            <Box sx={{ color: 'primary.main', mb: 2 }}>
-                                                {platform.icon}
-                                            </Box>
-                                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                                                {platform.name}
-                                            </Typography>
-                                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                                {platform.version}
-                                            </Typography>
-                                            <Chip
-                                                label={platform.status}
-                                                color="success"
-                                                size="small"
-                                                sx={{ fontWeight: 500 }}
-                                            />
-                                        </CardContent>
-                                    </Card>
+                                <Box key={index} sx={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    p: { xs: 1.5, sm: 2 }, // Responsive padding
+                                    borderRadius: 1,
+                                    backgroundColor: 'grey.50',
+                                    border: '1px solid',
+                                    borderColor: 'grey.200',
+                                    flexDirection: { xs: 'column', sm: 'row' }, // Stack on mobile
+                                    textAlign: { xs: 'center', sm: 'left' },
+                                    gap: { xs: 1, sm: 0 }
+                                }}>
+                                    <Box sx={{ color: 'primary.main', mr: { xs: 0, sm: 2 } }}>
+                                        {platform.icon}
+                                    </Box>
+                                    <Box sx={{ flex: 1 }}>
+                                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                                            {platform.name}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Version: {platform.version}
+                                        </Typography>
+                                    </Box>
+                                    <Chip
+                                        label={platform.status}
+                                        color="success"
+                                        size="small"
+                                        sx={{ fontWeight: 500, mt: { xs: 1, sm: 0 } }}
+                                    />
                                 </Box>
                             ))}
+                        </Stack>
+
+                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                            Platform-Specific Features
+                        </Typography>
+                        <Box sx={{
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                            gap: 3,
+                            mt: 2
+                        }}>
+                            <Box sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                backgroundColor: 'primary.50',
+                                border: '1px solid',
+                                borderColor: 'primary.100',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 2
+                            }}>
+                                <JavaIcon color="primary" sx={{ mt: 0.5 }} />
+                                <Box>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                        Java 8+ Support
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Full compatibility with Java 8 through 21+, including Virtual Threads in Java 21
+                                    </Typography>
+                                </Box>
+                            </Box>
+                            <Box sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                backgroundColor: 'secondary.50',
+                                border: '1px solid',
+                                borderColor: 'secondary.100',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 2
+                            }}>
+                                <ExtensionIcon color="secondary" sx={{ mt: 0.5 }} />
+                                <Box>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                        Kotlin Native Extensions
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Operator overloading, coroutines, and DSL builders for idiomatic Kotlin code
+                                    </Typography>
+                                </Box>
+                            </Box>
+                            <Box sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                backgroundColor: 'success.50',
+                                border: '1px solid',
+                                borderColor: 'success.100',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 2
+                            }}>
+                                <SpeedIcon color="success" sx={{ mt: 0.5 }} />
+                                <Box>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                        Spring Boot Auto-Configuration
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Zero-configuration setup with Spring Boot 2.7+ and 3.x support
+                                    </Typography>
+                                </Box>
+                            </Box>
+                            <Box sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                backgroundColor: 'info.50',
+                                border: '1px solid',
+                                borderColor: 'info.100',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 2
+                            }}>
+                                <AndroidIcon color="info" sx={{ mt: 0.5 }} />
+                                <Box>
+                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                        Android Compatibility
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        Optimized for Android API 21+ with ProGuard and R8 support
+                                    </Typography>
+                                </Box>
+                            </Box>
                         </Box>
                     </Box>
 
@@ -359,9 +555,10 @@ const DocumentationPage: React.FC = () => {
                             <RocketIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                             1 Minute Quick Start
                         </Typography>
-                        <Alert severity="info" sx={{ mb: 3 }}>
+                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
                             Get started with JCacheX in less than a minute. Choose your preferred language and follow the simple setup.
-                        </Alert>
+                            Each example below provides a complete working solution that you can copy and run immediately.
+                        </Typography>
                         <CodeTabs
                             tabs={[
                                 {
@@ -457,53 +654,103 @@ public class UserService {
                             <DashboardIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                             Eviction Strategies
                         </Typography>
-                        <Box sx={{
-                            display: 'grid',
-                            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                            gap: 3
-                        }}>
+                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                            JCacheX provides multiple eviction strategies to manage memory usage when the cache reaches its capacity.
+                            Each strategy is optimized for different use cases and access patterns.
+                        </Typography>
+
+                        <Stack spacing={3}>
                             {evictionStrategies.map((strategy, index) => (
-                                <Card key={index} sx={{ height: '100%' }}>
-                                    <CardContent>
-                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                            <Box sx={{ color: 'primary.main', mr: 2 }}>
-                                                {strategy.icon}
-                                            </Box>
-                                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                                {strategy.name}
-                                            </Typography>
+                                <Box key={index} sx={{
+                                    p: 3,
+                                    borderRadius: 2,
+                                    backgroundColor: 'grey.50',
+                                    border: '1px solid',
+                                    borderColor: 'grey.200'
+                                }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                        <Box sx={{ color: 'primary.main', mr: 2 }}>
+                                            {strategy.icon}
                                         </Box>
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                            {strategy.description}
+                                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                            {strategy.name}
                                         </Typography>
-                                        <Box sx={{ mb: 2 }}>
-                                            <Typography variant="caption" color="text.secondary">
-                                                Use Case:
-                                            </Typography>
-                                            <Typography variant="body2">
-                                                {strategy.useCase}
-                                            </Typography>
-                                        </Box>
-                                        <Box sx={{ mb: 2 }}>
-                                            <Typography variant="caption" color="text.secondary">
-                                                Performance:
-                                            </Typography>
-                                            <Typography variant="body2">
-                                                {strategy.performance}
-                                            </Typography>
-                                        </Box>
+                                    </Box>
+                                    <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
+                                        {strategy.description}
+                                    </Typography>
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                                            Best Use Cases:
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
+                                            {strategy.useCase}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                                            Performance Characteristics:
+                                        </Typography>
+                                        <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
+                                            {strategy.performance}
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Typography variant="caption" color="text.secondary">
+                                            Implementation:
+                                        </Typography>
                                         <Chip
                                             label={strategy.className}
                                             size="small"
+                                            variant="outlined"
                                             sx={{
                                                 fontFamily: 'monospace',
                                                 fontSize: '0.75rem'
                                             }}
                                         />
-                                    </CardContent>
-                                </Card>
+                                    </Box>
+                                </Box>
                             ))}
-                        </Box>
+                        </Stack>
+
+                        <Typography variant="h6" sx={{ mt: 4, mb: 2, fontWeight: 600 }}>
+                            Choosing the Right Strategy
+                        </Typography>
+                        <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
+                            The choice of eviction strategy depends on your application's access patterns:
+                        </Typography>
+                        <List dense sx={{ mt: 2 }}>
+                            <ListItem>
+                                <ListItemText
+                                    primary="• LRU - Best for general-purpose caching with temporal locality"
+                                    secondary="Most recently accessed items are more likely to be accessed again"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemText
+                                    primary="• LFU - Ideal for workloads with clear frequency patterns"
+                                    secondary="Some items are accessed much more frequently than others"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemText
+                                    primary="• FIFO/FILO - Simple strategies for predictable access patterns"
+                                    secondary="When insertion order is the primary factor for eviction"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemText
+                                    primary="• Weight-based - Memory-conscious caching for variable-size objects"
+                                    secondary="When cache entries have significantly different memory footprints"
+                                />
+                            </ListItem>
+                            <ListItem>
+                                <ListItemText
+                                    primary="• Time-based - TTL-based management for time-sensitive data"
+                                    secondary="When data freshness is more important than access patterns"
+                                />
+                            </ListItem>
+                        </List>
                     </Box>
 
                     {/* All Configuration Options */}
@@ -775,7 +1022,7 @@ public class UserService {
                     </Box>
                 </Box>
             </Container>
-        </PageWrapper>
+        </Layout>
     );
 };
 

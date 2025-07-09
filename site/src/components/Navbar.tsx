@@ -39,7 +39,6 @@ const Navbar: React.FC = () => {
     };
 
     const navigationLinks = [
-        { label: 'Docs', path: '/getting-started' },
         { label: 'Documentation', path: '/docs' },
         { label: 'Examples', path: '/examples' },
         { label: 'Spring', path: '/spring' },

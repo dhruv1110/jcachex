@@ -5,7 +5,7 @@ export { default as Footer } from './Footer';
 
 // Navigation
 export { default as Navbar } from './Navbar';
-export { default as MobileSidebar } from './MobileSidebar';
+export { default as Sidebar } from './Sidebar';
 
 // Page components
 export { default as Home } from './Home';
