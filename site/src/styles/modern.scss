@@ -251,14 +251,15 @@ body {
     border-radius: var(--border-radius-lg);
     overflow: hidden;
     box-shadow: var(--shadow-medium);
+    border: 1px solid #334155;
 
-    .tab-buttons {
+    .code-tabs-nav {
         background: #334155;
         padding: 0;
         display: flex;
         border-bottom: 1px solid #475569;
 
-        button {
+        .tab-button {
             background: none;
             border: none;
             padding: 1rem 1.5rem;
@@ -266,30 +267,258 @@ body {
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
+            border-radius: 0;
+            font-size: 0.875rem;
 
             &.active {
                 background: #1e293b;
                 color: #f1f5f9;
+                border-bottom: 2px solid #3b82f6;
             }
 
             &:hover:not(.active) {
                 background: #475569;
                 color: #e2e8f0;
             }
+
+            &:first-child.active {
+                border-top-left-radius: var(--border-radius-lg);
+            }
+
+            &:last-child.active {
+                border-top-right-radius: var(--border-radius-lg);
+            }
         }
     }
 
-    .tab-content {
-        padding: 1.5rem;
+    .code-tabs-content {
+        position: relative;
+        background: #1e293b;
 
+        .tab-pane {
+            display: none;
+            padding: 2rem;
+
+            &.active {
+                display: block;
+            }
+
+            pre {
+                margin: 0;
+                color: #e2e8f0;
+                font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', Consolas, monospace;
+                line-height: 1.5;
+                overflow-x: auto;
+                background: transparent;
+                padding: 0;
+                border: none;
+                border-radius: 0;
+                font-size: 14px;
+                white-space: pre;
+                word-spacing: normal;
+                word-break: normal;
+                tab-size: 4;
+
+                code {
+                    font-family: inherit;
+                    font-size: inherit;
+                    line-height: inherit;
+                    white-space: pre;
+                    background: transparent !important;
+                    padding: 0;
+                    margin: 0;
+                    border: none;
+                    display: block;
+                    color: inherit;
+                }
+            }
+        }
+    }
+
+    // Override Prism.js styles for dark theme
+    pre[class*="language-"] {
+        background: transparent !important;
+        color: #e2e8f0 !important;
+        text-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+        white-space: pre !important;
+        word-spacing: normal !important;
+        word-break: normal !important;
+        tab-size: 4 !important;
+        hyphens: none !important;
+    }
+
+    code[class*="language-"] {
+        background: transparent !important;
+        color: #e2e8f0 !important;
+        text-shadow: none !important;
+        font-size: 14px !important;
+        line-height: 1.5 !important;
+        white-space: pre !important;
+        word-spacing: normal !important;
+        word-break: normal !important;
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', Consolas, monospace !important;
+    }
+
+    // Dark theme token colors
+    .token.comment,
+    .token.prolog,
+    .token.doctype,
+    .token.cdata {
+        color: #6b7280 !important;
+    }
+
+    .token.punctuation {
+        color: #d1d5db !important;
+    }
+
+    .token.property,
+    .token.tag,
+    .token.boolean,
+    .token.number,
+    .token.constant,
+    .token.symbol,
+    .token.deleted {
+        color: #f87171 !important;
+    }
+
+    .token.selector,
+    .token.attr-name,
+    .token.string,
+    .token.char,
+    .token.builtin,
+    .token.inserted {
+        color: #10b981 !important;
+    }
+
+    .token.operator,
+    .token.entity,
+    .token.url,
+    .language-css .token.string,
+    .style .token.string {
+        color: #3b82f6 !important;
+    }
+
+    .token.atrule,
+    .token.attr-value,
+    .token.keyword {
+        color: #8b5cf6 !important;
+    }
+
+    .token.function,
+    .token.class-name {
+        color: #f59e0b !important;
+    }
+
+    .token.regex,
+    .token.important,
+    .token.variable {
+        color: #06b6d4 !important;
+    }
+
+    // Custom scrollbar for code blocks
+    .tab-pane {
         pre {
-            margin: 0;
-            color: #e2e8f0;
-            font-family: 'Fira Code', 'Monaco', 'Cascadia Code', 'Roboto Mono', monospace;
-            line-height: 1.6;
-            overflow-x: auto;
+            &::-webkit-scrollbar {
+                height: 8px;
+                width: 8px;
+            }
+
+            &::-webkit-scrollbar-track {
+                background: #334155;
+                border-radius: 4px;
+            }
+
+            &::-webkit-scrollbar-thumb {
+                background: #475569;
+                border-radius: 4px;
+
+                &:hover {
+                    background: #64748b;
+                }
+            }
         }
     }
+
+    // Better spacing for long lines
+    .tab-pane pre code {
+        min-height: 100%;
+        display: inline-block;
+        min-width: 100%;
+    }
+}
+
+// Installation Guide styling
+.installation-guide {
+    .installation-header {
+        text-align: center;
+        margin-bottom: 2rem;
+
+        h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: #1f2937;
+        }
+
+        p {
+            color: #6b7280;
+            font-size: 1.125rem;
+        }
+    }
+
+    .installation-content {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+}
+
+// Section styling for legacy components
+.section {
+    &__header {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto 3rem;
+
+        .section__title {
+            font-size: clamp(1.875rem, 4vw, 2.5rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .section__subtitle {
+            font-size: 1.125rem;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+    }
+}
+
+// Grid system for legacy components
+.grid {
+    display: grid;
+    gap: 2rem;
+    margin-top: 2rem;
+
+    &.grid--3-col {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+
+    &.grid--2-col {
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    }
+}
+
+// Container for legacy components
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
 }
 
 // Floating elements animation
