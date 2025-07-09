@@ -1,130 +1,309 @@
 # JCacheX Website
 
-This is the React-based website for JCacheX, built with Create React App.
+This is the React-based documentation website for JCacheX, built with Create React App.
 
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js (version 18 or higher)
-- npm (comes with Node.js)
-
-### Local Development
-
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-2. **Start the development server:**
-   ```bash
-   npm start
-   ```
-   This will open the website at [http://localhost:3000](http://localhost:3000)
-
-3. **Build for production:**
-   ```bash
-   npm run build
-   ```
-   This creates a `build` folder with the production-ready files.
-
-4. **Test the production build locally:**
-   ```bash
-   npm install -g serve
-   serve -s build
-   ```
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 site/
-├── public/           # Static files
-│   ├── index.html   # Main HTML template
-│   └── logo.svg     # JCacheX logo
+├── public/                 # Static assets
 ├── src/
-│   ├── components/  # React components
-│   │   ├── Home.js            # Homepage
-│   │   ├── Navbar.js          # Navigation
-│   │   ├── CodeTabs.js        # Code example tabs
-│   │   ├── GettingStarted.js  # Documentation
-│   │   └── Examples.js        # Code examples
-│   ├── styles/      # CSS files
-│   │   ├── index.css        # Global styles
-│   │   └── App.css          # App-wide styles
-│   ├── App.js       # Main App component
-│   └── index.js     # React entry point
-├── package.json     # Dependencies and scripts
-└── README.md       # This file
+│   ├── components/        # React components
+│   │   ├── common/       # Reusable components
+│   │   ├── Home.js       # Home page component
+│   │   ├── GettingStarted.js
+│   │   ├── Examples.js
+│   │   ├── SpringGuide.js
+│   │   └── ...
+│   ├── constants/        # Shared constants and data
+│   ├── hooks/           # Custom React hooks
+│   ├── styles/          # Global styles
+│   └── ...
+├── package.json
+└── README.md
 ```
 
-## 🔧 Available Scripts
+## Getting Started
 
-- `npm start` - Starts development server
-- `npm run build` - Builds the app for production
-- `npm test` - Runs tests
-- `npm run eject` - Ejects from Create React App (⚠️ irreversible)
+### Prerequisites
 
-## 🎨 Features
+- Node.js (v14 or higher)
+- npm or yarn
 
-- **Responsive Design**: Works on all devices
-- **Code Highlighting**: Syntax highlighting for Java, Kotlin, Maven, Gradle
-- **Tab Navigation**: Interactive code examples
-- **Modern UI**: Clean, professional design
-- **SEO Optimized**: Meta tags and structured data
+### Installation
 
-## 🛠️ Development Tips
+```bash
+cd site
+npm install
+```
 
-### Adding New Components
-1. Create a new file in `src/components/`
-2. Import and use in `App.js` or other components
-3. Add corresponding CSS file if needed
+### Development
 
-### Updating Documentation
-- Edit `src/components/GettingStarted.js` for documentation
-- Edit `src/components/Examples.js` for code examples
-- Version numbers are automatically updated during release
+```bash
+npm start
+```
 
-### Styling
-- Use CSS variables defined in `src/styles/index.css`
-- Follow the existing naming conventions
-- Responsive design should be mobile-first
+This runs the app in development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-## 🚢 Deployment
+### Building
 
-The website is automatically deployed to GitHub Pages when:
-1. A new release is created
-2. Changes are pushed to the main branch
+```bash
+npm run build
+```
 
-The deployment process:
-1. Installs dependencies
-2. Builds the React app
-3. Deploys to GitHub Pages
+Builds the app for production to the `build` folder.
 
-## 🔗 URLs
+## Version Testing
 
-- **Live Site**: https://dhruv1110.github.io/JCacheX
-- **GitHub Repository**: https://github.com/dhruv1110/JCacheX
-- **Maven Central**: https://central.sonatype.com/artifact/io.github.dhruv1110/jcachex-core
+The website supports dynamic version replacement for documentation and examples. Here's how to test different versions:
 
-## 📝 Contributing
+### Environment Variables
 
-1. Make changes to the React components
-2. Test locally with `npm start`
-3. Build and test production version
-4. Submit a pull request
+The website uses the `REACT_APP_VERSION` environment variable to display version information throughout the site.
 
-## 🐛 Troubleshooting
+### Testing with Different Versions
 
-### Development Server Won't Start
-- Check Node.js version: `node --version`
-- Delete `node_modules` and run `npm install` again
-- Check for port conflicts (default port 3000)
+#### 1. Default Version (Development)
+```bash
+npm start
+```
+This will use the default version (`1.0.0`) defined in the constants file.
 
-### Build Failures
-- Check for syntax errors in components
-- Ensure all dependencies are installed
-- Check console for specific error messages
+#### 2. Custom Version (Development)
+```bash
+REACT_APP_VERSION=2.1.0 npm start
+```
 
-### GitHub Pages Deployment Issues
-- Verify the GitHub Pages workflow is enabled
-- Check the Actions tab for deployment logs
-- Ensure the `homepage` field in `package.json` is correct
+#### 3. Custom Version (Build - Local Testing)
+```bash
+REACT_APP_VERSION=2.1.0 npm run build:local
+npm run serve
+```
+
+#### 4. Custom Version (Build - GitHub Pages)
+```bash
+REACT_APP_VERSION=2.1.0 npm run build
+```
+
+#### 5. Testing Multiple Versions
+
+**Important**: All npm commands must be run from the `site/` directory:
+
+```bash
+# Navigate to the site directory first
+cd site
+
+# Test with current version (local)
+REACT_APP_VERSION=1.0.15 npm run build:local
+
+# Test with beta version (local)
+REACT_APP_VERSION=2.0.0-beta.1 npm run build:local
+
+# Test with snapshot version (local)
+REACT_APP_VERSION=1.1.0-SNAPSHOT npm run build:local
+
+# Quick test command (builds and serves automatically)
+REACT_APP_VERSION=2.1.0 npm run test:version
+```
+
+### Verification
+
+After building with a custom version, check that:
+
+1. **Installation tabs** display the correct version in Maven, Gradle, and SBT examples
+2. **Code examples** use the correct version in import statements
+3. **Links** point to the correct version in Maven Central/GitHub
+4. **Documentation** reflects the correct version
+
+#### Automated Verification
+```bash
+# Navigate to site directory
+cd site
+
+# Use the verification script to check version replacement
+REACT_APP_VERSION=2.1.0 npm run verify:version
+
+# Manual verification - check version in bundle
+REACT_APP_VERSION=2.1.0 npm run build:local
+grep -o "2\.1\.0" build/static/js/main.*.js
+```
+
+### Local Testing vs GitHub Pages
+
+- **Local Testing**: Use `npm run build:local` - builds with relative paths for local testing
+- **GitHub Pages**: Use `npm run build` - builds with `/jcachex/` homepage for GitHub Pages deployment
+
+The local testing setup resolves Chrome console errors when serving GitHub Pages builds locally.
+
+### Areas Where Version is Used
+
+- Installation guides (Maven, Gradle, SBT)
+- Code examples and snippets
+- Download links
+- API documentation links
+- GitHub release links
+
+## Development Guidelines
+
+### Code Structure
+
+#### Reusable Components
+- Use components from `src/components/common/` for consistent UI
+- Components include: `FeatureCard`, `Section`, `Grid`, `InstallationGuide`, `Badge`
+
+#### Custom Hooks
+- `useVersion`: Manages version replacement throughout the site
+- `useTabState`: Handles tab switching logic
+- `useResponsive`: Provides responsive design utilities
+
+#### Constants
+- All shared data is centralized in `src/constants/index.js`
+- Includes installation tabs, code examples, and configuration
+
+### Adding New Content
+
+#### 1. New Component
+```jsx
+import React from 'react';
+import { Section, Grid, FeatureCard } from './common';
+import { useVersion } from '../hooks';
+
+const NewComponent = () => {
+    const { version } = useVersion();
+
+    return (
+        <Section title="New Section" centered>
+            <Grid columns={3}>
+                {/* content */}
+            </Grid>
+        </Section>
+    );
+};
+```
+
+#### 2. New Code Example
+```jsx
+const newTabs = [
+    {
+        id: 'java',
+        label: 'Java',
+        language: 'java',
+        code: `// Example with version ${version}`
+    }
+];
+```
+
+#### 3. New Installation Guide
+```jsx
+<InstallationGuide
+    tabs={customTabs}
+    title="Custom Installation"
+    description="Install with custom options"
+/>
+```
+
+### Responsive Design
+
+The website uses a mobile-first approach with breakpoints:
+
+- Mobile: `< 768px`
+- Tablet: `768px - 1024px`
+- Desktop: `> 1024px`
+
+#### CSS Guidelines
+- Use CSS custom properties for theming
+- Follow BEM naming convention
+- Ensure all components are responsive
+- Test on multiple screen sizes
+
+### Performance
+
+- Components use React hooks for state management
+- Code splitting is handled by Create React App
+- Images are optimized and use proper formats
+- CSS is minified in production builds
+
+## Deployment
+
+### GitHub Pages
+
+The site is configured for GitHub Pages deployment with the homepage set to `/jcachex/`.
+
+```bash
+# Navigate to site directory
+cd site
+
+# Build for production
+npm run build
+
+# Deploy to GitHub Pages (if gh-pages package is configured)
+npm run deploy
+```
+
+**Note**: GitHub Pages deployment is typically handled automatically via GitHub Actions when you push to the main branch.
+
+### Manual Deployment
+
+1. Build the project:
+```bash
+npm run build
+```
+
+2. Upload the `build/` folder contents to your web server
+
+3. Configure your server to serve `index.html` for all routes (SPA routing)
+
+## Testing
+
+### Visual Testing
+```bash
+npm start
+```
+
+Navigate through all pages and verify:
+- All components render correctly
+- Responsive design works on different screen sizes
+- Version information is displayed correctly
+- Code examples are properly formatted
+- Links work correctly
+
+### Build Testing
+```bash
+npm run build
+```
+
+Verify the build completes without errors and check the output for:
+- Proper file sizes
+- No console errors
+- Correct version replacement
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Version not updating**: Clear browser cache and rebuild
+2. **Components not rendering**: Check console for import errors
+3. **Styles not applying**: Ensure CSS imports are correct
+4. **Build failures**: Check for syntax errors and missing dependencies
+
+### Debug Mode
+
+```bash
+# Enable debug logging
+DEBUG=* npm start
+
+# Check bundle analysis
+npm run build && npx serve -s build
+```
+
+## Contributing
+
+1. Follow the existing code structure
+2. Test your changes with multiple versions
+3. Ensure responsive design works
+4. Update documentation as needed
+5. Test the build process
+
+## License
+
+This project is licensed under the same license as JCacheX.
