@@ -6,8 +6,8 @@
     "homepage": "https://dhruv1110.github.io/jcachex",
     "scripts": {
         "start": "react-scripts start",
-        "build": "react-scripts build",
-        "build:local": "GENERATE_SOURCEMAP=false PUBLIC_URL=. react-scripts build",
+        "build": "NODE_OPTIONS='--max-old-space-size=4096' GENERATE_SOURCEMAP=false react-scripts build",
+        "build:local": "NODE_OPTIONS='--max-old-space-size=4096' GENERATE_SOURCEMAP=false PUBLIC_URL=. react-scripts build",
         "serve": "serve -s build -l 3001",
         "serve:production": "serve -s build -l 3001 --single",
         "test:local": "npm run build:local && npm run serve",
