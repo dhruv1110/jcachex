@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useSEO } from '../hooks';
 import { Section, Grid, FeatureCard, Badge } from './common';
 import { MetaTags } from './SEO';
 import CodeTabs from './CodeTabs';
@@ -639,15 +640,10 @@ public class CacheMonitoringService {
 ];
 
 const ExamplesPage: React.FC = () => {
-    const [activeSection, setActiveSection] = useState<string>('basic');
+    const { getCurrentPageSEO } = useSEO();
+    const seoData = getCurrentPageSEO();
 
-    // Default SEO data for examples page
-    const seoData = {
-        title: 'JCacheX Examples and Code Samples',
-        description: 'Comprehensive examples and code samples for JCacheX. Learn async operations, Spring Boot integration, distributed caching, and advanced patterns.',
-        keywords: ['JCacheX examples', 'cache examples', 'Java cache tutorial', 'Spring cache examples', 'async cache'],
-        canonical: 'https://dhruv1110.github.io/jcachex/examples'
-    };
+    const [activeSection, setActiveSection] = useState<string>('basic');
 
     const sections = [
         { id: 'basic', label: 'Core Implementation', description: 'Fundamental caching patterns' },

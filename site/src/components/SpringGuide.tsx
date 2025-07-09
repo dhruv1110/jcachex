@@ -1,5 +1,5 @@
 import React from 'react';
-import { useVersion, useTabState } from '../hooks';
+import { useVersion, useTabState, useSEO } from '../hooks';
 import { SPRING_USAGE } from '../constants';
 import { Section, Grid, FeatureCard, InstallationGuide, Badge } from './common';
 import { MetaTags } from './SEO';
@@ -10,14 +10,8 @@ import { CodeTab, Feature, Resource } from '../types';
 const SpringGuide: React.FC = () => {
     const { version } = useVersion();
     const { activeTab, setActiveTab } = useTabState('maven');
-
-    // Default SEO data for Spring guide
-    const seoData = {
-        title: 'Spring Boot Integration Guide - JCacheX',
-        description: 'Complete guide to integrating JCacheX with Spring Boot applications. Auto-configuration, annotations, health checks, and monitoring.',
-        keywords: ['Spring Boot cache', 'JCacheX Spring', 'Spring cache integration', 'Spring Boot starter', 'cache annotations'],
-        canonical: 'https://dhruv1110.github.io/jcachex/spring'
-    };
+    const { getCurrentPageSEO } = useSEO();
+    const seoData = getCurrentPageSEO();
 
     const setupTabs: CodeTab[] = [
         {
