@@ -95,12 +95,20 @@ coverage.xml
 .jacoco/
 jacoco.exec
 
-# Logs
-logs/
-*.log
+# Node.js
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# React build
+site/build/
+
+# Logs
+logs/
+*.log
 
 # Environment
 .env
@@ -126,3 +134,4 @@ pubring.gpg
 *.swp
 *.swo
 *#
+/site-backup/
