@@ -2,7 +2,7 @@ import React from 'react';
 import { useVersion, useTabState } from '../hooks';
 import { SPRING_USAGE } from '../constants';
 import { Section, Grid, FeatureCard, InstallationGuide, Badge } from './common';
-import { MetaTags } from './SEO';
+import { MetaTags, Breadcrumbs } from './SEO';
 import CodeTabs from './CodeTabs';
 import { CodeTab, Feature, Resource } from '../types';
 import './SpringGuide.css';
@@ -451,6 +451,10 @@ public class CacheMetrics implements MeterBinder {
     return (
         <div className="spring-guide-page">
             <MetaTags seo={seoData} />
+            <Breadcrumbs items={[
+                { label: 'Home', path: '/' },
+                { label: 'Spring Boot', path: '/spring', current: true }
+            ]} />
 
             {/* Header */}
             <Section background="gradient" padding="lg" centered>

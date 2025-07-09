@@ -1,0 +1,40 @@
+{
+    "name": "JCacheX - High-Performance Java Caching Library",
+    "short_name": "JCacheX",
+    "description": "High-performance Java caching library with async support, Spring integration, distributed caching, and advanced eviction strategies",
+    "start_url": "/jcachex/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#1976d2",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/jcachex/logo.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/jcachex/favicon-16x16.png",
+            "sizes": "16x16",
+            "type": "image/png"
+        },
+        {
+            "src": "/jcachex/favicon-32x32.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "/jcachex/apple-touch-icon.png",
+            "sizes": "180x180",
+            "type": "image/png"
+        }
+    ],
+    "categories": [
+        "developer",
+        "productivity",
+        "utilities"
+    ],
+    "lang": "en",
+    "scope": "/jcachex/"
+}

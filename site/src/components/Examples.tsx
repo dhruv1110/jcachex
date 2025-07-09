@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Section, Grid, FeatureCard, Badge } from './common';
-import { MetaTags } from './SEO';
+import { MetaTags, Breadcrumbs } from './SEO';
 import CodeTabs from './CodeTabs';
 import type { CodeTab } from '../types';
 
@@ -736,6 +736,10 @@ const ExamplesPage: React.FC = () => {
     return (
         <div className="examples-page">
             <MetaTags seo={seoData} />
+            <Breadcrumbs items={[
+                { label: 'Home', path: '/' },
+                { label: 'Examples', path: '/examples', current: true }
+            ]} />
 
             {/* Header */}
             <Section background="gradient" padding="lg" centered>

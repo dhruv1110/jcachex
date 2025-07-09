@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { FAQ } from '../types';
 import { Section } from './common';
 import PageWrapper from './PageWrapper';
+import { Breadcrumbs } from './SEO';
 import './FAQ.css';
 
 
@@ -176,6 +177,10 @@ const FAQPage: React.FC = () => {
             keywords="JCacheX, FAQ, questions, answers, help, support, Java cache"
             className="faq-page"
         >
+            <Breadcrumbs items={[
+                { label: 'Home', path: '/' },
+                { label: 'FAQ', path: '/faq', current: true }
+            ]} />
 
             {/* Header */}
             <Section background="gradient" padding="lg" centered>
