@@ -3,6 +3,7 @@ package io.github.dhruv1110.jcachex;
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
@@ -408,14 +409,16 @@ public class DefaultCache<K, V> implements Cache<K, V>, AutoCloseable {
 
     private void scheduleRefresh() {
         scheduler.scheduleAtFixedRate(() -> {
-            Instant now = Instant.now();
+            long currentTimeNanos = System.nanoTime();
             entries.forEach((key, entry) -> {
                 if (entry.isExpired()) {
                     remove(key);
                     notifyListeners(listener -> listener.onExpire(key, entry.getValue()));
-                } else if (config.getRefreshAfterWrite() != null &&
-                        entry.getCreationTime().plus(config.getRefreshAfterWrite()).isBefore(now)) {
-                    CompletableFuture.runAsync(() -> loadValue(key));
+                } else if (config.getRefreshAfterWrite() != null) {
+                    long refreshThresholdNanos = entry.getCreationTimeNanos() + config.getRefreshAfterWrite().toNanos();
+                    if (currentTimeNanos > refreshThresholdNanos) {
+                        CompletableFuture.runAsync(() -> loadValue(key));
+                    }
                 }
             });
         }, 0, REFRESH_INTERVAL_SECONDS, TimeUnit.SECONDS);

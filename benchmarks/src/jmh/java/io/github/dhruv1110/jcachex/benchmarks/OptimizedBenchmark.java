@@ -11,33 +11,33 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Quick benchmark for fast validation of setup with different JCacheX
- * configurations.
+ * Benchmark comparing JCacheX with nanoTime optimizations against other cache
+ * implementations
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Warmup(iterations = 1, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 2, time = 1, timeUnit = TimeUnit.SECONDS)
+@Warmup(iterations = 2, time = 2, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 3, time = 2, timeUnit = TimeUnit.SECONDS)
 @Fork(1)
 @State(Scope.Benchmark)
-public class QuickBenchmark {
+public class OptimizedBenchmark {
 
-    protected static final int CACHE_SIZE = 1000;
+    protected static final int CACHE_SIZE = 500; // Smaller for more eviction activity
     protected static final int OPERATIONS_COUNT = 100;
 
     // Test data
     protected String[] keys;
     protected String[] values;
 
-    // Cache implementations - now with alternative configuration
-    protected Cache<String, String> jcacheXCache;
-    protected Cache<String, String> jcacheXBatchCache;
+    // Cache implementations
+    protected Cache<String, String> jcacheXDefault;
     protected com.github.benmanes.caffeine.cache.Cache<String, String> caffeineCache;
     protected ConcurrentHashMap<String, String> concurrentMap;
 
     @Setup(Level.Trial)
     public void setupTrial() {
-        // Generate test data
+        System.out.println("Setting up OptimizedBenchmark...");
+
         keys = new String[OPERATIONS_COUNT];
         values = new String[OPERATIONS_COUNT];
 
@@ -47,38 +47,22 @@ public class QuickBenchmark {
         }
 
         // Setup cache implementations
-        setupJCacheX();
-        setupJCacheXBatch();
+        setupJCacheXDefault();
         setupCaffeine();
         setupConcurrentMap();
     }
 
-    private void setupJCacheX() {
+    private void setupJCacheXDefault() {
         try {
             CacheConfig<String, String> config = CacheConfig.<String, String>builder()
                     .maximumSize((long) CACHE_SIZE)
                     .expireAfterWrite(Duration.ofMinutes(30))
-                    .recordStats(false)
+                    .recordStats(false) // Disable stats for pure performance
                     .build();
-            jcacheXCache = new DefaultCache<>(config);
-            System.out.println("✓ JCacheX setup successful");
+            jcacheXDefault = new DefaultCache<>(config);
+            System.out.println("✓ JCacheX Default setup successful");
         } catch (Exception e) {
-            System.err.println("✗ JCacheX setup failed: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void setupJCacheXBatch() {
-        try {
-            CacheConfig<String, String> config = CacheConfig.<String, String>builder()
-                    .maximumSize((long) CACHE_SIZE)
-                    .expireAfterWrite(Duration.ofMinutes(30))
-                    .recordStats(true) // Enable stats for comparison
-                    .build();
-            jcacheXBatchCache = new DefaultCache<>(config);
-            System.out.println("✓ JCacheX Alt setup successful");
-        } catch (Exception e) {
-            System.err.println("✗ JCacheX Alt setup failed: " + e.getMessage());
+            System.err.println("✗ JCacheX Default setup failed: " + e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -113,8 +97,7 @@ public class QuickBenchmark {
             String key = keys[i];
             String value = values[i];
 
-            jcacheXCache.put(key, value);
-            jcacheXBatchCache.put(key, value);
+            jcacheXDefault.put(key, value);
             caffeineCache.put(key, value);
             concurrentMap.put(key, value);
         }
@@ -123,32 +106,21 @@ public class QuickBenchmark {
     @TearDown(Level.Trial)
     public void tearDown() {
         try {
-            if (jcacheXCache != null) {
-                jcacheXCache.clear();
-            }
-            if (jcacheXBatchCache != null) {
-                jcacheXBatchCache.clear();
-            }
-            if (caffeineCache != null) {
+            if (jcacheXDefault != null)
+                jcacheXDefault.clear();
+            if (caffeineCache != null)
                 caffeineCache.invalidateAll();
-            }
-            if (concurrentMap != null) {
+            if (concurrentMap != null)
                 concurrentMap.clear();
-            }
         } catch (Exception e) {
             System.err.println("Cleanup failed: " + e.getMessage());
         }
     }
 
-    // Quick GET benchmarks
+    // GET benchmarks - comparing cached access performance
     @Benchmark
-    public String jcacheXGet() {
-        return jcacheXCache.get(keys[0]);
-    }
-
-    @Benchmark
-    public String jcacheXBatchGet() {
-        return jcacheXBatchCache.get(keys[0]);
+    public String jcacheXDefaultGet() {
+        return jcacheXDefault.get(keys[0]);
     }
 
     @Benchmark
@@ -161,15 +133,10 @@ public class QuickBenchmark {
         return concurrentMap.get(keys[0]);
     }
 
-    // Quick PUT benchmarks
+    // PUT benchmarks - testing write performance
     @Benchmark
-    public void jcacheXPut() {
-        jcacheXCache.put("testKey", "testValue");
-    }
-
-    @Benchmark
-    public void jcacheXBatchPut() {
-        jcacheXBatchCache.put("testKey", "testValue");
+    public void jcacheXDefaultPut() {
+        jcacheXDefault.put("testKey", "testValue");
     }
 
     @Benchmark
@@ -180,5 +147,20 @@ public class QuickBenchmark {
     @Benchmark
     public void concurrentMapPut() {
         concurrentMap.put("testKey", "testValue");
+    }
+
+    // Bulk operations - testing higher-throughput scenarios
+    @Benchmark
+    public void jcacheXDefaultBulkPut() {
+        for (int i = 0; i < 10; i++) {
+            jcacheXDefault.put("bulk" + i, "value" + i);
+        }
+    }
+
+    @Benchmark
+    public void caffeineBulkPut() {
+        for (int i = 0; i < 10; i++) {
+            caffeineCache.put("bulk" + i, "value" + i);
+        }
     }
 }

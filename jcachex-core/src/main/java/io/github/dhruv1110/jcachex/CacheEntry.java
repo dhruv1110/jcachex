@@ -73,18 +73,62 @@ import java.util.concurrent.atomic.AtomicLong;
 public class CacheEntry<V> {
     private final V value;
     private final long weight;
-    private final Instant expirationTime;
+    private final Instant expirationTime; // Keep Instant for compatibility with Duration-based expiration
+    private final long expirationTimeNanos; // Add nanos for faster expiration checks
     private final AtomicLong accessCount;
-    private volatile Instant lastAccessTime;
-    private final Instant creationTime;
+    private volatile long lastAccessTimeNanos;
+    private volatile Instant lastAccessTime; // Keep for compatibility
+    private final long creationTimeNanos;
+    private final Instant creationTime; // Keep for compatibility
 
     public CacheEntry(V value, long weight, Instant expirationTime) {
         this.value = value;
         this.weight = weight;
         this.expirationTime = expirationTime;
+        this.expirationTimeNanos = calculateExpirationNanos(expirationTime);
         this.accessCount = new AtomicLong(0);
-        this.lastAccessTime = Instant.now();
-        this.creationTime = Instant.now();
+        long currentNanos = System.nanoTime();
+        Instant now = Instant.now();
+        this.lastAccessTimeNanos = currentNanos;
+        this.lastAccessTime = now;
+        this.creationTimeNanos = currentNanos;
+        this.creationTime = now;
+    }
+
+    private static long calculateExpirationNanos(Instant expirationTime) {
+        if (expirationTime == null) {
+            return -1L; // Special value for "no expiration"
+        }
+
+        try {
+            // Handle extreme cases first
+            if (expirationTime.equals(Instant.MAX)) {
+                return Long.MAX_VALUE;
+            }
+            if (expirationTime.equals(Instant.MIN)) {
+                return 1L; // Special value for "expired far in the past"
+            }
+
+            long currentTimeMillis = System.currentTimeMillis();
+            long expirationMillis = expirationTime.toEpochMilli();
+            long deltaMillis = expirationMillis - currentTimeMillis;
+
+            // Clamp to reasonable bounds to avoid overflow
+            if (deltaMillis > 365L * 24 * 60 * 60 * 1000) { // > 1 year
+                return Long.MAX_VALUE;
+            } else if (deltaMillis < -365L * 24 * 60 * 60 * 1000) { // < -1 year
+                return 1L; // Expired far in the past
+            } else {
+                long result = System.nanoTime() + deltaMillis * 1_000_000L;
+                // Ensure we don't return our special values accidentally
+                if (result <= 1L)
+                    return 2L;
+                return result;
+            }
+        } catch (Exception e) {
+            // Handle any overflow or other issues gracefully
+            return expirationTime.isAfter(Instant.now()) ? Long.MAX_VALUE : 1L;
+        }
     }
 
     public V getValue() {
@@ -96,7 +140,15 @@ public class CacheEntry<V> {
     }
 
     public boolean isExpired() {
-        return expirationTime != null && Instant.now().isAfter(expirationTime);
+        if (expirationTimeNanos == -1L) {
+            // No expiration set
+            return false;
+        }
+        if (expirationTimeNanos == 1L) {
+            // Expired far in the past (like Instant.MIN)
+            return true;
+        }
+        return System.nanoTime() > expirationTimeNanos;
     }
 
     public Instant getExpirationTime() {
@@ -109,6 +161,7 @@ public class CacheEntry<V> {
 
     public void incrementAccessCount() {
         accessCount.incrementAndGet();
+        lastAccessTimeNanos = System.nanoTime();
         lastAccessTime = Instant.now();
     }
 
@@ -116,7 +169,15 @@ public class CacheEntry<V> {
         return lastAccessTime;
     }
 
+    public long getLastAccessTimeNanos() {
+        return lastAccessTimeNanos;
+    }
+
     public Instant getCreationTime() {
         return creationTime;
+    }
+
+    public long getCreationTimeNanos() {
+        return creationTimeNanos;
     }
 }

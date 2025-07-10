@@ -15,9 +15,10 @@ import java.util.concurrent.CompletableFuture;
  * Configuration options for a JCacheX cache instance.
  * <p>
  * This class provides a comprehensive set of configuration options to customize
- * cache behavior
- * including size limits, expiration policies, eviction strategies, and
- * performance tuning.
+ * cache behavior including size limits, expiration policies, eviction
+ * strategies,
+ * and performance tuning. JCacheX is optimized for high performance with
+ * nanoTime-based operations and immediate eviction for minimal latency.
  * </p>
  *
  * <h3>Basic Usage Examples:</h3>
