@@ -1,0 +1,1491 @@
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.cache2kGetThroughput
+
+# Run progress: 0.00% complete, ETA 00:34:00
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+45.191 ops/us
+# Warmup Iteration   2: 44.863 ops/us
+# Warmup Iteration   3: 44.360 ops/us
+Iteration   1: 46.840 ops/us
+Iteration   2: 46.786 ops/us
+Iteration   3: 46.213 ops/us
+Iteration   4: 46.891 ops/us
+Iteration   5: 46.900 ops/us
+
+# Run progress: 1.67% complete, ETA 00:33:57
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+45.294 ops/us
+# Warmup Iteration   2: 45.407 ops/us
+# Warmup Iteration   3: 46.945 ops/us
+Iteration   1: 46.897 ops/us
+Iteration   2: 46.919 ops/us
+Iteration   3: 46.871 ops/us
+Iteration   4: 46.926 ops/us
+Iteration   5: 47.293 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.cache2kGetThroughput":
+  46.854 ±(99.9%) 0.398 ops/us [Average]
+  (min, avg, max) = (46.213, 46.854, 47.293), stdev = 0.263
+  CI (99.9%): [46.456, 47.252] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.cache2kGetThroughput4T
+
+# Run progress: 3.33% complete, ETA 00:33:22
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+73.530 ops/us
+# Warmup Iteration   2: 75.960 ops/us
+# Warmup Iteration   3: 78.831 ops/us
+Iteration   1: 79.113 ops/us
+Iteration   2: 77.143 ops/us
+Iteration   3: 75.009 ops/us
+Iteration   4: 78.749 ops/us
+Iteration   5: 77.064 ops/us
+
+# Run progress: 5.00% complete, ETA 00:33:07
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+75.183 ops/us
+# Warmup Iteration   2: 78.078 ops/us
+# Warmup Iteration   3: 79.078 ops/us
+Iteration   1: 80.280 ops/us
+Iteration   2: 79.696 ops/us
+Iteration   3: 79.603 ops/us
+Iteration   4: 78.628 ops/us
+Iteration   5: 79.349 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.cache2kGetThroughput4T":
+  78.463 ±(99.9%) 2.421 ops/us [Average]
+  (min, avg, max) = (75.009, 78.463, 80.280), stdev = 1.601
+  CI (99.9%): [76.043, 80.884] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.cache2kMixedThroughput
+
+# Run progress: 6.67% complete, ETA 00:32:41
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+23.537 ops/us
+# Warmup Iteration   2: 23.846 ops/us
+# Warmup Iteration   3: 25.979 ops/us
+Iteration   1: 26.527 ops/us
+Iteration   2: 26.840 ops/us
+Iteration   3: 26.965 ops/us
+Iteration   4: 26.871 ops/us
+Iteration   5: 26.914 ops/us
+
+# Run progress: 8.33% complete, ETA 00:32:01
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+23.630 ops/us
+# Warmup Iteration   2: 24.026 ops/us
+# Warmup Iteration   3: 26.476 ops/us
+Iteration   1: 26.776 ops/us
+Iteration   2: 26.673 ops/us
+Iteration   3: 26.999 ops/us
+Iteration   4: 26.979 ops/us
+Iteration   5: 26.857 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.cache2kMixedThroughput":
+  26.840 ±(99.9%) 0.223 ops/us [Average]
+  (min, avg, max) = (26.527, 26.840, 26.999), stdev = 0.148
+  CI (99.9%): [26.617, 27.064] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.cache2kMixedThroughput4T
+
+# Run progress: 10.00% complete, ETA 00:31:23
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+14.919 ops/us
+# Warmup Iteration   2: 14.018 ops/us
+# Warmup Iteration   3: 14.752 ops/us
+Iteration   1: 14.687 ops/us
+Iteration   2: 17.549 ops/us
+Iteration   3: 17.985 ops/us
+Iteration   4: 16.566 ops/us
+Iteration   5: 18.414 ops/us
+
+# Run progress: 11.67% complete, ETA 00:30:53
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+16.873 ops/us
+# Warmup Iteration   2: 16.768 ops/us
+# Warmup Iteration   3: 18.138 ops/us
+Iteration   1: 17.854 ops/us
+Iteration   2: 17.679 ops/us
+Iteration   3: 17.957 ops/us
+Iteration   4: 17.865 ops/us
+Iteration   5: 17.976 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.cache2kMixedThroughput4T":
+  17.453 ±(99.9%) 1.638 ops/us [Average]
+  (min, avg, max) = (14.687, 17.453, 18.414), stdev = 1.083
+  CI (99.9%): [15.815, 19.091] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.cache2kPutThroughput
+
+# Run progress: 13.33% complete, ETA 00:30:22
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+12.013 ops/us
+# Warmup Iteration   2: 12.469 ops/us
+# Warmup Iteration   3: 12.740 ops/us
+Iteration   1: 12.737 ops/us
+Iteration   2: 12.735 ops/us
+Iteration   3: 12.445 ops/us
+Iteration   4: 12.759 ops/us
+Iteration   5: 12.757 ops/us
+
+# Run progress: 15.00% complete, ETA 00:29:44
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+12.100 ops/us
+# Warmup Iteration   2: 12.515 ops/us
+# Warmup Iteration   3: 12.775 ops/us
+Iteration   1: 12.778 ops/us
+Iteration   2: 12.749 ops/us
+Iteration   3: 12.817 ops/us
+Iteration   4: 12.808 ops/us
+Iteration   5: 12.801 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.cache2kPutThroughput":
+  12.739 ±(99.9%) 0.162 ops/us [Average]
+  (min, avg, max) = (12.445, 12.739, 12.817), stdev = 0.107
+  CI (99.9%): [12.576, 12.901] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.cache2kPutThroughput4T
+
+# Run progress: 16.67% complete, ETA 00:29:07
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+6.152 ops/us
+# Warmup Iteration   2: 5.921 ops/us
+# Warmup Iteration   3: 6.973 ops/us
+Iteration   1: 6.567 ops/us
+Iteration   2: 6.367 ops/us
+Iteration   3: 6.638 ops/us
+Iteration   4: 6.445 ops/us
+Iteration   5: 6.541 ops/us
+
+# Run progress: 18.33% complete, ETA 00:28:35
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+6.083 ops/us
+# Warmup Iteration   2: 6.311 ops/us
+# Warmup Iteration   3: 6.576 ops/us
+Iteration   1: 6.439 ops/us
+Iteration   2: 6.442 ops/us
+Iteration   3: 6.449 ops/us
+Iteration   4: 6.456 ops/us
+Iteration   5: 6.352 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.cache2kPutThroughput4T":
+  6.470 ±(99.9%) 0.134 ops/us [Average]
+  (min, avg, max) = (6.352, 6.470, 6.638), stdev = 0.088
+  CI (99.9%): [6.336, 6.603] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.caffeineGetThroughput
+
+# Run progress: 20.00% complete, ETA 00:28:02
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+27.978 ops/us
+# Warmup Iteration   2: 28.039 ops/us
+# Warmup Iteration   3: 28.128 ops/us
+Iteration   1: 27.891 ops/us
+Iteration   2: 27.969 ops/us
+Iteration   3: 28.013 ops/us
+Iteration   4: 28.006 ops/us
+Iteration   5: 28.032 ops/us
+
+# Run progress: 21.67% complete, ETA 00:27:25
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+29.163 ops/us
+# Warmup Iteration   2: 28.935 ops/us
+# Warmup Iteration   3: 29.626 ops/us
+Iteration   1: 28.487 ops/us
+Iteration   2: 29.041 ops/us
+Iteration   3: 28.160 ops/us
+Iteration   4: 29.253 ops/us
+Iteration   5: 29.213 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.caffeineGetThroughput":
+  28.406 ±(99.9%) 0.836 ops/us [Average]
+  (min, avg, max) = (27.891, 28.406, 29.253), stdev = 0.553
+  CI (99.9%): [27.571, 29.242] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.caffeineGetThroughput4T
+
+# Run progress: 23.33% complete, ETA 00:26:48
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+17.771 ops/us
+# Warmup Iteration   2: 17.753 ops/us
+# Warmup Iteration   3: 17.913 ops/us
+Iteration   1: 17.814 ops/us
+Iteration   2: 17.957 ops/us
+Iteration   3: 17.684 ops/us
+Iteration   4: 17.961 ops/us
+Iteration   5: 17.824 ops/us
+
+# Run progress: 25.00% complete, ETA 00:26:15
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+17.842 ops/us
+# Warmup Iteration   2: 18.224 ops/us
+# Warmup Iteration   3: 17.847 ops/us
+Iteration   1: 17.585 ops/us
+Iteration   2: 17.879 ops/us
+Iteration   3: 17.987 ops/us
+Iteration   4: 17.750 ops/us
+Iteration   5: 17.805 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.caffeineGetThroughput4T":
+  17.825 ±(99.9%) 0.194 ops/us [Average]
+  (min, avg, max) = (17.585, 17.825, 17.987), stdev = 0.129
+  CI (99.9%): [17.630, 18.019] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.caffeineMixedThroughput
+
+# Run progress: 26.67% complete, ETA 00:25:41
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+25.599 ops/us
+# Warmup Iteration   2: 25.784 ops/us
+# Warmup Iteration   3: 26.386 ops/us
+Iteration   1: 26.399 ops/us
+Iteration   2: 26.360 ops/us
+Iteration   3: 26.365 ops/us
+Iteration   4: 26.321 ops/us
+Iteration   5: 26.332 ops/us
+
+# Run progress: 28.33% complete, ETA 00:25:05
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+25.497 ops/us
+# Warmup Iteration   2: 25.845 ops/us
+# Warmup Iteration   3: 25.984 ops/us
+Iteration   1: 25.930 ops/us
+Iteration   2: 25.241 ops/us
+Iteration   3: 25.835 ops/us
+Iteration   4: 25.903 ops/us
+Iteration   5: 25.912 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.caffeineMixedThroughput":
+  26.060 ±(99.9%) 0.558 ops/us [Average]
+  (min, avg, max) = (25.241, 26.060, 26.399), stdev = 0.369
+  CI (99.9%): [25.502, 26.617] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.caffeineMixedThroughput4T
+
+# Run progress: 30.00% complete, ETA 00:24:29
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+18.316 ops/us
+# Warmup Iteration   2: 18.291 ops/us
+# Warmup Iteration   3: 18.185 ops/us
+Iteration   1: 18.139 ops/us
+Iteration   2: 18.193 ops/us
+Iteration   3: 18.045 ops/us
+Iteration   4: 18.519 ops/us
+Iteration   5: 18.347 ops/us
+
+# Run progress: 31.67% complete, ETA 00:23:55
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+17.981 ops/us
+# Warmup Iteration   2: 18.042 ops/us
+# Warmup Iteration   3: 18.082 ops/us
+Iteration   1: 18.268 ops/us
+Iteration   2: 18.034 ops/us
+Iteration   3: 18.067 ops/us
+Iteration   4: 17.765 ops/us
+Iteration   5: 17.863 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.caffeineMixedThroughput4T":
+  18.124 ±(99.9%) 0.336 ops/us [Average]
+  (min, avg, max) = (17.765, 18.124, 18.519), stdev = 0.223
+  CI (99.9%): [17.788, 18.461] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.caffeinePutThroughput
+
+# Run progress: 33.33% complete, ETA 00:23:21
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+30.675 ops/us
+# Warmup Iteration   2: 30.829 ops/us
+# Warmup Iteration   3: 30.960 ops/us
+Iteration   1: 30.973 ops/us
+Iteration   2: 30.958 ops/us
+Iteration   3: 30.956 ops/us
+Iteration   4: 30.963 ops/us
+Iteration   5: 30.944 ops/us
+
+# Run progress: 35.00% complete, ETA 00:22:45
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+30.710 ops/us
+# Warmup Iteration   2: 30.981 ops/us
+# Warmup Iteration   3: 31.063 ops/us
+Iteration   1: 31.064 ops/us
+Iteration   2: 31.013 ops/us
+Iteration   3: 31.044 ops/us
+Iteration   4: 31.054 ops/us
+Iteration   5: 30.727 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.caffeinePutThroughput":
+  30.970 ±(99.9%) 0.145 ops/us [Average]
+  (min, avg, max) = (30.727, 30.970, 31.064), stdev = 0.096
+  CI (99.9%): [30.824, 31.115] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.caffeinePutThroughput4T
+
+# Run progress: 36.67% complete, ETA 00:22:09
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+17.205 ops/us
+# Warmup Iteration   2: 17.639 ops/us
+# Warmup Iteration   3: 16.705 ops/us
+Iteration   1: 16.661 ops/us
+Iteration   2: 16.544 ops/us
+Iteration   3: 16.092 ops/us
+Iteration   4: 16.488 ops/us
+Iteration   5: 16.728 ops/us
+
+# Run progress: 38.33% complete, ETA 00:21:35
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+16.761 ops/us
+# Warmup Iteration   2: 17.206 ops/us
+# Warmup Iteration   3: 17.463 ops/us
+Iteration   1: 17.026 ops/us
+Iteration   2: 17.376 ops/us
+Iteration   3: 17.255 ops/us
+Iteration   4: 17.008 ops/us
+Iteration   5: 17.117 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.caffeinePutThroughput4T":
+  16.830 ±(99.9%) 0.599 ops/us [Average]
+  (min, avg, max) = (16.092, 16.830, 17.376), stdev = 0.396
+  CI (99.9%): [16.231, 17.429] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapGetThroughput
+
+# Run progress: 40.00% complete, ETA 00:21:01
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+120.517 ops/us
+# Warmup Iteration   2: 120.718 ops/us
+# Warmup Iteration   3: 122.779 ops/us
+Iteration   1: 122.701 ops/us
+Iteration   2: 122.896 ops/us
+Iteration   3: 122.839 ops/us
+Iteration   4: 122.773 ops/us
+Iteration   5: 122.817 ops/us
+
+# Run progress: 41.67% complete, ETA 00:20:25
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+116.398 ops/us
+# Warmup Iteration   2: 115.058 ops/us
+# Warmup Iteration   3: 118.628 ops/us
+Iteration   1: 118.491 ops/us
+Iteration   2: 118.448 ops/us
+Iteration   3: 118.382 ops/us
+Iteration   4: 118.519 ops/us
+Iteration   5: 118.663 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapGetThroughput":
+  120.653 ±(99.9%) 3.432 ops/us [Average]
+  (min, avg, max) = (118.382, 120.653, 122.896), stdev = 2.270
+  CI (99.9%): [117.221, 124.085] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapGetThroughput4T
+
+# Run progress: 43.33% complete, ETA 00:19:49
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+446.454 ops/us
+# Warmup Iteration   2: 447.236 ops/us
+# Warmup Iteration   3: 456.292 ops/us
+Iteration   1: 456.003 ops/us
+Iteration   2: 455.957 ops/us
+Iteration   3: 443.800 ops/us
+Iteration   4: 456.335 ops/us
+Iteration   5: 456.225 ops/us
+
+# Run progress: 45.00% complete, ETA 00:19:15
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+463.893 ops/us
+# Warmup Iteration   2: 464.469 ops/us
+# Warmup Iteration   3: 474.354 ops/us
+Iteration   1: 473.179 ops/us
+Iteration   2: 474.329 ops/us
+Iteration   3: 475.070 ops/us
+Iteration   4: 474.450 ops/us
+Iteration   5: 474.737 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapGetThroughput4T":
+  464.008 ±(99.9%) 17.413 ops/us [Average]
+  (min, avg, max) = (443.800, 464.008, 475.070), stdev = 11.517
+  CI (99.9%): [446.596, 481.421] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapMixedThroughput
+
+# Run progress: 46.67% complete, ETA 00:18:41
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+82.538 ops/us
+# Warmup Iteration   2: 82.648 ops/us
+# Warmup Iteration   3: 82.773 ops/us
+Iteration   1: 82.811 ops/us
+Iteration   2: 82.749 ops/us
+Iteration   3: 81.896 ops/us
+Iteration   4: 82.766 ops/us
+Iteration   5: 80.620 ops/us
+
+# Run progress: 48.33% complete, ETA 00:18:05
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+80.005 ops/us
+# Warmup Iteration   2: 80.490 ops/us
+# Warmup Iteration   3: 80.491 ops/us
+Iteration   1: 80.567 ops/us
+Iteration   2: 79.851 ops/us
+Iteration   3: 80.483 ops/us
+Iteration   4: 80.543 ops/us
+Iteration   5: 80.544 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapMixedThroughput":
+  81.283 ±(99.9%) 1.731 ops/us [Average]
+  (min, avg, max) = (79.851, 81.283, 82.811), stdev = 1.145
+  CI (99.9%): [79.552, 83.014] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapMixedThroughput4T
+
+# Run progress: 50.00% complete, ETA 00:17:30
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+148.966 ops/us
+# Warmup Iteration   2: 140.438 ops/us
+# Warmup Iteration   3: 136.377 ops/us
+Iteration   1: 137.088 ops/us
+Iteration   2: 136.348 ops/us
+Iteration   3: 132.403 ops/us
+Iteration   4: 129.886 ops/us
+Iteration   5: 133.744 ops/us
+
+# Run progress: 51.67% complete, ETA 00:16:55
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+150.439 ops/us
+# Warmup Iteration   2: 142.443 ops/us
+# Warmup Iteration   3: 141.404 ops/us
+Iteration   1: 138.652 ops/us
+Iteration   2: 137.296 ops/us
+Iteration   3: 135.941 ops/us
+Iteration   4: 133.481 ops/us
+Iteration   5: 131.631 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapMixedThroughput4T":
+  134.647 ±(99.9%) 4.293 ops/us [Average]
+  (min, avg, max) = (129.886, 134.647, 138.652), stdev = 2.839
+  CI (99.9%): [130.354, 138.940] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapPutThroughput
+
+# Run progress: 53.33% complete, ETA 00:16:21
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+65.481 ops/us
+# Warmup Iteration   2: 66.981 ops/us
+# Warmup Iteration   3: 67.297 ops/us
+Iteration   1: 67.294 ops/us
+Iteration   2: 65.160 ops/us
+Iteration   3: 67.042 ops/us
+Iteration   4: 67.112 ops/us
+Iteration   5: <failure>
+
+java.lang.ArrayIndexOutOfBoundsException: Index -648 out of bounds for length 1000
+	at io.github.dhruv1110.jcachex.benchmarks.BaseBenchmark.getRandomKey(BaseBenchmark.java:229)
+	at io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapPutThroughput(ThroughputBenchmark.java:122)
+	at io.github.dhruv1110.jcachex.benchmarks.jmh_generated.ThroughputBenchmark_concurrentMapPutThroughput_jmhTest.concurrentMapPutThroughput_thrpt_jmhStub(ThroughputBenchmark_concurrentMapPutThroughput_jmhTest.java:185)
+	at io.github.dhruv1110.jcachex.benchmarks.jmh_generated.ThroughputBenchmark_concurrentMapPutThroughput_jmhTest.concurrentMapPutThroughput_Throughput(ThroughputBenchmark_concurrentMapPutThroughput_jmhTest.java:105)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call(BenchmarkHandler.java:527)
+	at org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call(BenchmarkHandler.java:504)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+
+
+# Run progress: 55.00% complete, ETA 00:15:44
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+64.869 ops/us
+# Warmup Iteration   2: 63.865 ops/us
+# Warmup Iteration   3: 64.537 ops/us
+Iteration   1: 64.527 ops/us
+Iteration   2: 64.545 ops/us
+Iteration   3: 64.495 ops/us
+Iteration   4: 64.574 ops/us
+Iteration   5: <failure>
+
+java.lang.ArrayIndexOutOfBoundsException: Index -648 out of bounds for length 1000
+	at io.github.dhruv1110.jcachex.benchmarks.BaseBenchmark.getRandomKey(BaseBenchmark.java:229)
+	at io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapPutThroughput(ThroughputBenchmark.java:122)
+	at io.github.dhruv1110.jcachex.benchmarks.jmh_generated.ThroughputBenchmark_concurrentMapPutThroughput_jmhTest.concurrentMapPutThroughput_thrpt_jmhStub(ThroughputBenchmark_concurrentMapPutThroughput_jmhTest.java:185)
+	at io.github.dhruv1110.jcachex.benchmarks.jmh_generated.ThroughputBenchmark_concurrentMapPutThroughput_jmhTest.concurrentMapPutThroughput_Throughput(ThroughputBenchmark_concurrentMapPutThroughput_jmhTest.java:105)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call(BenchmarkHandler.java:527)
+	at org.openjdk.jmh.runner.BenchmarkHandler$BenchmarkTask.call(BenchmarkHandler.java:504)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+
+
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapPutThroughput":
+  65.594 ±(99.9%) 2.500 ops/us [Average]
+  (min, avg, max) = (64.495, 65.594, 67.294), stdev = 1.308
+  CI (99.9%): [63.093, 68.094] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapPutThroughput4T
+
+# Run progress: 56.67% complete, ETA 00:15:08
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+39.539 ops/us
+# Warmup Iteration   2: 39.655 ops/us
+# Warmup Iteration   3: 36.765 ops/us
+Iteration   1: 39.553 ops/us
+Iteration   2: 37.140 ops/us
+Iteration   3: 40.229 ops/us
+Iteration   4: 39.554 ops/us
+Iteration   5: 38.854 ops/us
+
+# Run progress: 58.33% complete, ETA 00:14:33
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+52.882 ops/us
+# Warmup Iteration   2: 52.016 ops/us
+# Warmup Iteration   3: 51.434 ops/us
+Iteration   1: 49.891 ops/us
+Iteration   2: 51.896 ops/us
+Iteration   3: 50.827 ops/us
+Iteration   4: 50.049 ops/us
+Iteration   5: 50.581 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.concurrentMapPutThroughput4T":
+  44.857 ±(99.9%) 9.340 ops/us [Average]
+  (min, avg, max) = (37.140, 44.857, 51.896), stdev = 6.178
+  CI (99.9%): [35.517, 54.198] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.ehcacheGetThroughput
+
+# Run progress: 60.00% complete, ETA 00:13:59
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+19.166 ops/us
+# Warmup Iteration   2: 19.008 ops/us
+# Warmup Iteration   3: 19.121 ops/us
+Iteration   1: 19.091 ops/us
+Iteration   2: 19.026 ops/us
+Iteration   3: 19.052 ops/us
+Iteration   4: 18.374 ops/us
+Iteration   5: 18.885 ops/us
+
+# Run progress: 61.67% complete, ETA 00:13:24
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+18.957 ops/us
+# Warmup Iteration   2: 18.946 ops/us
+# Warmup Iteration   3: 19.026 ops/us
+Iteration   1: 18.959 ops/us
+Iteration   2: 19.000 ops/us
+Iteration   3: 18.976 ops/us
+Iteration   4: 18.961 ops/us
+Iteration   5: 19.031 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.ehcacheGetThroughput":
+  18.936 ±(99.9%) 0.310 ops/us [Average]
+  (min, avg, max) = (18.374, 18.936, 19.091), stdev = 0.205
+  CI (99.9%): [18.625, 19.246] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.ehcacheGetThroughput4T
+
+# Run progress: 63.33% complete, ETA 00:12:48
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+72.115 ops/us
+# Warmup Iteration   2: 71.677 ops/us
+# Warmup Iteration   3: 71.896 ops/us
+Iteration   1: 71.607 ops/us
+Iteration   2: 71.740 ops/us
+Iteration   3: 71.921 ops/us
+Iteration   4: 72.020 ops/us
+Iteration   5: 71.676 ops/us
+
+# Run progress: 65.00% complete, ETA 00:12:14
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+70.086 ops/us
+# Warmup Iteration   2: 70.522 ops/us
+# Warmup Iteration   3: 70.540 ops/us
+Iteration   1: 67.653 ops/us
+Iteration   2: 70.460 ops/us
+Iteration   3: 69.928 ops/us
+Iteration   4: 69.337 ops/us
+Iteration   5: 69.319 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.ehcacheGetThroughput4T":
+  70.566 ±(99.9%) 2.232 ops/us [Average]
+  (min, avg, max) = (67.653, 70.566, 72.020), stdev = 1.476
+  CI (99.9%): [68.334, 72.798] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.ehcacheMixedThroughput
+
+# Run progress: 66.67% complete, ETA 00:11:39
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+15.888 ops/us
+# Warmup Iteration   2: 16.171 ops/us
+# Warmup Iteration   3: 16.106 ops/us
+Iteration   1: 16.183 ops/us
+Iteration   2: 16.848 ops/us
+Iteration   3: 16.524 ops/us
+Iteration   4: 16.883 ops/us
+Iteration   5: 16.864 ops/us
+
+# Run progress: 68.33% complete, ETA 00:11:04
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+15.903 ops/us
+# Warmup Iteration   2: 15.440 ops/us
+# Warmup Iteration   3: 16.688 ops/us
+Iteration   1: 16.913 ops/us
+Iteration   2: 16.886 ops/us
+Iteration   3: 16.816 ops/us
+Iteration   4: 16.815 ops/us
+Iteration   5: 16.899 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.ehcacheMixedThroughput":
+  16.763 ±(99.9%) 0.352 ops/us [Average]
+  (min, avg, max) = (16.183, 16.763, 16.913), stdev = 0.233
+  CI (99.9%): [16.411, 17.115] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.ehcacheMixedThroughput4T
+
+# Run progress: 70.00% complete, ETA 00:10:29
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+40.074 ops/us
+# Warmup Iteration   2: 41.914 ops/us
+# Warmup Iteration   3: 41.845 ops/us
+Iteration   1: 42.215 ops/us
+Iteration   2: 42.763 ops/us
+Iteration   3: 42.371 ops/us
+Iteration   4: 42.335 ops/us
+Iteration   5: 43.284 ops/us
+
+# Run progress: 71.67% complete, ETA 00:09:54
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+40.181 ops/us
+# Warmup Iteration   2: 39.445 ops/us
+# Warmup Iteration   3: 41.368 ops/us
+Iteration   1: 40.909 ops/us
+Iteration   2: 39.395 ops/us
+Iteration   3: 39.984 ops/us
+Iteration   4: 38.472 ops/us
+Iteration   5: 39.724 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.ehcacheMixedThroughput4T":
+  41.145 ±(99.9%) 2.514 ops/us [Average]
+  (min, avg, max) = (38.472, 41.145, 43.284), stdev = 1.663
+  CI (99.9%): [38.631, 43.659] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.ehcachePutThroughput
+
+# Run progress: 73.33% complete, ETA 00:09:19
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+15.725 ops/us
+# Warmup Iteration   2: 16.689 ops/us
+# Warmup Iteration   3: 16.771 ops/us
+Iteration   1: 17.236 ops/us
+Iteration   2: 17.246 ops/us
+Iteration   3: 17.248 ops/us
+Iteration   4: 17.302 ops/us
+Iteration   5: 17.229 ops/us
+
+# Run progress: 75.00% complete, ETA 00:08:44
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+15.731 ops/us
+# Warmup Iteration   2: 16.584 ops/us
+# Warmup Iteration   3: 16.716 ops/us
+Iteration   1: 16.878 ops/us
+Iteration   2: 16.936 ops/us
+Iteration   3: 16.915 ops/us
+Iteration   4: 16.944 ops/us
+Iteration   5: 16.942 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.ehcachePutThroughput":
+  17.088 ±(99.9%) 0.265 ops/us [Average]
+  (min, avg, max) = (16.878, 17.088, 17.302), stdev = 0.176
+  CI (99.9%): [16.822, 17.353] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.ehcachePutThroughput4T
+
+# Run progress: 76.67% complete, ETA 00:08:09
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+22.105 ops/us
+# Warmup Iteration   2: 22.315 ops/us
+# Warmup Iteration   3: 21.718 ops/us
+Iteration   1: 23.600 ops/us
+Iteration   2: 22.668 ops/us
+Iteration   3: 22.879 ops/us
+Iteration   4: 22.835 ops/us
+Iteration   5: 22.954 ops/us
+
+# Run progress: 78.33% complete, ETA 00:07:34
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+22.730 ops/us
+# Warmup Iteration   2: 23.028 ops/us
+# Warmup Iteration   3: 22.266 ops/us
+Iteration   1: 23.168 ops/us
+Iteration   2: 22.904 ops/us
+Iteration   3: 22.964 ops/us
+Iteration   4: 22.860 ops/us
+Iteration   5: 23.000 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.ehcachePutThroughput4T":
+  22.983 ±(99.9%) 0.380 ops/us [Average]
+  (min, avg, max) = (22.668, 22.983, 23.600), stdev = 0.252
+  CI (99.9%): [22.603, 23.364] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.jcacheXGetThroughput
+
+# Run progress: 80.00% complete, ETA 00:06:59
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+12.285 ops/us
+# Warmup Iteration   2: 12.252 ops/us
+# Warmup Iteration   3: 12.247 ops/us
+Iteration   1: 12.247 ops/us
+Iteration   2: 12.230 ops/us
+Iteration   3: 12.342 ops/us
+Iteration   4: 12.357 ops/us
+Iteration   5: 12.362 ops/us
+
+# Run progress: 81.67% complete, ETA 00:06:24
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+12.493 ops/us
+# Warmup Iteration   2: 12.367 ops/us
+# Warmup Iteration   3: 12.435 ops/us
+Iteration   1: 12.540 ops/us
+Iteration   2: 12.561 ops/us
+Iteration   3: 12.523 ops/us
+Iteration   4: 12.097 ops/us
+Iteration   5: 12.541 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.jcacheXGetThroughput":
+  12.380 ±(99.9%) 0.240 ops/us [Average]
+  (min, avg, max) = (12.097, 12.380, 12.561), stdev = 0.159
+  CI (99.9%): [12.140, 12.620] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.jcacheXGetThroughput4T
+
+# Run progress: 83.33% complete, ETA 00:05:49
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+7.724 ops/us
+# Warmup Iteration   2: 7.661 ops/us
+# Warmup Iteration   3: 7.894 ops/us
+Iteration   1: 7.808 ops/us
+Iteration   2: 8.019 ops/us
+Iteration   3: 8.201 ops/us
+Iteration   4: 8.064 ops/us
+Iteration   5: 8.129 ops/us
+
+# Run progress: 85.00% complete, ETA 00:05:14
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+7.747 ops/us
+# Warmup Iteration   2: 7.586 ops/us
+# Warmup Iteration   3: 7.930 ops/us
+Iteration   1: 8.073 ops/us
+Iteration   2: 7.512 ops/us
+Iteration   3: 7.999 ops/us
+Iteration   4: 8.132 ops/us
+Iteration   5: 8.073 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.jcacheXGetThroughput4T":
+  8.001 ±(99.9%) 0.304 ops/us [Average]
+  (min, avg, max) = (7.512, 8.001, 8.201), stdev = 0.201
+  CI (99.9%): [7.697, 8.305] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.jcacheXMixedThroughput
+
+# Run progress: 86.67% complete, ETA 00:04:39
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+10.808 ops/us
+# Warmup Iteration   2: 11.275 ops/us
+# Warmup Iteration   3: 10.320 ops/us
+Iteration   1: 11.484 ops/us
+Iteration   2: 11.328 ops/us
+Iteration   3: 10.418 ops/us
+Iteration   4: 11.710 ops/us
+Iteration   5: 11.716 ops/us
+
+# Run progress: 88.33% complete, ETA 00:04:04
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+10.794 ops/us
+# Warmup Iteration   2: 11.245 ops/us
+# Warmup Iteration   3: 11.390 ops/us
+Iteration   1: 11.360 ops/us
+Iteration   2: 11.362 ops/us
+Iteration   3: 11.158 ops/us
+Iteration   4: 11.575 ops/us
+Iteration   5: 11.578 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.jcacheXMixedThroughput":
+  11.369 ±(99.9%) 0.572 ops/us [Average]
+  (min, avg, max) = (10.418, 11.369, 11.716), stdev = 0.378
+  CI (99.9%): [10.797, 11.941] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.jcacheXMixedThroughput4T
+
+# Run progress: 90.00% complete, ETA 00:03:29
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+6.120 ops/us
+# Warmup Iteration   2: 5.622 ops/us
+# Warmup Iteration   3: 6.317 ops/us
+Iteration   1: 6.328 ops/us
+Iteration   2: 6.323 ops/us
+Iteration   3: 6.041 ops/us
+Iteration   4: 6.410 ops/us
+Iteration   5: 5.710 ops/us
+
+# Run progress: 91.67% complete, ETA 00:02:54
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+5.716 ops/us
+# Warmup Iteration   2: 6.286 ops/us
+# Warmup Iteration   3: 6.302 ops/us
+Iteration   1: 6.230 ops/us
+Iteration   2: 6.168 ops/us
+Iteration   3: 6.375 ops/us
+Iteration   4: 6.437 ops/us
+Iteration   5: 6.361 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.jcacheXMixedThroughput4T":
+  6.238 ±(99.9%) 0.335 ops/us [Average]
+  (min, avg, max) = (5.710, 6.238, 6.437), stdev = 0.221
+  CI (99.9%): [5.904, 6.573] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.jcacheXPutThroughput
+
+# Run progress: 93.33% complete, ETA 00:02:19
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+7.038 ops/us
+# Warmup Iteration   2: 7.615 ops/us
+# Warmup Iteration   3: 7.583 ops/us
+Iteration   1: 7.573 ops/us
+Iteration   2: 7.570 ops/us
+Iteration   3: 7.536 ops/us
+Iteration   4: 7.545 ops/us
+Iteration   5: 7.575 ops/us
+
+# Run progress: 95.00% complete, ETA 00:01:44
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+7.205 ops/us
+# Warmup Iteration   2: 7.619 ops/us
+# Warmup Iteration   3: 7.592 ops/us
+Iteration   1: 7.591 ops/us
+Iteration   2: 7.590 ops/us
+Iteration   3: 7.581 ops/us
+Iteration   4: 7.524 ops/us
+Iteration   5: 7.598 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.jcacheXPutThroughput":
+  7.568 ±(99.9%) 0.038 ops/us [Average]
+  (min, avg, max) = (7.524, 7.568, 7.598), stdev = 0.025
+  CI (99.9%): [7.531, 7.606] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 3 s each
+# Measurement: 5 iterations, 5 s each
+# Timeout: 10 min per iteration
+# Threads: 4 threads, will synchronize iterations
+# Benchmark mode: Throughput, ops/time
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.jcacheXPutThroughput4T
+
+# Run progress: 96.67% complete, ETA 00:01:09
+# Fork: 1 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+5.295 ops/us
+# Warmup Iteration   2: 5.437 ops/us
+# Warmup Iteration   3: 5.496 ops/us
+Iteration   1: 5.370 ops/us
+Iteration   2: 5.514 ops/us
+Iteration   3: 5.618 ops/us
+Iteration   4: 5.566 ops/us
+Iteration   5: 5.603 ops/us
+
+# Run progress: 98.33% complete, ETA 00:00:34
+# Fork: 2 of 2
+# Warmup Iteration   1: SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+5.575 ops/us
+# Warmup Iteration   2: 5.760 ops/us
+# Warmup Iteration   3: 5.638 ops/us
+Iteration   1: 5.663 ops/us
+Iteration   2: 5.658 ops/us
+Iteration   3: 5.655 ops/us
+Iteration   4: 5.623 ops/us
+Iteration   5: 5.678 ops/us
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.ThroughputBenchmark.jcacheXPutThroughput4T":
+  5.595 ±(99.9%) 0.141 ops/us [Average]
+  (min, avg, max) = (5.370, 5.595, 5.678), stdev = 0.093
+  CI (99.9%): [5.454, 5.736] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:35:00
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                            Mode  Cnt    Score    Error   Units
+ThroughputBenchmark.cache2kGetThroughput            thrpt   10   46.854 ±  0.398  ops/us
+ThroughputBenchmark.cache2kGetThroughput4T          thrpt   10   78.463 ±  2.421  ops/us
+ThroughputBenchmark.cache2kMixedThroughput          thrpt   10   26.840 ±  0.223  ops/us
+ThroughputBenchmark.cache2kMixedThroughput4T        thrpt   10   17.453 ±  1.638  ops/us
+ThroughputBenchmark.cache2kPutThroughput            thrpt   10   12.739 ±  0.162  ops/us
+ThroughputBenchmark.cache2kPutThroughput4T          thrpt   10    6.470 ±  0.134  ops/us
+ThroughputBenchmark.caffeineGetThroughput           thrpt   10   28.406 ±  0.836  ops/us
+ThroughputBenchmark.caffeineGetThroughput4T         thrpt   10   17.825 ±  0.194  ops/us
+ThroughputBenchmark.caffeineMixedThroughput         thrpt   10   26.060 ±  0.558  ops/us
+ThroughputBenchmark.caffeineMixedThroughput4T       thrpt   10   18.124 ±  0.336  ops/us
+ThroughputBenchmark.caffeinePutThroughput           thrpt   10   30.970 ±  0.145  ops/us
+ThroughputBenchmark.caffeinePutThroughput4T         thrpt   10   16.830 ±  0.599  ops/us
+ThroughputBenchmark.concurrentMapGetThroughput      thrpt   10  120.653 ±  3.432  ops/us
+ThroughputBenchmark.concurrentMapGetThroughput4T    thrpt   10  464.008 ± 17.413  ops/us
+ThroughputBenchmark.concurrentMapMixedThroughput    thrpt   10   81.283 ±  1.731  ops/us
+ThroughputBenchmark.concurrentMapMixedThroughput4T  thrpt   10  134.647 ±  4.293  ops/us
+ThroughputBenchmark.concurrentMapPutThroughput      thrpt    8   65.594 ±  2.500  ops/us
+ThroughputBenchmark.concurrentMapPutThroughput4T    thrpt   10   44.857 ±  9.340  ops/us
+ThroughputBenchmark.ehcacheGetThroughput            thrpt   10   18.936 ±  0.310  ops/us
+ThroughputBenchmark.ehcacheGetThroughput4T          thrpt   10   70.566 ±  2.232  ops/us
+ThroughputBenchmark.ehcacheMixedThroughput          thrpt   10   16.763 ±  0.352  ops/us
+ThroughputBenchmark.ehcacheMixedThroughput4T        thrpt   10   41.145 ±  2.514  ops/us
+ThroughputBenchmark.ehcachePutThroughput            thrpt   10   17.088 ±  0.265  ops/us
+ThroughputBenchmark.ehcachePutThroughput4T          thrpt   10   22.983 ±  0.380  ops/us
+ThroughputBenchmark.jcacheXGetThroughput            thrpt   10   12.380 ±  0.240  ops/us
+ThroughputBenchmark.jcacheXGetThroughput4T          thrpt   10    8.001 ±  0.304  ops/us
+ThroughputBenchmark.jcacheXMixedThroughput          thrpt   10   11.369 ±  0.572  ops/us
+ThroughputBenchmark.jcacheXMixedThroughput4T        thrpt   10    6.238 ±  0.335  ops/us
+ThroughputBenchmark.jcacheXPutThroughput            thrpt   10    7.568 ±  0.038  ops/us
+ThroughputBenchmark.jcacheXPutThroughput4T          thrpt   10    5.595 ±  0.141  ops/us

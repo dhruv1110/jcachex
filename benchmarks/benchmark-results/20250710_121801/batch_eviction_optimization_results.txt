@@ -1,0 +1,415 @@
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 2 s each
+# Measurement: 5 iterations, 2 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.caffeineBulkPut
+
+# Run progress: 0.00% complete, ETA 00:04:16
+# Fork: 1 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.423 us/op
+# Warmup Iteration   2: 0.394 us/op
+# Warmup Iteration   3: 0.391 us/op
+Iteration   1: 0.396 us/op
+Iteration   2: 0.397 us/op
+Iteration   3: 0.394 us/op
+Iteration   4: 0.397 us/op
+Iteration   5: 0.395 us/op
+
+# Run progress: 6.25% complete, ETA 00:04:04
+# Fork: 2 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.422 us/op
+# Warmup Iteration   2: 0.396 us/op
+# Warmup Iteration   3: 0.393 us/op
+Iteration   1: 0.393 us/op
+Iteration   2: 0.397 us/op
+Iteration   3: 0.395 us/op
+Iteration   4: 0.394 us/op
+Iteration   5: 0.394 us/op
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.caffeineBulkPut":
+  0.395 ±(99.9%) 0.002 us/op [Average]
+  (min, avg, max) = (0.393, 0.395, 0.397), stdev = 0.002
+  CI (99.9%): [0.393, 0.398] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 2 s each
+# Measurement: 5 iterations, 2 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.caffeineGet
+
+# Run progress: 12.50% complete, ETA 00:03:47
+# Fork: 1 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.015 us/op
+# Warmup Iteration   2: 0.014 us/op
+# Warmup Iteration   3: 0.014 us/op
+Iteration   1: 0.013 us/op
+Iteration   2: 0.014 us/op
+Iteration   3: 0.014 us/op
+Iteration   4: 0.014 us/op
+Iteration   5: 0.014 us/op
+
+# Run progress: 18.75% complete, ETA 00:03:31
+# Fork: 2 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.015 us/op
+# Warmup Iteration   2: 0.015 us/op
+# Warmup Iteration   3: 0.015 us/op
+Iteration   1: 0.015 us/op
+Iteration   2: 0.015 us/op
+Iteration   3: 0.015 us/op
+Iteration   4: 0.015 us/op
+Iteration   5: 0.015 us/op
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.caffeineGet":
+  0.014 ±(99.9%) 0.001 us/op [Average]
+  (min, avg, max) = (0.013, 0.014, 0.015), stdev = 0.001
+  CI (99.9%): [0.013, 0.015] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 2 s each
+# Measurement: 5 iterations, 2 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.caffeinePut
+
+# Run progress: 25.00% complete, ETA 00:03:15
+# Fork: 1 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.022 us/op
+# Warmup Iteration   2: 0.022 us/op
+# Warmup Iteration   3: 0.022 us/op
+Iteration   1: 0.022 us/op
+Iteration   2: 0.022 us/op
+Iteration   3: 0.022 us/op
+Iteration   4: 0.022 us/op
+Iteration   5: 0.023 us/op
+
+# Run progress: 31.25% complete, ETA 00:02:58
+# Fork: 2 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.022 us/op
+# Warmup Iteration   2: 0.022 us/op
+# Warmup Iteration   3: 0.022 us/op
+Iteration   1: 0.022 us/op
+Iteration   2: 0.022 us/op
+Iteration   3: 0.022 us/op
+Iteration   4: 0.022 us/op
+Iteration   5: 0.022 us/op
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.caffeinePut":
+  0.022 ±(99.9%) 0.001 us/op [Average]
+  (min, avg, max) = (0.022, 0.022, 0.023), stdev = 0.001
+  CI (99.9%): [0.021, 0.022] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 2 s each
+# Measurement: 5 iterations, 2 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.concurrentMapGet
+
+# Run progress: 37.50% complete, ETA 00:02:42
+# Fork: 1 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.004 us/op
+# Warmup Iteration   2: 0.004 us/op
+# Warmup Iteration   3: 0.004 us/op
+Iteration   1: 0.004 us/op
+Iteration   2: 0.004 us/op
+Iteration   3: 0.004 us/op
+Iteration   4: 0.004 us/op
+Iteration   5: 0.004 us/op
+
+# Run progress: 43.75% complete, ETA 00:02:26
+# Fork: 2 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.004 us/op
+# Warmup Iteration   2: 0.004 us/op
+# Warmup Iteration   3: 0.004 us/op
+Iteration   1: 0.004 us/op
+Iteration   2: 0.004 us/op
+Iteration   3: 0.004 us/op
+Iteration   4: 0.004 us/op
+Iteration   5: 0.004 us/op
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.concurrentMapGet":
+  0.004 ±(99.9%) 0.001 us/op [Average]
+  (min, avg, max) = (0.004, 0.004, 0.004), stdev = 0.001
+  CI (99.9%): [0.004, 0.004] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 2 s each
+# Measurement: 5 iterations, 2 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.concurrentMapPut
+
+# Run progress: 50.00% complete, ETA 00:02:10
+# Fork: 1 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.010 us/op
+# Warmup Iteration   2: 0.010 us/op
+# Warmup Iteration   3: 0.010 us/op
+Iteration   1: 0.010 us/op
+Iteration   2: 0.010 us/op
+Iteration   3: 0.010 us/op
+Iteration   4: 0.010 us/op
+Iteration   5: 0.010 us/op
+
+# Run progress: 56.25% complete, ETA 00:01:53
+# Fork: 2 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.010 us/op
+# Warmup Iteration   2: 0.010 us/op
+# Warmup Iteration   3: 0.010 us/op
+Iteration   1: 0.010 us/op
+Iteration   2: 0.010 us/op
+Iteration   3: 0.010 us/op
+Iteration   4: 0.010 us/op
+Iteration   5: 0.010 us/op
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.concurrentMapPut":
+  0.010 ±(99.9%) 0.001 us/op [Average]
+  (min, avg, max) = (0.010, 0.010, 0.010), stdev = 0.001
+  CI (99.9%): [0.010, 0.010] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 2 s each
+# Measurement: 5 iterations, 2 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.jcacheXDefaultBulkPut
+
+# Run progress: 62.50% complete, ETA 00:01:37
+# Fork: 1 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+1.489 us/op
+# Warmup Iteration   2: 1.250 us/op
+# Warmup Iteration   3: 1.245 us/op
+Iteration   1: 1.250 us/op
+Iteration   2: 1.256 us/op
+Iteration   3: 1.254 us/op
+Iteration   4: 1.254 us/op
+Iteration   5: 1.255 us/op
+
+# Run progress: 68.75% complete, ETA 00:01:21
+# Fork: 2 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+1.392 us/op
+# Warmup Iteration   2: 1.263 us/op
+# Warmup Iteration   3: 1.278 us/op
+Iteration   1: 1.251 us/op
+Iteration   2: 1.250 us/op
+Iteration   3: 1.248 us/op
+Iteration   4: 1.251 us/op
+Iteration   5: 1.248 us/op
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.jcacheXDefaultBulkPut":
+  1.252 ±(99.9%) 0.004 us/op [Average]
+  (min, avg, max) = (1.248, 1.252, 1.256), stdev = 0.003
+  CI (99.9%): [1.248, 1.256] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 2 s each
+# Measurement: 5 iterations, 2 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.jcacheXDefaultGet
+
+# Run progress: 75.00% complete, ETA 00:01:05
+# Fork: 1 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.043 us/op
+# Warmup Iteration   2: 0.043 us/op
+# Warmup Iteration   3: 0.043 us/op
+Iteration   1: 0.043 us/op
+Iteration   2: 0.043 us/op
+Iteration   3: 0.043 us/op
+Iteration   4: 0.043 us/op
+Iteration   5: 0.043 us/op
+
+# Run progress: 81.25% complete, ETA 00:00:48
+# Fork: 2 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.043 us/op
+# Warmup Iteration   2: 0.043 us/op
+# Warmup Iteration   3: 0.043 us/op
+Iteration   1: 0.043 us/op
+Iteration   2: 0.043 us/op
+Iteration   3: 0.043 us/op
+Iteration   4: 0.043 us/op
+Iteration   5: 0.043 us/op
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.jcacheXDefaultGet":
+  0.043 ±(99.9%) 0.001 us/op [Average]
+  (min, avg, max) = (0.043, 0.043, 0.043), stdev = 0.001
+  CI (99.9%): [0.043, 0.043] (assumes normal distribution)
+
+
+# JMH version: 1.37
+# VM version: JDK 21.0.2, Java HotSpot(TM) 64-Bit Server VM, 21.0.2+13-LTS-58
+# VM invoker: /Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java
+# VM options: -Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication
+# Blackhole mode: compiler (auto-detected, use -Djmh.blackhole.autoDetect=false to disable)
+# Warmup: 3 iterations, 2 s each
+# Measurement: 5 iterations, 2 s each
+# Timeout: 10 min per iteration
+# Threads: 1 thread, will synchronize iterations
+# Benchmark mode: Average time, time/op
+# Benchmark: io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.jcacheXDefaultPut
+
+# Run progress: 87.50% complete, ETA 00:00:32
+# Fork: 1 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.125 us/op
+# Warmup Iteration   2: 0.114 us/op
+# Warmup Iteration   3: 0.120 us/op
+Iteration   1: 0.113 us/op
+Iteration   2: 0.113 us/op
+Iteration   3: 0.113 us/op
+Iteration   4: 0.113 us/op
+Iteration   5: 0.113 us/op
+
+# Run progress: 93.75% complete, ETA 00:00:16
+# Fork: 2 of 2
+# Warmup Iteration   1: Setting up OptimizedBenchmark...
+✓ JCacheX Default setup successful
+✓ Caffeine setup successful
+✓ ConcurrentMap setup successful
+0.123 us/op
+# Warmup Iteration   2: 0.113 us/op
+# Warmup Iteration   3: 0.113 us/op
+Iteration   1: 0.113 us/op
+Iteration   2: 0.113 us/op
+Iteration   3: 0.113 us/op
+Iteration   4: 0.114 us/op
+Iteration   5: 0.113 us/op
+
+
+Result "io.github.dhruv1110.jcachex.benchmarks.OptimizedBenchmark.jcacheXDefaultPut":
+  0.113 ±(99.9%) 0.001 us/op [Average]
+  (min, avg, max) = (0.113, 0.113, 0.114), stdev = 0.001
+  CI (99.9%): [0.112, 0.114] (assumes normal distribution)
+
+
+# Run complete. Total time: 00:04:20
+
+REMEMBER: The numbers below are just data. To gain reusable insights, you need to follow up on
+why the numbers are the way they are. Use profilers (see -prof, -lprof), design factorial
+experiments, perform baseline and negative tests that provide experimental control, make sure
+the benchmarking environment is safe on JVM/OS/HW level, ask for reviews from the domain experts.
+Do not assume the numbers tell you what you want them to tell.
+
+NOTE: Current JVM experimentally supports Compiler Blackholes, and they are in use. Please exercise
+extra caution when trusting the results, look into the generated code to check the benchmark still
+works, and factor in a small probability of new VM bugs. Additionally, while comparisons between
+different JVMs are already problematic, the performance difference caused by different Blackhole
+modes can be very significant. Please make sure you use the consistent Blackhole mode for comparisons.
+
+Benchmark                                 Mode  Cnt  Score    Error  Units
+OptimizedBenchmark.caffeineBulkPut        avgt   10  0.395 ±  0.002  us/op
+OptimizedBenchmark.caffeineGet            avgt   10  0.014 ±  0.001  us/op
+OptimizedBenchmark.caffeinePut            avgt   10  0.022 ±  0.001  us/op
+OptimizedBenchmark.concurrentMapGet       avgt   10  0.004 ±  0.001  us/op
+OptimizedBenchmark.concurrentMapPut       avgt   10  0.010 ±  0.001  us/op
+OptimizedBenchmark.jcacheXDefaultBulkPut  avgt   10  1.252 ±  0.004  us/op
+OptimizedBenchmark.jcacheXDefaultGet      avgt   10  0.043 ±  0.001  us/op
+OptimizedBenchmark.jcacheXDefaultPut      avgt   10  0.113 ±  0.001  us/op
