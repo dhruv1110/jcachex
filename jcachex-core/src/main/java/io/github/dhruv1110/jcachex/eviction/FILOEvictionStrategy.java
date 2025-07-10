@@ -8,7 +8,10 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * First In, Last Out (FILO) eviction strategy.
+ * <p>
  * This strategy evicts the entry that was inserted last.
+ * Optimized implementation with minimal object allocation.
+ * </p>
  *
  * @param <K> the type of keys maintained by the cache
  * @param <V> the type of mapped values
@@ -19,12 +22,25 @@ public class FILOEvictionStrategy<K, V> implements EvictionStrategy<K, V> {
 
     @Override
     public K selectEvictionCandidate(Map<K, CacheEntry<V>> entries) {
-        return entries.entrySet().stream()
-                .max((e1, e2) -> Long.compare(
-                        insertionOrder.getOrDefault(e1.getKey(), 0L),
-                        insertionOrder.getOrDefault(e2.getKey(), 0L)))
-                .map(Map.Entry::getKey)
-                .orElse(null);
+        if (entries.isEmpty()) {
+            return null;
+        }
+
+        K candidate = null;
+        long maxOrder = Long.MIN_VALUE;
+
+        // Efficient iteration without stream overhead
+        for (K key : entries.keySet()) {
+            Long order = insertionOrder.get(key);
+            long insertOrder = order != null ? order : 0L;
+
+            if (insertOrder > maxOrder) {
+                maxOrder = insertOrder;
+                candidate = key;
+            }
+        }
+
+        return candidate;
     }
 
     @Override
