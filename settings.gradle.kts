@@ -4,6 +4,7 @@ include(
     "jcachex-core",
     "jcachex-kotlin",
     "jcachex-spring",
+    "benchmarks",
     "example:java",
     "example:kotlin",
     "example:springboot"

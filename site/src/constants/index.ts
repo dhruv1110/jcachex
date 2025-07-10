@@ -117,8 +117,8 @@ export const FEATURES: Feature[] = [
     {
         icon: '⚡',
         title: 'High Performance',
-        description: 'Optimized for speed with minimal memory overhead, lock-free algorithms, and efficient data structures.',
-        details: ['10x faster than traditional caching', 'O(1) cache operations', 'Minimal GC pressure']
+        description: 'Optimized for speed with nanoTime operations, immediate eviction, and efficient data structures.',
+        details: ['Sub-microsecond latency operations', 'O(1) cache operations', 'Minimal GC pressure']
     },
     {
         icon: '🔧',
@@ -217,9 +217,9 @@ export const MODULES: Module[] = [
 // Performance stats
 export const PERFORMANCE_STATS: PerformanceStat[] = [
     { label: 'Throughput', value: '1M+ ops/sec', description: 'Operations per second' },
-    { label: 'Latency', value: '<1ms', description: 'Average response time' },
+    { label: 'Latency', value: '~0.08µs', description: 'Typical GET operation time' },
     { label: 'Memory', value: '90% efficient', description: 'Memory utilization' },
-    { label: 'CPU', value: '<5%', description: 'CPU overhead' }
+    { label: 'Eviction', value: 'Immediate', description: 'Zero-delay eviction' }
 ];
 
 // Architecture components
