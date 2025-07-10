@@ -15,7 +15,7 @@ dependencies {
     jmh("org.openjdk.jmh:jmh-core:1.37")
     jmh("org.openjdk.jmh:jmh-generator-annprocess:1.37")
 
-        // Competing cache libraries
+    // Competing cache libraries
     jmh("com.github.ben-manes.caffeine:caffeine:3.1.8")
     jmh("org.ehcache:ehcache:3.10.8")
     jmh("org.cache2k:cache2k-core:2.6.1.Final")
@@ -38,21 +38,25 @@ jmh {
     fork = 2
     threads = 1
     timeUnit = "us" // microseconds
-    benchmarkMode = listOf("avgt", "thrpt") // Average time and throughput
-    jvmArgs = listOf(
-        "-Xms2g",
-        "-Xmx4g",
-        "-XX:+UseG1GC",
-        "-XX:+UnlockExperimentalVMOptions",
-        "-XX:+UseStringDeduplication"
-    )
+    benchmarkMode =
+        listOf("avgt", "thrpt") // Average time and throughput
+    jvmArgs =
+        listOf(
+            "-Xms2g",
+            "-Xmx4g",
+            "-XX:+UseG1GC",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+UseStringDeduplication",
+        )
 }
 
 tasks.named<JavaCompile>("compileJmhJava") {
-    options.compilerArgs.addAll(listOf(
-        "-parameters",
-        "-Xlint:unchecked"
-    ))
+    options.compilerArgs.addAll(
+        listOf(
+            "-parameters",
+            "-Xlint:unchecked",
+        ),
+    )
 }
 
 java {
