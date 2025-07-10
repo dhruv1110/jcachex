@@ -68,8 +68,8 @@ subprojects {
     apply(plugin = "maven-publish")
     apply(plugin = "signing")
 
-    // Only apply Dokka plugin to core modules, not examples
-    if (!project.path.startsWith(":example")) {
+    // Only apply Dokka plugin to core modules, not examples or benchmarks
+    if (!project.path.startsWith(":example") && project.path != ":benchmarks") {
         apply(plugin = "org.jetbrains.dokka")
     }
 
@@ -86,14 +86,14 @@ subprojects {
             languageVersion.set(JavaLanguageVersion.of(11))
         }
         withSourcesJar()
-        // Only generate javadoc JARs for core modules, not examples
-        if (!project.path.startsWith(":example")) {
+        // Only generate javadoc JARs for core modules, not examples or benchmarks
+        if (!project.path.startsWith(":example") && project.path != ":benchmarks") {
             withJavadocJar()
         }
     }
 
-    // Publishing configuration - only for core modules, not examples
-    if (!project.path.startsWith(":example")) {
+    // Publishing configuration - only for core modules, not examples or benchmarks
+    if (!project.path.startsWith(":example") && project.path != ":benchmarks") {
         publishing {
             publications {
                 create<MavenPublication>("maven") {
@@ -207,8 +207,8 @@ subprojects {
         }
     }
 
-    // Documentation tasks - only for core modules, not examples
-    if (!project.path.startsWith(":example")) {
+    // Documentation tasks - only for core modules, not examples or benchmarks
+    if (!project.path.startsWith(":example") && project.path != ":benchmarks") {
         tasks.withType<Javadoc> {
             // Force javadoc to use JDK 11+ for HTML5 support
             options.jFlags = listOf("-Djava.awt.headless=true")
@@ -230,10 +230,10 @@ subprojects {
         }
     }
 
-    // Dokka configuration for Kotlin projects - only for core modules, not examples
+    // Dokka configuration for Kotlin projects - only for core modules, not examples or benchmarks
     afterEvaluate {
-        if (project.path.startsWith(":example")) {
-            // Disable Dokka tasks for example modules
+        if (project.path.startsWith(":example") || project.path == ":benchmarks") {
+            // Disable Dokka tasks for example modules and benchmarks
             tasks.matching { it.name.contains("dokka", ignoreCase = true) }.configureEach {
                 enabled = false
             }
@@ -374,10 +374,10 @@ tasks.register("allDocumentationCoverage") {
 
 tasks.register("generateAllDocs") {
     group = "documentation"
-    description = "Generates documentation for core modules only (excludes examples)"
+    description = "Generates documentation for core modules only (excludes examples and benchmarks)"
 
     // Only include core modules (jcachex-core, jcachex-kotlin, jcachex-spring)
-    val coreModules = subprojects.filter { !it.name.startsWith("example") }
+    val coreModules = subprojects.filter { !it.name.startsWith("example") && it.name != "benchmarks" }
 
     dependsOn(coreModules.map {
         try { it.tasks.named("javadoc") } catch (e: Exception) { null }
