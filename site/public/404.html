@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JCacheX - Page Not Found</title>
+    <script type="text/javascript">
+        // GitHub Pages SPA redirect
+        // https://github.com/rafgraph/spa-github-pages
+        // This script takes the current url and converts the path and query
+        // string into just a query string, and then redirects the browser
+        // to the new url with just a query string and hash fragment,
+        // e.g. https://www.foo.tld/one/two?a=b&c=d#qwe, becomes
+        // https://www.foo.tld/?/one/two&a=b~and~c=d#qwe
+        // Note: this 404.html file must be at least 512 bytes for it to work
+        // with Internet Explorer (it is currently > 512 bytes)
+
+        // If you're creating a Project Pages site and NOT using a custom domain,
+        // then set pathSegmentsToKeep to 1 (enterprise users may need to set it to > 1).
+        // This way the code will only replace the route part and not the real folder.
+        // For example, if your site is at username.github.io/repo-name, then set
+        // pathSegmentsToKeep to 1 so that paths like /repo-name/one/two will become
+        // /repo-name/?/one/two instead of /?/repo-name/one/two
+        var pathSegmentsToKeep = 1;
+
+        var l = window.location;
+        var pathname = l.pathname;
+
+        // Only redirect if the path looks like a SPA route (no file extension)
+        // This prevents redirecting requests for static files that genuinely don't exist
+        var shouldRedirect = !pathname.match(/\.[a-zA-Z0-9]+$/);
+
+        // Define known SPA routes to be extra safe
+        var knownRoutes = [
+            'docs', 'documentation', 'getting-started', 'examples', 'spring', 'spring-boot', 'faq'
+        ];
+
+        // Check if the path (after removing the repo name) matches known routes
+        var pathParts = pathname.split('/').filter(Boolean);
+        var routePath = pathParts.slice(pathSegmentsToKeep).join('/');
+        var isKnownRoute = knownRoutes.some(function (route) {
+            return routePath === route || routePath.startsWith(route + '/');
+        });
+
+        // Only redirect if it's a known route or looks like a SPA route (no extension)
+        if (shouldRedirect && (isKnownRoute || !pathname.includes('.'))) {
+            l.replace(
+                l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+                l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+                l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+                (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+                l.hash
+            );
+        }
+    </script>
+</head>
+
+<body>
+    <noscript>
+        <style>
+            body {
+                font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                margin: 0;
+                padding: 40px 20px;
+                background: #f5f5f5;
+                color: #333;
+                line-height: 1.6;
+            }
+
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: white;
+                padding: 40px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                text-align: center;
+            }
+
+            h1 {
+                color: #1976d2;
+                font-size: 3rem;
+                margin-bottom: 20px;
+            }
+
+            .error-code {
+                font-size: 5rem;
+                font-weight: bold;
+                color: #1976d2;
+                margin: 20px 0;
+            }
+
+            .links {
+                margin-top: 30px;
+            }
+
+            .links a {
+                display: inline-block;
+                margin: 10px;
+                padding: 12px 24px;
+                background: #1976d2;
+                color: white;
+                text-decoration: none;
+                border-radius: 4px;
+            }
+
+            .links a:hover {
+                background: #1565c0;
+            }
+
+            .links a.secondary {
+                background: #f5f5f5;
+                color: #1976d2;
+                border: 1px solid #1976d2;
+            }
+
+            .links a.secondary:hover {
+                background: #1976d2;
+                color: white;
+            }
+        </style>
+        <div class="container">
+            <div class="error-code">404</div>
+            <h1>Page Not Found</h1>
+            <p>The page you are looking for could not be found. This could be because:</p>
+            <ul style="text-align: left; margin: 20px 0;">
+                <li>The URL was typed incorrectly</li>
+                <li>The page has been moved or deleted</li>
+                <li>You followed a broken link</li>
+                <li>JavaScript is disabled (required for some pages)</li>
+            </ul>
+            <div class="links">
+                <a href="https://dhruv1110.github.io/jcachex/">🏠 Go to Homepage</a>
+                <a href="https://dhruv1110.github.io/jcachex/getting-started" class="secondary">📚 Documentation</a>
+                <a href="https://github.com/dhruv1110/JCacheX" class="secondary">🐙 GitHub</a>
+            </div>
+            <p style="margin-top: 30px; font-size: 0.9rem; color: #666;">
+                If you believe this is an error, please
+                <a href="https://github.com/dhruv1110/JCacheX/issues" style="color: #1976d2;">report it on GitHub</a>
+            </p>
+        </div>
+    </noscript>
+</body>
+
+</html>
