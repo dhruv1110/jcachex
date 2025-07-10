@@ -1,828 +1,845 @@
-import React, { useState } from 'react';
-import { Section, Grid, FeatureCard, Badge } from './common';
-import { MetaTags, Breadcrumbs } from './SEO';
+import React from 'react';
+import {
+    Container,
+    Typography,
+    Box,
+    Card,
+    CardContent,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemIcon,
+    Chip,
+    Alert,
+    Button,
+    Stack,
+    useTheme,
+    useMediaQuery,
+    Divider,
+    Paper
+} from '@mui/material';
+import {
+    Code as CodeIcon,
+    Coffee as JavaIcon,
+    Extension as ExtensionIcon,
+    Speed as SpeedIcon,
+    Settings as SettingsIcon,
+    Memory as MemoryIcon,
+    Security as SecurityIcon,
+    Sync as SyncIcon,
+    Dashboard as DashboardIcon,
+    Storage as StorageIcon,
+    Timeline as TimelineIcon,
+    Api as ApiIcon,
+    Build as BuildIcon,
+    Analytics as AnalyticsIcon,
+    Architecture as ArchitectureIcon,
+    Timer as TimerIcon,
+    GitHub as GitHubIcon,
+    Link as LinkIcon,
+    PlayArrow as PlayArrowIcon,
+    Computer as ComputerIcon,
+    CloudSync as CloudSyncIcon,
+    CheckCircle as CheckCircleIcon,
+    Star as StarIcon,
+    TrendingUp as TrendingUpIcon,
+    Shield as ShieldIcon,
+    FlashOn as FlashOnIcon,
+    Cloud as CloudIcon,
+    Cached as CachedIcon,
+    Http as HttpIcon,
+    Refresh as RefreshIcon,
+    Delete as DeleteIcon,
+    DataUsage as DataUsageIcon,
+    Psychology as PsychologyIcon,
+    Functions as FunctionsIcon,
+    QueryStats as QueryStatsIcon,
+    Transform as TransformIcon,
+    School as SchoolIcon,
+    Engineering as EngineeringIcon,
+    Layers as LayersIcon,
+    AccountTree as AccountTreeIcon,
+    SmartToy as SmartToyIcon,
+    Calculate as CalculateIcon,
+    Assessment as AssessmentIcon,
+    TableChart as TableChartIcon,
+    Public as PublicIcon,
+    Lightbulb as LightbulbIcon,
+    Insights as InsightsIcon,
+} from '@mui/icons-material';
+import Layout from './Layout';
 import CodeTabs from './CodeTabs';
+import { MetaTags, Breadcrumbs } from './SEO';
 import type { CodeTab } from '../types';
-
-// Define examples with better organization and explanations
-const BASIC_EXAMPLES: CodeTab[] = [
-    {
-        id: 'simple-cache',
-        label: 'Basic Cache Implementation',
-        language: 'java',
-        code: `// Basic cache configuration and usage
-import io.github.dhruv1110.jcachex.*;
-import java.time.Duration;
-
-public class BasicCacheExample {
-    public static void main(String[] args) {
-        // Configure cache with capacity and expiration
-        CacheConfig<String, String> config = CacheConfig.<String, String>builder()
-            .maximumSize(100L)  // Maximum 100 cached items
-            .expireAfterWrite(Duration.ofMinutes(10))  // Items expire after 10 minutes
-            .recordStats(true)  // Enable performance metrics
-            .build();
-
-        // Create cache instance
-        Cache<String, String> cache = new DefaultCache<>(config);
-
-        // Basic cache operations
-        cache.put("user:123", "Alice Johnson");
-        String cachedValue = cache.get("user:123");
-
-        System.out.println("Retrieved: " + cachedValue);
-        System.out.println("Cache size: " + cache.size());
-
-        // Check cache statistics
-        CacheStats stats = cache.stats();
-        System.out.println("Hit rate: " + stats.hitRate());
-    }
-}`
-    },
-    {
-        id: 'object-caching',
-        label: 'Object Serialization',
-        language: 'java',
-        code: `// Caching complex objects with proper serialization
-public class ObjectCacheExample {
-
-    // Domain object for caching
-    public static class UserProfile {
-        private final String userId;
-        private final String name;
-        private final String email;
-        private final Set<String> roles;
-
-        public UserProfile(String userId, String name, String email, Set<String> roles) {
-            this.userId = userId;
-            this.name = name;
-            this.email = email;
-            this.roles = Collections.unmodifiableSet(roles);
-        }
-
-        // Getters and proper equals/hashCode implementation
-        public String getUserId() { return userId; }
-        public String getName() { return name; }
-        public String getEmail() { return email; }
-        public Set<String> getRoles() { return roles; }
-    }
-
-    public static void main(String[] args) {
-        // Configure cache for user profiles
-        CacheConfig<String, UserProfile> config = CacheConfig.<String, UserProfile>builder()
-            .maximumSize(1000L)
-            .expireAfterWrite(Duration.ofHours(1))
-            .evictionStrategy(EvictionStrategy.LRU)
-            .recordStats(true)
-            .build();
-
-        Cache<String, UserProfile> userCache = new DefaultCache<>(config);
-
-        // Cache user profiles
-        Set<String> adminRoles = Set.of("ADMIN", "USER");
-        UserProfile admin = new UserProfile("123", "Alice Johnson", "alice@company.com", adminRoles);
-
-        userCache.put(admin.getUserId(), admin);
-
-        // Retrieve and validate
-        UserProfile cached = userCache.get("123");
-        if (cached != null) {
-            System.out.println("User: " + cached.getName() + " (" + cached.getEmail() + ")");
-            System.out.println("Roles: " + cached.getRoles());
-        }
-    }
-}`
-    },
-    {
-        id: 'kotlin-implementation',
-        label: 'Kotlin Integration',
-        language: 'kotlin',
-        code: `// JCacheX with Kotlin idiomatic patterns
-import io.github.dhruv1110.jcachex.kotlin.*
-import kotlin.time.Duration.Companion.minutes
-
-data class Product(
-    val id: String,
-    val name: String,
-    val price: BigDecimal,
-    val category: String
-)
-
-class ProductCacheService {
-
-    // Cache configuration using Kotlin DSL
-    private val productCache = cache<String, Product> {
-        maxSize = 500
-        expireAfterWrite = 30.minutes
-        evictionStrategy = EvictionStrategy.LRU
-        recordStats = true
-    }
-
-    // Cache operations with Kotlin idioms
-    suspend fun getProduct(productId: String): Product? {
-        return productCache[productId] ?: loadFromDatabase(productId)?.also { product ->
-            productCache[productId] = product
-        }
-    }
-
-    suspend fun updateProduct(product: Product) {
-        saveToDatabase(product)
-        productCache[product.id] = product // Update cache
-    }
-
-    fun evictProduct(productId: String) {
-        productCache.invalidate(productId)
-    }
-
-    // Simulated database operations
-    private suspend fun loadFromDatabase(productId: String): Product? {
-        // Database loading logic
-        return Product(productId, "Sample Product", BigDecimal("99.99"), "Electronics")
-    }
-
-    private suspend fun saveToDatabase(product: Product) {
-        // Database persistence logic
-    }
-
-    // Cache performance monitoring
-    fun getCacheMetrics(): String {
-        val stats = productCache.stats()
-        val hitRate = (stats.hitRate() * 100).toString().take(5)
-        return "Hit Rate: $hitRate% | " +
-               "Size: \${productCache.size()} | " +
-               "Evictions: \${stats.evictionCount()}"
-    }
-}`
-    }
-];
-
-const DATABASE_EXAMPLES: CodeTab[] = [
-    {
-        id: 'repository-pattern',
-        label: 'Repository Pattern Integration',
-        language: 'java',
-        code: `// Cache-aside pattern with repository layer
-@Repository
-public class ProductRepository {
-
-    private final JdbcTemplate jdbcTemplate;
-    private final Cache<String, Product> productCache;
-
-    public ProductRepository(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-
-        // Configure cache for database entities
-        CacheConfig<String, Product> config = CacheConfig.<String, Product>builder()
-            .maximumSize(10000L)
-            .expireAfterWrite(Duration.ofHours(2))
-            .evictionStrategy(EvictionStrategy.LRU)
-            .recordStats(true)
-            .eventListener(new LoggingCacheEventListener<>())
-            .build();
-
-        this.productCache = new DefaultCache<>(config);
-    }
-
-    public Optional<Product> findById(String productId) {
-        // Check cache first
-        Product cached = productCache.get(productId);
-        if (cached != null) {
-            return Optional.of(cached);
-        }
-
-        // Load from database
-        try {
-            Product product = jdbcTemplate.queryForObject(
-                "SELECT id, name, price, category FROM products WHERE id = ?",
-                new Object[]{productId},
-                (rs, rowNum) -> new Product(
-                    rs.getString("id"),
-                    rs.getString("name"),
-                    rs.getBigDecimal("price"),
-                    rs.getString("category")
-                )
-            );
-
-            // Cache the result
-            if (product != null) {
-                productCache.put(productId, product);
-            }
-
-            return Optional.ofNullable(product);
-
-        } catch (EmptyResultDataAccessException e) {
-            return Optional.empty();
-        }
-    }
-
-    public Product save(Product product) {
-        // Save to database
-        jdbcTemplate.update(
-            "INSERT INTO products (id, name, price, category) VALUES (?, ?, ?, ?) " +
-            "ON DUPLICATE KEY UPDATE name = ?, price = ?, category = ?",
-            product.getId(), product.getName(), product.getPrice(), product.getCategory(),
-            product.getName(), product.getPrice(), product.getCategory()
-        );
-
-        // Update cache
-        productCache.put(product.getId(), product);
-
-        return product;
-    }
-
-    public void deleteById(String productId) {
-        jdbcTemplate.update("DELETE FROM products WHERE id = ?", productId);
-        productCache.invalidate(productId);
-    }
-
-    // Bulk operations with cache optimization
-    public List<Product> findByCategory(String category) {
-        return jdbcTemplate.query(
-            "SELECT id, name, price, category FROM products WHERE category = ?",
-            new Object[]{category},
-            (rs, rowNum) -> {
-                Product product = new Product(
-                    rs.getString("id"),
-                    rs.getString("name"),
-                    rs.getBigDecimal("price"),
-                    rs.getString("category")
-                );
-
-                // Cache individual products
-                productCache.put(product.getId(), product);
-                return product;
-            }
-        );
-    }
-}`
-    },
-    {
-        id: 'spring-annotations',
-        label: 'Spring Boot Annotations',
-        language: 'java',
-        code: `// Declarative caching with Spring Boot integration
-@Service
-@Transactional(readOnly = true)
-public class UserService {
-
-    private final UserRepository userRepository;
-
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
-    // Cache method results with automatic key generation
-    @JCacheXCacheable(
-        cacheName = "users",
-        expireAfterWrite = 30,
-        expireAfterWriteUnit = TimeUnit.MINUTES,
-        maximumSize = 1000
-    )
-    public User findUserById(String userId) {
-        return userRepository.findById(userId)
-            .orElseThrow(() -> new UserNotFoundException("User not found: " + userId));
-    }
-
-    // Custom cache key with SpEL expression
-    @JCacheXCacheable(
-        cacheName = "usersByEmail",
-        key = "#email.toLowerCase()",
-        expireAfterWrite = 15,
-        expireAfterWriteUnit = TimeUnit.MINUTES
-    )
-    public Optional<User> findUserByEmail(String email) {
-        return userRepository.findByEmailIgnoreCase(email);
-    }
-
-    // Conditional caching based on method parameters
-    @JCacheXCacheable(
-        cacheName = "activeUsers",
-        condition = "#includeInactive == false",
-        expireAfterWrite = 10,
-        expireAfterWriteUnit = TimeUnit.MINUTES
-    )
-    public List<User> findUsers(boolean includeInactive) {
-        return includeInactive ?
-            userRepository.findAll() :
-            userRepository.findByActiveTrue();
-    }
-
-    // Cache eviction on data modification
-    @JCacheXCacheEvict(cacheName = "users")
-    @JCacheXCacheEvict(cacheName = "usersByEmail", key = "#user.email.toLowerCase()")
-    @Transactional
-    public User updateUser(User user) {
-        return userRepository.save(user);
-    }
-
-    // Multiple cache eviction
-    @JCacheXCacheEvict(cacheName = "users")
-    @JCacheXCacheEvict(cacheName = "usersByEmail")
-    @JCacheXCacheEvict(cacheName = "activeUsers")
-    @Transactional
-    public void deleteUser(String userId) {
-        userRepository.deleteById(userId);
-    }
-
-    // Cache warming strategy
-    @EventListener(ApplicationReadyEvent.class)
-    public void warmUpCaches() {
-        // Pre-load frequently accessed data
-        List<User> activeUsers = userRepository.findTop100ByActiveOrderByLastLoginDesc(true);
-        // These calls will populate the cache
-        activeUsers.forEach(user -> findUserById(user.getId()));
-    }
-}`
-    }
-];
-
-const API_EXAMPLES: CodeTab[] = [
-    {
-        id: 'external-api-caching',
-        label: 'External API Integration',
-        language: 'java',
-        code: `// Caching external API responses with fallback strategies
-@Service
-public class ExternalApiService {
-
-    private final RestTemplate restTemplate;
-    private final Cache<String, ApiResponse> responseCache;
-    private final Cache<String, ApiResponse> staleCache;
-
-    public ExternalApiService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-
-        // Primary cache with shorter TTL
-        CacheConfig<String, ApiResponse> primaryConfig = CacheConfig.<String, ApiResponse>builder()
-            .maximumSize(1000L)
-            .expireAfterWrite(Duration.ofMinutes(15))
-            .recordStats(true)
-            .build();
-        this.responseCache = new DefaultCache<>(primaryConfig);
-
-        // Stale cache with longer TTL for fallback
-        CacheConfig<String, ApiResponse> staleConfig = CacheConfig.<String, ApiResponse>builder()
-            .maximumSize(500L)
-            .expireAfterWrite(Duration.ofHours(24))
-            .build();
-        this.staleCache = new DefaultCache<>(staleConfig);
-    }
-
-    public ApiResponse fetchData(String endpoint, Map<String, String> parameters) {
-        String cacheKey = buildCacheKey(endpoint, parameters);
-
-        // Try primary cache first
-        ApiResponse cached = responseCache.get(cacheKey);
-        if (cached != null) {
-            return cached;
-        }
-
-        try {
-            // Make external API call
-            String url = buildUrl(endpoint, parameters);
-            ApiResponse response = restTemplate.getForObject(url, ApiResponse.class);
-
-            if (response != null && response.isSuccessful()) {
-                // Cache successful responses
-                responseCache.put(cacheKey, response);
-                staleCache.put(cacheKey, response); // Also store in stale cache
-                return response;
-            }
-
-        } catch (RestClientException e) {
-            // API call failed - try stale cache as fallback
-            ApiResponse stale = staleCache.get(cacheKey);
-            if (stale != null) {
-                // Return stale data with warning
-                return stale.withStaleWarning();
-            }
-
-            throw new ExternalApiException("API call failed and no cached data available", e);
-        }
-
-        throw new ExternalApiException("API returned unsuccessful response");
-    }
-
-    // Bulk API calls with intelligent caching
-    public List<ApiResponse> fetchMultiple(List<String> endpoints) {
-        Map<String, ApiResponse> results = new HashMap<>();
-        List<String> uncachedEndpoints = new ArrayList<>();
-
-        // Check cache for all endpoints
-        for (String endpoint : endpoints) {
-            String cacheKey = buildCacheKey(endpoint, Collections.emptyMap());
-            ApiResponse cached = responseCache.get(cacheKey);
-
-            if (cached != null) {
-                results.put(endpoint, cached);
-            } else {
-                uncachedEndpoints.add(endpoint);
-            }
-        }
-
-        // Batch fetch uncached endpoints
-        if (!uncachedEndpoints.isEmpty()) {
-            try {
-                List<ApiResponse> responses = batchApiCall(uncachedEndpoints);
-                for (int i = 0; i < uncachedEndpoints.size(); i++) {
-                    String endpoint = uncachedEndpoints.get(i);
-                    ApiResponse response = responses.get(i);
-
-                    if (response.isSuccessful()) {
-                        String cacheKey = buildCacheKey(endpoint, Collections.emptyMap());
-                        responseCache.put(cacheKey, response);
-                        staleCache.put(cacheKey, response);
-                    }
-
-                    results.put(endpoint, response);
-                }
-            } catch (RestClientException e) {
-                // Handle batch failure
-                throw new ExternalApiException("Batch API call failed", e);
-            }
-        }
-
-        return endpoints.stream()
-            .map(results::get)
-            .collect(Collectors.toList());
-    }
-
-    private String buildCacheKey(String endpoint, Map<String, String> parameters) {
-        return endpoint + ":" + parameters.entrySet().stream()
-            .sorted(Map.Entry.comparingByKey())
-            .map(entry -> entry.getKey() + "=" + entry.getValue())
-            .collect(Collectors.joining("&"));
-    }
-
-    private String buildUrl(String endpoint, Map<String, String> parameters) {
-        // URL building logic
-        return endpoint + "?" + parameters.entrySet().stream()
-            .map(entry -> entry.getKey() + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8))
-            .collect(Collectors.joining("&"));
-    }
-
-    private List<ApiResponse> batchApiCall(List<String> endpoints) {
-        // Batch API call implementation
-        return endpoints.stream()
-            .map(endpoint -> restTemplate.getForObject(endpoint, ApiResponse.class))
-            .collect(Collectors.toList());
-    }
-}`
-    }
-];
-
-const MONITORING_EXAMPLES: CodeTab[] = [
-    {
-        id: 'production-monitoring',
-        label: 'Production Monitoring',
-        language: 'java',
-        code: `// Comprehensive cache monitoring and alerting
-@Component
-public class CacheMonitoringService {
-
-    private final MeterRegistry meterRegistry;
-    private final List<Cache<?, ?>> monitoredCaches;
-    private final ScheduledExecutorService scheduler;
-
-    public CacheMonitoringService(MeterRegistry meterRegistry) {
-        this.meterRegistry = meterRegistry;
-        this.monitoredCaches = new CopyOnWriteArrayList<>();
-        this.scheduler = Executors.newScheduledThreadPool(2);
-
-        // Schedule periodic health checks
-        startHealthCheckMonitoring();
-        startPerformanceMetricsCollection();
-    }
-
-    public void registerCache(String name, Cache<?, ?> cache) {
-        monitoredCaches.add(cache);
-
-        // Create Micrometer gauges for cache metrics
-        Gauge.builder("cache.size")
-            .tag("cache", name)
-            .register(meterRegistry, cache, Cache::size);
-
-        Gauge.builder("cache.hit_rate")
-            .tag("cache", name)
-            .register(meterRegistry, cache, c -> c.stats().hitRate());
-
-        Gauge.builder("cache.miss_rate")
-            .tag("cache", name)
-            .register(meterRegistry, cache, c -> c.stats().missRate());
-
-        Gauge.builder("cache.eviction_count")
-            .tag("cache", name)
-            .register(meterRegistry, cache, c -> c.stats().evictionCount());
-    }
-
-    private void startHealthCheckMonitoring() {
-        scheduler.scheduleAtFixedRate(() -> {
-            for (Cache<?, ?> cache : monitoredCaches) {
-                CacheStats stats = cache.stats();
-                CacheHealthStatus health = evaluateCacheHealth(stats);
-
-                // Publish health metrics
-                meterRegistry.gauge("cache.health_score",
-                    Tags.of("cache", getCacheName(cache)),
-                    health.getScore());
-
-                // Trigger alerts for unhealthy caches
-                if (health.getScore() < 0.7) {
-                    sendAlert(getCacheName(cache), health);
-                }
-            }
-        }, 0, 1, TimeUnit.MINUTES);
-    }
-
-    private void startPerformanceMetricsCollection() {
-        scheduler.scheduleAtFixedRate(() -> {
-            for (Cache<?, ?> cache : monitoredCaches) {
-                String cacheName = getCacheName(cache);
-                CacheStats stats = cache.stats();
-
-                // Log detailed performance metrics
-                MDC.put("cache.name", cacheName);
-                MDC.put("cache.size", String.valueOf(cache.size()));
-                MDC.put("cache.hit_rate", String.valueOf(stats.hitRate()));
-                MDC.put("cache.average_load_time", String.valueOf(stats.averageLoadTime()));
-
-                if (stats.hitRate() < 0.5) {
-                    // Log warning for poor hit rates
-                    log.warn("Cache {} has low hit rate: {:.2f}%",
-                        cacheName, stats.hitRate() * 100);
-                }
-
-                MDC.clear();
-            }
-        }, 0, 5, TimeUnit.MINUTES);
-    }
-
-    public CacheHealthReport generateHealthReport() {
-        Map<String, CacheMetrics> cacheMetrics = new HashMap<>();
-
-        for (Cache<?, ?> cache : monitoredCaches) {
-            String name = getCacheName(cache);
-            CacheStats stats = cache.stats();
-
-            CacheMetrics metrics = CacheMetrics.builder()
-                .name(name)
-                .size(cache.size())
-                .hitRate(stats.hitRate())
-                .missRate(stats.missRate())
-                .evictionCount(stats.evictionCount())
-                .averageLoadTime(stats.averageLoadTime())
-                .requestCount(stats.requestCount())
-                .healthScore(evaluateCacheHealth(stats).getScore())
-                .build();
-
-            cacheMetrics.put(name, metrics);
-        }
-
-        return new CacheHealthReport(cacheMetrics, Instant.now());
-    }
-
-    private CacheHealthStatus evaluateCacheHealth(CacheStats stats) {
-        double score = 1.0;
-        List<String> issues = new ArrayList<>();
-
-        // Hit rate assessment
-        if (stats.hitRate() < 0.5) {
-            score -= 0.3;
-            issues.add("Low hit rate: " + Math.round(stats.hitRate() * 100) + "%");
-        } else if (stats.hitRate() < 0.7) {
-            score -= 0.1;
-        }
-
-        // Load time assessment
-        if (stats.averageLoadTime() > 100) {
-            score -= 0.2;
-            issues.add("High average load time: " + stats.averageLoadTime() + "ms");
-        }
-
-        // Eviction rate assessment
-        long totalRequests = stats.requestCount();
-        if (totalRequests > 0 && (stats.evictionCount() / (double) totalRequests) > 0.1) {
-            score -= 0.2;
-            issues.add("High eviction rate: " +
-                Math.round((stats.evictionCount() / (double) totalRequests) * 100) + "%");
-        }
-
-        return new CacheHealthStatus(Math.max(0, score), issues);
-    }
-
-    private void sendAlert(String cacheName, CacheHealthStatus health) {
-        // Integration with alerting system (PagerDuty, Slack, etc.)
-        log.error("Cache health alert for {}: score={:.2f}, issues={}",
-            cacheName, health.getScore(), health.getIssues());
-    }
-
-    private String getCacheName(Cache<?, ?> cache) {
-        // Extract cache name from cache instance
-        return cache.getClass().getSimpleName() + "@" +
-            Integer.toHexString(cache.hashCode());
-    }
-
-    @PreDestroy
-    public void shutdown() {
-        scheduler.shutdown();
-        try {
-            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
-                scheduler.shutdownNow();
-            }
-        } catch (InterruptedException e) {
-            scheduler.shutdownNow();
-            Thread.currentThread().interrupt();
-        }
-    }
-}`
-    }
-];
-
-const ExamplesPage: React.FC = () => {
-    const [activeSection, setActiveSection] = useState<string>('basic');
-
-    // Default SEO data for examples page
+import EnhancedCard, { type FeatureItem, ExampleCardInfoItem } from './EnhancedCard';
+
+// Import example code from auto-generated constants
+import {
+    BASIC_CACHE_EXAMPLE,
+    OBJECT_CACHING_EXAMPLE,
+    COMPLEX_CACHE_CONFIG_EXAMPLE,
+    ASYNC_CACHE_EXAMPLE,
+    THREAD_SAFETY_EXAMPLE,
+    MULTI_CACHE_SYSTEM_EXAMPLE,
+    OBSERVABLE_CACHE_SERVICE_EXAMPLE,
+    COROUTINES_EXAMPLE,
+    EXTENSIONS_EXAMPLE,
+    SPRING_JPA_EXAMPLE,
+    REST_API_EXAMPLE,
+    COMPUTATION_SERVICE_EXAMPLE
+} from '../utils/loadExamples';
+
+const Examples: React.FC = () => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+    // Define navigation items for the sidebar
+    const navigationItems = [
+        {
+            id: 'java-examples',
+            title: 'Java Examples',
+            icon: <JavaIcon />,
+            children: [
+                { id: 'basic-cache', title: 'Basic Cache', icon: <CodeIcon /> },
+                { id: 'complex-cache-configurations', title: 'Complex Cache Configurations', icon: <SettingsIcon /> },
+                { id: 'non-blocking-caching', title: 'Non-blocking Caching', icon: <SyncIcon /> },
+                { id: 'thread-safety', title: 'Thread Safety', icon: <SecurityIcon /> },
+                { id: 'multi-cache-system', title: 'Multi Cache System', icon: <ArchitectureIcon /> },
+                { id: 'observability', title: 'Observability', icon: <AnalyticsIcon /> },
+            ],
+        },
+        {
+            id: 'kotlin-examples',
+            title: 'Kotlin Examples',
+            icon: <ExtensionIcon />,
+            children: [
+                { id: 'extensions-usage', title: 'Extensions Usage', icon: <ExtensionIcon /> },
+                { id: 'coroutines-support', title: 'Coroutines Support', icon: <CloudSyncIcon /> },
+            ],
+        },
+        {
+            id: 'springboot-examples',
+            title: 'Spring Boot Examples',
+            icon: <SpeedIcon />,
+            children: [
+                { id: 'spring-jpa', title: 'Spring JPA', icon: <StorageIcon /> },
+                { id: 'rest-api', title: 'Rest API', icon: <ApiIcon /> },
+                { id: 'heavy-computation-process', title: 'Heavy Computation Process', icon: <ComputerIcon /> },
+            ],
+        },
+    ];
+
+    const sidebarConfig = {
+        title: "Examples",
+        navigationItems: navigationItems,
+        expandedByDefault: true
+    };
+
+    // SEO data
     const seoData = {
         title: 'JCacheX Examples and Code Samples',
-        description: 'Comprehensive examples and code samples for JCacheX. Learn async operations, Spring Boot integration, distributed caching, and advanced patterns.',
-        keywords: ['JCacheX examples', 'cache examples', 'Java cache tutorial', 'Spring cache examples', 'async cache'],
+        description: 'Comprehensive examples and code samples for JCacheX. Learn Java, Kotlin, and Spring Boot integration patterns.',
+        keywords: ['JCacheX examples', 'cache examples', 'Java cache tutorial', 'Spring cache examples', 'Kotlin cache'],
         canonical: 'https://dhruv1110.github.io/jcachex/examples'
     };
 
-    const sections = [
-        { id: 'basic', label: 'Core Implementation', description: 'Fundamental caching patterns' },
-        { id: 'database', label: 'Database Integration', description: 'Repository and ORM patterns' },
-        { id: 'api', label: 'API Caching', description: 'External service integration' },
-        { id: 'monitoring', label: 'Production Monitoring', description: 'Observability and alerting' }
-    ];
-
-    const getSectionExamples = (sectionId: string) => {
-        switch (sectionId) {
-            case 'basic': return BASIC_EXAMPLES;
-            case 'database': return DATABASE_EXAMPLES;
-            case 'api': return API_EXAMPLES;
-            case 'monitoring': return MONITORING_EXAMPLES;
-            default: return BASIC_EXAMPLES;
-        }
-    };
-
-    const getSectionInfo = (sectionId: string) => {
-        switch (sectionId) {
-            case 'basic':
-                return {
-                    title: 'Core Implementation Patterns',
-                    description: 'Essential caching patterns and configuration strategies for production applications.',
-                    keyPoints: [
-                        'Cache configuration and lifecycle management',
-                        'Object serialization and type safety',
-                        'Performance monitoring and statistics',
-                        'Memory management and eviction policies'
-                    ],
-                    useCases: 'Session management, user preferences, configuration data, frequently accessed entities'
-                };
-            case 'database':
-                return {
-                    title: 'Database Integration Strategies',
-                    description: 'Production-ready patterns for caching database queries and managing data consistency.',
-                    keyPoints: [
-                        'Cache-aside pattern implementation',
-                        'Repository layer integration',
-                        'Declarative caching with annotations',
-                        'Bulk operations and cache warming'
-                    ],
-                    useCases: 'User profiles, product catalogs, reference data, complex query results'
-                };
-            case 'api':
-                return {
-                    title: 'External API Integration',
-                    description: 'Strategies for caching external service responses with fault tolerance and fallback mechanisms.',
-                    keyPoints: [
-                        'Multi-tier cache architecture',
-                        'Fallback and stale data strategies',
-                        'Batch API call optimization',
-                        'Circuit breaker pattern integration'
-                    ],
-                    useCases: 'Weather data, payment processing, geolocation services, third-party content'
-                };
-            case 'monitoring':
-                return {
-                    title: 'Production Monitoring',
-                    description: 'Comprehensive monitoring, alerting, and performance optimization for production environments.',
-                    keyPoints: [
-                        'Real-time performance metrics',
-                        'Health checks and alerting',
-                        'Integration with monitoring systems',
-                        'Automated performance optimization'
-                    ],
-                    useCases: 'Production deployment, capacity planning, performance tuning, incident response'
-                };
-            default:
-                return {
-                    title: 'Core Implementation Patterns',
-                    description: 'Essential caching patterns and configuration strategies for production applications.',
-                    keyPoints: [
-                        'Cache configuration and lifecycle management',
-                        'Object serialization and type safety',
-                        'Performance monitoring and statistics',
-                        'Memory management and eviction policies'
-                    ],
-                    useCases: 'Session management, user preferences, configuration data, frequently accessed entities'
-                };
-        }
-    };
-
-    const currentSection = getSectionInfo(activeSection);
-
     return (
-        <div className="examples-page">
+        <Layout sidebarConfig={sidebarConfig}>
             <MetaTags seo={seoData} />
             <Breadcrumbs items={[
                 { label: 'Home', path: '/' },
                 { label: 'Examples', path: '/examples', current: true }
             ]} />
 
-            {/* Header */}
-            <Section background="gradient" padding="lg" centered>
-                <div className="examples-header">
-                    <h1 className="examples-title">Implementation Examples</h1>
-                    <p className="examples-subtitle">
-                        Production-ready code examples and integration patterns for enterprise applications.
-                        Comprehensive implementations covering core functionality through advanced monitoring.
-                    </p>
-                </div>
-            </Section>
+            <Container
+                maxWidth={false}
+                sx={{
+                    py: 4,
+                    px: { xs: 2, sm: 3, md: 0 },
+                    pr: { xs: 2, sm: 3, md: 4 },
+                    pl: { xs: 2, sm: 3, md: 0 },
+                    ml: { xs: 0, md: 0 },
+                    mt: { xs: 1, md: 0 },
+                    minHeight: { xs: 'calc(100vh - 80px)', md: 'auto' },
+                }}
+            >
+                {/* Header */}
+                <Box sx={{ textAlign: 'center', mb: 6 }}>
+                    <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
+                        JCacheX Examples
+                    </Typography>
+                    <Typography variant="h5" color="text.secondary" sx={{ mb: 4 }}>
+                        Comprehensive code examples and integration patterns for production applications
+                    </Typography>
+                    <Box sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' },
+                        gap: 2,
+                        justifyItems: 'center',
+                        maxWidth: '600px',
+                        mx: 'auto'
+                    }}>
+                        <Chip
+                            icon={<JavaIcon />}
+                            label="Java Examples"
+                            color="primary"
+                            sx={{ px: 2, py: 1 }}
+                        />
+                        <Chip
+                            icon={<ExtensionIcon />}
+                            label="Kotlin Extensions"
+                            color="secondary"
+                            sx={{ px: 2, py: 1 }}
+                        />
+                        <Chip
+                            icon={<SpeedIcon />}
+                            label="Spring Boot"
+                            color="success"
+                            sx={{ px: 2, py: 1 }}
+                        />
+                    </Box>
+                </Box>
 
-            {/* Examples Navigation */}
-            <Section background="dark" padding="lg">
-                <nav className="examples-nav">
-                    <ul className="examples-nav-list">
-                        {sections.map((section) => (
-                            <li key={section.id} className="examples-nav-item">
-                                <button
-                                    className={`examples-nav-link ${activeSection === section.id ? 'active' : ''}`}
-                                    onClick={() => setActiveSection(section.id)}
-                                >
-                                    <div className="nav-content">
-                                        <span className="nav-label">{section.label}</span>
-                                        <span className="nav-description">{section.description}</span>
-                                    </div>
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-            </Section>
+                {/* Java Examples Section */}
+                <Box id="java-examples" sx={{ mb: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                        <JavaIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Java Examples
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                        Comprehensive Java examples covering basic usage to advanced enterprise patterns.
+                    </Typography>
+                </Box>
 
-            {/* Current Section Content */}
-            <Section background="primary" padding="lg">
-                <div className="examples-section">
-                    <div className="examples-section-header">
-                        <h2>{currentSection.title}</h2>
-                        <p>{currentSection.description}</p>
-                    </div>
+                {/* Basic Cache */}
+                <Box id="basic-cache" sx={{ mb: 6 }}>
+                    <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                        <CodeIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Basic Cache
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                        Essential cache setup and usage patterns for getting started with JCacheX.
+                    </Typography>
 
-                    <Grid>
-                        <div className="example-category">
-                            <div className="category-header">
-                                <h3>Key Implementation Points</h3>
-                                <ul>
-                                    {currentSection.keyPoints.map((point, index) => (
-                                        <li key={index}>{point}</li>
-                                    ))}
-                                </ul>
+                    <EnhancedCard
+                        header={{
+                            icon: <CodeIcon />,
+                            title: "When to use Basic Cache",
+                            subtitle: "Simple, fast caching for everyday use cases",
+                            bgColor: "primary.main"
+                        }}
+                        description="Perfect for getting started with caching or when you need straightforward key-value storage without complex configurations. Ideal for most common caching scenarios."
+                        features={{
+                            leftTitle: "Common Use Cases",
+                            leftIcon: <CheckCircleIcon />,
+                            leftItems: [
+                                ExampleCardInfoItem(<CachedIcon />, "Frequently Accessed Data", "Cache database query results, API responses"),
+                                ExampleCardInfoItem(<AccountTreeIcon />, "User Sessions", "Store user preferences, shopping carts, temp data"),
+                                ExampleCardInfoItem(<SettingsIcon />, "Configuration Data", "Application settings, feature flags, lookup tables"),
+                                ExampleCardInfoItem(<FunctionsIcon />, "Computation Results", "Cache expensive calculations, processed data")
+                            ],
+                            rightTitle: "Key Benefits",
+                            rightIcon: <StarIcon />,
+                            rightItems: [
+                                ExampleCardInfoItem(<FlashOnIcon />, "Fast Setup", "Get started in minutes with minimal configuration"),
+                                ExampleCardInfoItem(<SchoolIcon />, "Easy to Learn", "Simple API suitable for beginners"),
+                                ExampleCardInfoItem(<MemoryIcon />, "Low Memory Footprint", "Efficient storage with automatic cleanup"),
+                                ExampleCardInfoItem(<SecurityIcon />, "Thread Safe", "Concurrent access without additional locking")
+                            ],
+                            rightBgColor: "primary.50"
+                        }}
+                        footer={{
+                            chips: [
+                                { icon: <StarIcon />, label: "Beginner Friendly", color: "primary" },
+                                { icon: <SpeedIcon />, label: "Fast Performance", color: "success" },
+                                { icon: <SchoolIcon />, label: "Easy Setup", color: "info" }
+                            ]
+                        }}
+                    />
 
-                                <h4>Common Use Cases</h4>
-                                <p>{currentSection.useCases}</p>
-                            </div>
+                    <CodeTabs tabs={[
+                        {
+                            id: 'basic-usage',
+                            label: 'Basic Usage',
+                            language: 'java',
+                            code: BASIC_CACHE_EXAMPLE
+                        },
+                        {
+                            id: 'object-caching',
+                            label: 'Object Caching',
+                            language: 'java',
+                            code: OBJECT_CACHING_EXAMPLE
+                        }
+                    ]} />
+                </Box>
 
-                            <CodeTabs tabs={getSectionExamples(activeSection)} />
-                        </div>
-                    </Grid>
-                </div>
-            </Section>
+                {/* Complex Cache Configurations */}
+                <Box id="complex-cache-configurations" sx={{ mb: 6 }}>
+                    <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                        <SettingsIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Complex Cache Configurations
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                        Advanced configuration patterns for production environments with custom eviction policies and listeners.
+                    </Typography>
 
-            {/* Next Steps */}
-            <Section background="dark" padding="lg">
-                <div className="next-steps-cta">
-                    <h3>Ready to implement?</h3>
-                    <p>
-                        Continue your implementation with comprehensive documentation and framework-specific guides.
-                    </p>
-                    <div className="cta-buttons">
-                        <a href="/getting-started" className="btn btn-primary">
-                            View Documentation
-                        </a>
-                        <a href="/spring" className="btn btn-secondary">
-                            Spring Guide
-                        </a>
-                        <a href="/faq" className="btn btn-outline">
-                            FAQ
-                        </a>
-                    </div>
-                </div>
-            </Section>
-        </div>
+                    <EnhancedCard
+                        header={{
+                            icon: <SettingsIcon />,
+                            title: "Advanced Configuration Features",
+                            subtitle: "Enterprise-grade configurations for production environments",
+                            bgColor: "info.main"
+                        }}
+                        description="Take full control of your cache behavior with advanced configuration options. Perfect for production environments that require fine-tuned performance, custom eviction policies, and comprehensive monitoring."
+                        features={{
+                            leftTitle: "Configuration Options",
+                            leftIcon: <CheckCircleIcon />,
+                            leftItems: [
+                                ExampleCardInfoItem(<LayersIcon />, "Custom Eviction Strategies", "LRU, LFU, FIFO, TTL, weight-based policies"),
+                                ExampleCardInfoItem(<QueryStatsIcon />, "Event Listeners", "Monitor cache operations, evictions, updates"),
+                                ExampleCardInfoItem(<MemoryIcon />, "Weight-based Management", "Dynamic memory allocation based on entry size"),
+                                ExampleCardInfoItem(<AccountTreeIcon />, "Composite Strategies", "Combine multiple eviction policies intelligently")
+                            ],
+                            rightTitle: "Enterprise Features",
+                            rightIcon: <EngineeringIcon />,
+                            rightItems: [
+                                ExampleCardInfoItem(<InsightsIcon />, "Advanced Monitoring", "Detailed metrics, performance analytics, alerts"),
+                                ExampleCardInfoItem(<FlashOnIcon />, "Performance Tuning", "Optimize for specific workload patterns"),
+                                ExampleCardInfoItem(<ShieldIcon />, "Resource Protection", "Prevent memory leaks, control resource usage"),
+                                ExampleCardInfoItem(<TransformIcon />, "Dynamic Reconfiguration", "Adjust settings without service restart")
+                            ],
+                            rightBgColor: "info.50"
+                        }}
+                        footer={{
+                            chips: [
+                                { icon: <EngineeringIcon />, label: "Enterprise Ready", color: "primary" },
+                                { icon: <SettingsIcon />, label: "Highly Configurable", color: "info" },
+                                { icon: <InsightsIcon />, label: "Production Monitoring", color: "success" }
+                            ]
+                        }}
+                    />
+
+                    <CodeTabs tabs={[
+                        {
+                            id: 'advanced-config',
+                            label: 'Advanced Configuration',
+                            language: 'java',
+                            code: COMPLEX_CACHE_CONFIG_EXAMPLE
+                        }
+                    ]} />
+                </Box>
+
+                {/* Non-blocking Caching */}
+                <Box id="non-blocking-caching" sx={{ mb: 6 }}>
+                    <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                        <SyncIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Non-blocking Caching
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                        Asynchronous caching patterns that don't block application threads during cache operations.
+                    </Typography>
+
+                    <EnhancedCard
+                        header={{
+                            icon: <SyncIcon />,
+                            title: "Non-blocking Benefits",
+                            subtitle: "Asynchronous operations that keep your application responsive",
+                            bgColor: "success.main"
+                        }}
+                        description="Eliminate blocking operations that can freeze your application threads. Perfect for high-throughput systems where responsiveness is critical and every millisecond counts."
+                        features={{
+                            leftTitle: "Performance Improvements",
+                            leftIcon: <CheckCircleIcon />,
+                            leftItems: [
+                                ExampleCardInfoItem(<FlashOnIcon />, "Improved Responsiveness", "UI stays responsive during cache operations"),
+                                ExampleCardInfoItem(<DataUsageIcon />, "Better Resource Utilization", "Efficient CPU and memory usage patterns"),
+                                ExampleCardInfoItem(<SecurityIcon />, "Reduced Thread Contention", "Minimize lock conflicts and deadlocks"),
+                                ExampleCardInfoItem(<ShieldIcon />, "Graceful Degradation", "Maintain service quality under high load")
+                            ],
+                            rightTitle: "Async Patterns",
+                            rightIcon: <TrendingUpIcon />,
+                            rightItems: [
+                                ExampleCardInfoItem(<CloudSyncIcon />, "CompletableFuture Support", "Full async/await pattern integration"),
+                                ExampleCardInfoItem(<PlayArrowIcon />, "Reactive Streams", "Backpressure handling and flow control"),
+                                ExampleCardInfoItem(<TimerIcon />, "Timeout Management", "Configurable timeouts for async operations"),
+                                ExampleCardInfoItem(<RefreshIcon />, "Retry Mechanisms", "Intelligent retry with exponential backoff")
+                            ],
+                            rightBgColor: "success.50"
+                        }}
+                        footer={{
+                            chips: [
+                                { icon: <FlashOnIcon />, label: "High Performance", color: "primary" },
+                                { icon: <CloudSyncIcon />, label: "Async Ready", color: "success" },
+                                { icon: <TrendingUpIcon />, label: "Scalable", color: "info" }
+                            ],
+                            performanceText: "⚡ Up to 10x throughput improvement"
+                        }}
+                    />
+
+                    <CodeTabs tabs={[
+                        {
+                            id: 'async-cache-operations',
+                            label: 'Async Cache Operations',
+                            language: 'java',
+                            code: ASYNC_CACHE_EXAMPLE
+                        }
+                    ]} />
+                </Box>
+
+                {/* Thread Safety */}
+                <Box id="thread-safety" sx={{ mb: 6 }}>
+                    <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                        <SecurityIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Thread Safety
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                        Ensuring cache operations are thread-safe in concurrent environments.
+                    </Typography>
+
+                    <EnhancedCard
+                        header={{
+                            icon: <SecurityIcon />,
+                            title: "Thread Safety Considerations",
+                            subtitle: "Concurrent operations without compromising data integrity",
+                            bgColor: "warning.main"
+                        }}
+                        description="Ensure your cache operations are completely thread-safe in multi-threaded environments. Critical for applications handling concurrent requests where data consistency is paramount."
+                        features={{
+                            leftTitle: "Safety Guarantees",
+                            leftIcon: <CheckCircleIcon />,
+                            leftItems: [
+                                ExampleCardInfoItem(<SyncIcon />, "Concurrent Read/Write", "Safe simultaneous access from multiple threads"),
+                                ExampleCardInfoItem(<FlashOnIcon />, "Atomic Operations", "All cache operations are atomic and consistent"),
+                                ExampleCardInfoItem(<LayersIcon />, "Lock-free Structures", "High-performance concurrent data structures"),
+                                ExampleCardInfoItem(<ShieldIcon />, "Consistent State", "Guaranteed consistency across all operations")
+                            ],
+                            rightTitle: "Concurrency Features",
+                            rightIcon: <LightbulbIcon />,
+                            rightItems: [
+                                ExampleCardInfoItem(<TrendingUpIcon />, "High Throughput", "Optimized for concurrent high-load scenarios"),
+                                ExampleCardInfoItem(<TimerIcon />, "Deadlock Prevention", "Sophisticated locking strategies prevent deadlocks"),
+                                ExampleCardInfoItem(<DataUsageIcon />, "Memory Barriers", "Proper memory synchronization guarantees"),
+                                ExampleCardInfoItem(<InsightsIcon />, "Contention Monitoring", "Built-in metrics for thread contention analysis")
+                            ],
+                            rightBgColor: "warning.50"
+                        }}
+                        footer={{
+                            chips: [
+                                { icon: <SecurityIcon />, label: "Thread Safe", color: "primary" },
+                                { icon: <FlashOnIcon />, label: "Lock-free", color: "warning" },
+                                { icon: <TrendingUpIcon />, label: "High Concurrency", color: "success" }
+                            ],
+                            performanceText: "🔐 100% thread-safe guaranteed"
+                        }}
+                    />
+
+                    <CodeTabs tabs={[
+                        {
+                            id: 'thread-safe-cache',
+                            label: 'Thread-Safe Cache',
+                            language: 'java',
+                            code: THREAD_SAFETY_EXAMPLE
+                        }
+                    ]} />
+                </Box>
+
+                {/* Multi Cache System */}
+                <Box id="multi-cache-system" sx={{ mb: 6 }}>
+                    <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                        <ArchitectureIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Multi Cache System
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                        Managing multiple cache instances with different configurations and purposes.
+                    </Typography>
+
+                    <EnhancedCard
+                        header={{
+                            icon: <ArchitectureIcon />,
+                            title: "Multi-Cache Architecture",
+                            subtitle: "Hierarchical caching with intelligent coordination",
+                            bgColor: "secondary.main"
+                        }}
+                        description="Design sophisticated multi-tier cache architectures for complex applications. Perfect for enterprise systems requiring different cache strategies for different data types and access patterns."
+                        features={{
+                            leftTitle: "Cache Layers",
+                            leftIcon: <CheckCircleIcon />,
+                            leftItems: [
+                                ExampleCardInfoItem(<MemoryIcon />, "L1 Memory Cache", "Fast in-memory storage for hot data"),
+                                ExampleCardInfoItem(<StorageIcon />, "L2 Disk Cache", "Persistent storage for larger datasets"),
+                                ExampleCardInfoItem(<LayersIcon />, "Domain Partitioning", "Separate caches for different business domains"),
+                                ExampleCardInfoItem(<SyncIcon />, "Cache Coordination", "Intelligent synchronization between cache layers")
+                            ],
+                            rightTitle: "Management Features",
+                            rightIcon: <DashboardIcon />,
+                            rightItems: [
+                                ExampleCardInfoItem(<DashboardIcon />, "Unified Management", "Central control panel for all cache instances"),
+                                ExampleCardInfoItem(<InsightsIcon />, "Cross-Cache Analytics", "Comprehensive metrics across all cache layers"),
+                                ExampleCardInfoItem(<ShieldIcon />, "Consistency Guarantees", "Maintain data consistency across cache tiers"),
+                                ExampleCardInfoItem(<TransformIcon />, "Dynamic Scaling", "Auto-scale cache tiers based on demand")
+                            ],
+                            rightBgColor: "secondary.50"
+                        }}
+                        footer={{
+                            chips: [
+                                { icon: <ArchitectureIcon />, label: "Multi-Tier", color: "primary" },
+                                { icon: <LayersIcon />, label: "Hierarchical", color: "secondary" },
+                                { icon: <EngineeringIcon />, label: "Enterprise Scale", color: "success" }
+                            ],
+                            performanceText: "🏗️ Scalable architecture design"
+                        }}
+                    />
+
+                    <CodeTabs tabs={[
+                        {
+                            id: 'multi-cache-manager',
+                            label: 'Multi-Cache Manager',
+                            language: 'java',
+                            code: MULTI_CACHE_SYSTEM_EXAMPLE
+                        }
+                    ]} />
+                </Box>
+
+                {/* Observability */}
+                <Box id="observability" sx={{ mb: 6 }}>
+                    <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                        <AnalyticsIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Observability
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+                        Monitoring, metrics, and observability patterns for production cache systems.
+                    </Typography>
+
+                    <EnhancedCard
+                        header={{
+                            icon: <AnalyticsIcon />,
+                            title: "Observability Features",
+                            subtitle: "Complete monitoring and analytics for production systems",
+                            bgColor: "info.main"
+                        }}
+                        description="Gain deep insights into your cache performance with comprehensive monitoring, metrics, and alerting capabilities. Essential for maintaining optimal performance in production environments."
+                        features={{
+                            leftTitle: "Monitoring Tools",
+                            leftIcon: <CheckCircleIcon />,
+                            leftItems: [
+                                ExampleCardInfoItem(<QueryStatsIcon />, "Real-time Metrics", "Hit rates, miss rates, response times, throughput"),
+                                ExampleCardInfoItem(<DashboardIcon />, "Performance Dashboards", "Visual analytics with charts and graphs"),
+                                ExampleCardInfoItem(<InsightsIcon />, "Alerting System", "Configurable alerts for performance thresholds"),
+                                ExampleCardInfoItem(<TimelineIcon />, "Distributed Tracing", "End-to-end request tracking across services")
+                            ],
+                            rightTitle: "Analytics & Insights",
+                            rightIcon: <TrendingUpIcon />,
+                            rightItems: [
+                                ExampleCardInfoItem(<AssessmentIcon />, "Performance Analytics", "Deep dive into cache behavior patterns"),
+                                ExampleCardInfoItem(<TableChartIcon />, "Usage Statistics", "Detailed breakdowns of cache utilization"),
+                                ExampleCardInfoItem(<LightbulbIcon />, "Optimization Recommendations", "AI-powered suggestions for performance tuning"),
+                                ExampleCardInfoItem(<DataUsageIcon />, "Cost Analysis", "Resource usage and cost optimization insights")
+                            ],
+                            rightBgColor: "info.50"
+                        }}
+                        footer={{
+                            chips: [
+                                { icon: <AnalyticsIcon />, label: "Full Observability", color: "primary" },
+                                { icon: <InsightsIcon />, label: "Real-time Monitoring", color: "info" },
+                                { icon: <LightbulbIcon />, label: "AI Insights", color: "success" }
+                            ]
+                        }}
+                    />
+
+                    <CodeTabs tabs={[
+                        {
+                            id: 'cache-observability',
+                            label: 'Cache Observability',
+                            language: 'java',
+                            code: OBSERVABLE_CACHE_SERVICE_EXAMPLE
+                        }
+                    ]} />
+                </Box>
+
+                {/* Kotlin Examples Section */}
+                <Box id="kotlin-examples" sx={{ mb: 8, mt: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                        <ExtensionIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Kotlin Examples
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                        Kotlin-specific examples showcasing extensions and coroutines support.
+                    </Typography>
+                </Box>
+
+                {/* Extensions Usage */}
+                <EnhancedCard
+                    header={{
+                        icon: <ExtensionIcon />,
+                        title: "Kotlin Extensions",
+                        subtitle: "Idiomatic Kotlin extensions for JCacheX providing a more fluent API.",
+                        bgColor: "primary.main"
+                    }}
+                    description="Leverage Kotlin's language features for a more expressive and concise caching API. Enjoy null safety, extension functions, and seamless integration with Kotlin collections."
+                    features={{
+                        leftTitle: "Language Features",
+                        leftIcon: <CheckCircleIcon />,
+                        leftItems: [
+                            ExampleCardInfoItem(<ExtensionIcon />, "Extension Functions", "Add cache operations directly to your types"),
+                            ExampleCardInfoItem(<SchoolIcon />, "Type Inference", "No need to specify types explicitly"),
+                            ExampleCardInfoItem(<AccountTreeIcon />, "Collection Support", "Work with lists, sets, and maps natively"),
+                            ExampleCardInfoItem(<ShieldIcon />, "Null Safety", "Avoid null pointer exceptions with safe calls")
+                        ],
+                        rightTitle: "Developer Experience",
+                        rightIcon: <TrendingUpIcon />,
+                        rightItems: [
+                            ExampleCardInfoItem(<ExtensionIcon />, "Intuitive API", "Natural Kotlin syntax feels familiar"),
+                            ExampleCardInfoItem(<LightbulbIcon />, "IDE Support", "Full IntelliJ IDEA autocomplete and refactoring"),
+                            ExampleCardInfoItem(<TransformIcon />, "Null Safety", "Kotlin's null safety prevents runtime errors"),
+                            ExampleCardInfoItem(<FlashOnIcon />, "Concise Code", "Reduce boilerplate with smart defaults")
+                        ],
+                        rightBgColor: "secondary.50"
+                    }}
+                    footer={{
+                        chips: [
+                            { icon: <ExtensionIcon />, label: "Kotlin Native", color: "primary" },
+                            { icon: <SchoolIcon />, label: "Developer Friendly", color: "secondary" },
+                            { icon: <ShieldIcon />, label: "Type Safe", color: "success" }
+                        ],
+                        performanceText: "🎯 Idiomatic Kotlin experience"
+                    }}
+                />
+
+                <CodeTabs tabs={[
+                    {
+                        id: 'kotlin-extensions',
+                        label: 'Kotlin Extensions',
+                        language: 'kotlin',
+                        code: EXTENSIONS_EXAMPLE
+                    }
+                ]} />
+
+                {/* Coroutines Support */}
+                <EnhancedCard
+                    header={{
+                        icon: <CloudSyncIcon />,
+                        title: "Coroutines Integration",
+                        subtitle: "Seamless async operations with structured concurrency",
+                        bgColor: "success.main"
+                    }}
+                    description="Harness the power of Kotlin coroutines for truly asynchronous caching operations. Perfect for reactive applications that need non-blocking I/O with structured concurrency and cancellation support."
+                    features={{
+                        leftTitle: "Async Features",
+                        leftIcon: <CheckCircleIcon />,
+                        leftItems: [
+                            ExampleCardInfoItem(<SyncIcon />, "Suspend Functions", "Non-blocking cache operations with suspend/resume"),
+                            ExampleCardInfoItem(<TimelineIcon />, "Flow-based Events", "Reactive streams for cache events and updates"),
+                            ExampleCardInfoItem(<AccountTreeIcon />, "Structured Concurrency", "Hierarchical task management with scopes"),
+                            ExampleCardInfoItem(<DeleteIcon />, "Cancellation Support", "Cooperative cancellation for long-running operations")
+                        ],
+                        rightTitle: "Performance Benefits",
+                        rightIcon: <TrendingUpIcon />,
+                        rightItems: [
+                            ExampleCardInfoItem(<FlashOnIcon />, "Non-blocking I/O", "Threads never block waiting for cache operations"),
+                            ExampleCardInfoItem(<DataUsageIcon />, "Resource Efficiency", "Handle thousands of concurrent operations"),
+                            ExampleCardInfoItem(<ShieldIcon />, "Exception Safety", "Structured exception handling with coroutines"),
+                            ExampleCardInfoItem(<InsightsIcon />, "Backpressure Control", "Flow-based backpressure for high-load scenarios")
+                        ],
+                        rightBgColor: "success.50"
+                    }}
+                    footer={{
+                        chips: [
+                            { icon: <CloudSyncIcon />, label: "Coroutines Ready", color: "primary" },
+                            { icon: <FlashOnIcon />, label: "Non-blocking", color: "success" },
+                            { icon: <AccountTreeIcon />, label: "Structured", color: "info" }
+                        ],
+                        performanceText: "⚡ Truly reactive caching"
+                    }}
+                />
+
+                <CodeTabs tabs={[
+                    {
+                        id: 'coroutines-cache',
+                        label: 'Coroutines Cache',
+                        language: 'kotlin',
+                        code: COROUTINES_EXAMPLE
+                    }
+                ]} />
+
+                {/* Spring Boot Examples Section */}
+                <Box id="springboot-examples" sx={{ mb: 8, mt: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                        <SpeedIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Spring Boot Examples
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                        Spring Boot integration examples for enterprise applications.
+                    </Typography>
+                </Box>
+
+                {/* Spring JPA */}
+                <EnhancedCard
+                    header={{
+                        icon: <StorageIcon />,
+                        title: "Spring JPA Integration",
+                        subtitle: "Seamless database caching with Spring Data JPA",
+                        bgColor: "success.main"
+                    }}
+                    description="Supercharge your Spring Data JPA applications with intelligent caching. Reduce database load, improve response times, and scale your application effortlessly with automatic cache management."
+                    features={{
+                        leftTitle: "JPA Features",
+                        leftIcon: <CheckCircleIcon />,
+                        leftItems: [
+                            ExampleCardInfoItem(<StorageIcon />, "Repository-level Caching", "Automatic caching for repository methods"),
+                            ExampleCardInfoItem(<QueryStatsIcon />, "Query Result Caching", "Cache complex JPQL and native SQL queries"),
+                            ExampleCardInfoItem(<AccountTreeIcon />, "Entity-level Management", "Individual entity caching with relationships"),
+                            ExampleCardInfoItem(<SyncIcon />, "Transactional Operations", "Cache operations within database transactions")
+                        ],
+                        rightTitle: "Database Benefits",
+                        rightIcon: <TrendingUpIcon />,
+                        rightItems: [
+                            ExampleCardInfoItem(<FlashOnIcon />, "Reduced DB Load", "Minimize database queries and connection usage"),
+                            ExampleCardInfoItem(<SpeedIcon />, "Faster Response Times", "Serve cached data without database roundtrips"),
+                            ExampleCardInfoItem(<ShieldIcon />, "Automatic Invalidation", "Smart cache eviction on entity updates"),
+                            ExampleCardInfoItem(<InsightsIcon />, "Relationship Caching", "Intelligent caching of entity associations")
+                        ],
+                        rightBgColor: "success.50"
+                    }}
+                    footer={{
+                        chips: [
+                            { icon: <StorageIcon />, label: "JPA Ready", color: "primary" },
+                            { icon: <SpeedIcon />, label: "Spring Boot", color: "success" },
+                            { icon: <SettingsIcon />, label: "Auto-config", color: "info" }
+                        ],
+                        performanceText: "🏎️ Database performance boost"
+                    }}
+                />
+
+                <CodeTabs tabs={[
+                    {
+                        id: 'spring-jpa-cache',
+                        label: 'Spring JPA Cache',
+                        language: 'java',
+                        code: SPRING_JPA_EXAMPLE
+                    }
+                ]} />
+
+                {/* Rest API */}
+                <EnhancedCard
+                    header={{
+                        icon: <ApiIcon />,
+                        title: "REST API Caching",
+                        subtitle: "Optimize API performance and reduce external service calls",
+                        bgColor: "primary.main"
+                    }}
+                    description="Enhance your REST API performance by caching responses, reducing latency, and minimizing external service dependencies. Perfect for high-traffic applications with frequent API calls."
+                    features={{
+                        leftTitle: "Core Features",
+                        leftIcon: <CheckCircleIcon />,
+                        leftItems: [
+                            ExampleCardInfoItem(<HttpIcon />, "HTTP Response Caching", "Cache GET/POST responses with TTL control"),
+                            ExampleCardInfoItem(<PublicIcon />, "External API Caching", "Cache third-party API responses intelligently"),
+                            ExampleCardInfoItem(<SettingsIcon />, "Request-Level Control", "Fine-grained cache control per endpoint"),
+                            ExampleCardInfoItem(<DeleteIcon />, "Smart Invalidation", "Automatic cache invalidation strategies")
+                        ],
+                        rightTitle: "Performance Benefits",
+                        rightIcon: <TrendingUpIcon />,
+                        rightItems: [
+                            ExampleCardInfoItem(<FlashOnIcon />, "Faster Response Times", "Reduce latency by up to 90% for cached responses"),
+                            ExampleCardInfoItem(<ShieldIcon />, "Reduced External Dependencies", "Minimize risk of third-party service failures"),
+                            ExampleCardInfoItem(<DataUsageIcon />, "Lower Bandwidth Usage", "Reduce network traffic and API costs"),
+                            ExampleCardInfoItem(<TrendingUpIcon />, "Better Scalability", "Handle more concurrent requests efficiently")
+                        ],
+                        rightBgColor: "success.50"
+                    }}
+                    footer={{
+                        chips: [
+                            { icon: <StarIcon />, label: "Production Ready", color: "primary" },
+                            { icon: <CloudIcon />, label: "Microservices", color: "secondary" },
+                            { icon: <SpeedIcon />, label: "High Performance", color: "success" },
+                            { icon: <SecurityIcon />, label: "Enterprise Grade", color: "info" }
+                        ]
+                    }}
+                />
+
+                <CodeTabs tabs={[
+                    {
+                        id: 'rest-api-cache',
+                        label: 'REST API Cache',
+                        language: 'java',
+                        code: REST_API_EXAMPLE
+                    }
+                ]} />
+
+                {/* Heavy Computation Process */}
+                <EnhancedCard
+                    header={{
+                        icon: <ComputerIcon />,
+                        title: "Heavy Computation Caching",
+                        subtitle: "Cache expensive computations and long-running processes",
+                        bgColor: "secondary.main"
+                    }}
+                    description="Transform your application performance by caching results of expensive computations, complex algorithms, and resource-intensive operations. Essential for applications with heavy computational workloads."
+                    features={{
+                        leftTitle: "Computation Types",
+                        leftIcon: <CheckCircleIcon />,
+                        leftItems: [
+                            ExampleCardInfoItem(<CalculateIcon />, "Mathematical Computations", "Complex algorithms, statistical analysis, matrix operations"),
+                            ExampleCardInfoItem(<DataUsageIcon />, "Data Processing", "Large dataset transformations, aggregations, analytics"),
+                            ExampleCardInfoItem(<AssessmentIcon />, "Report Generation", "Complex reports, dashboards, business intelligence"),
+                            ExampleCardInfoItem(<PsychologyIcon />, "ML Predictions", "Machine learning inference, model predictions")
+                        ],
+                        rightTitle: "Smart Optimizations",
+                        rightIcon: <LightbulbIcon />,
+                        rightItems: [
+                            ExampleCardInfoItem(<TimerIcon />, "Intelligent TTL", "Adaptive expiration based on computation cost"),
+                            ExampleCardInfoItem(<MemoryIcon />, "Memory Optimization", "Efficient storage for large computation results"),
+                            ExampleCardInfoItem(<SyncIcon />, "Async Processing", "Non-blocking computation with future-based caching"),
+                            ExampleCardInfoItem(<InsightsIcon />, "Usage Analytics", "Monitor hit rates and computation savings")
+                        ],
+                        rightBgColor: "warning.50"
+                    }}
+                    footer={{
+                        chips: [
+                            { icon: <FlashOnIcon />, label: "Performance Critical", color: "primary" },
+                            { icon: <SmartToyIcon />, label: "AI/ML Ready", color: "secondary" },
+                            { icon: <EngineeringIcon />, label: "Scientific Computing", color: "success" }
+                        ],
+                        performanceText: "💡 Save up to 95% computation time"
+                    }}
+                />
+
+                <CodeTabs tabs={[
+                    {
+                        id: 'heavy-computation-cache',
+                        label: 'Heavy Computation Cache',
+                        language: 'java',
+                        code: COMPUTATION_SERVICE_EXAMPLE
+                    }
+                ]} />
+
+                {/* Footer */}
+                <Box sx={{ textAlign: 'center', mt: 8, pt: 4, borderTop: 1, borderColor: 'divider' }}>
+                    <Typography variant="body2" color="text.secondary">
+                        JCacheX Examples - Production-ready caching patterns for Java, Kotlin, and Spring Boot
+                    </Typography>
+                    <Box sx={{ mt: 2 }}>
+                        <Button
+                            startIcon={<GitHubIcon />}
+                            href="https://github.com/dhruv1110/JCacheX"
+                            target="_blank"
+                            variant="outlined"
+                            sx={{ mr: 2 }}
+                        >
+                            GitHub
+                        </Button>
+                        <Button
+                            startIcon={<LinkIcon />}
+                            href="/docs"
+                            variant="outlined"
+                        >
+                            Documentation
+                        </Button>
+                    </Box>
+                </Box>
+            </Container>
+        </Layout>
     );
 };
 
-export default ExamplesPage;
+export default Examples;
