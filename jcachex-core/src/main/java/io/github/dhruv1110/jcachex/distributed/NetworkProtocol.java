@@ -28,7 +28,7 @@ import java.util.concurrent.CompletableFuture;
  * </ul>
  *
  * <h3>Usage Examples:</h3>
- * 
+ *
  * <pre>{@code
  * // TCP with Java serialization
  * NetworkProtocol protocol = NetworkProtocol.tcp()
@@ -172,6 +172,8 @@ public interface NetworkProtocol {
      * Base class for cache operations.
      */
     abstract class CacheOperation implements Serializable {
+        private static final long serialVersionUID = 2001L;
+
         private final String operationId;
         private final Instant timestamp;
         private final String sourceNodeId;
@@ -208,8 +210,10 @@ public interface NetworkProtocol {
      * Put operation for distributed cache.
      */
     class PutOperation extends CacheOperation {
-        private final Object key;
-        private final Object value;
+        private static final long serialVersionUID = 2002L;
+
+        private final transient Object key;
+        private final transient Object value;
         private final DistributedCache.ConsistencyLevel consistencyLevel;
 
         public PutOperation(String operationId, String sourceNodeId, Object key, Object value,
@@ -242,7 +246,9 @@ public interface NetworkProtocol {
      * Get operation for distributed cache.
      */
     class GetOperation extends CacheOperation {
-        private final Object key;
+        private static final long serialVersionUID = 2003L;
+
+        private final transient Object key;
         private final DistributedCache.ConsistencyLevel consistencyLevel;
 
         public GetOperation(String operationId, String sourceNodeId, Object key,
@@ -270,7 +276,9 @@ public interface NetworkProtocol {
      * Invalidate operation for distributed cache.
      */
     class InvalidateOperation extends CacheOperation {
-        private final Collection<Object> keys;
+        private static final long serialVersionUID = 2004L;
+
+        private final transient Collection<Object> keys;
 
         public InvalidateOperation(String operationId, String sourceNodeId, Collection<Object> keys) {
             super(operationId, sourceNodeId);
@@ -291,9 +299,11 @@ public interface NetworkProtocol {
      * Response to a cache operation.
      */
     class OperationResponse implements Serializable {
+        private static final long serialVersionUID = 2005L;
+
         private final String operationId;
         private final boolean success;
-        private final Object result;
+        private final transient Object result;
         private final String errorMessage;
         private final Instant timestamp;
 

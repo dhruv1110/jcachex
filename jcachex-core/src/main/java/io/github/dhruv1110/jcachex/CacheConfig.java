@@ -698,7 +698,16 @@ public class CacheConfig<K, V> {
          * @throws IllegalArgumentException if any configuration is invalid
          */
         public CacheConfig<K, V> build() {
-            // Enhanced validation with proper exception types
+            validateConfiguration();
+            checkConflictingSettings();
+            setDefaults();
+            return new CacheConfig<>(this);
+        }
+
+        /**
+         * Validates the basic configuration parameters.
+         */
+        private void validateConfiguration() {
             if (maximumSize != null && maximumSize < 1) {
                 throw CacheConfigurationException.invalidMaximumSize(maximumSize);
             }
@@ -709,8 +718,12 @@ public class CacheConfig<K, V> {
                 throw new CacheConfigurationException("Expire after write duration must be non-negative",
                         "INVALID_EXPIRATION");
             }
+        }
 
-            // Check for conflicting configurations
+        /**
+         * Checks for conflicting configuration settings.
+         */
+        private void checkConflictingSettings() {
             if (maximumWeight != null && weigher == null) {
                 throw CacheConfigurationException.missingWeigher();
             }
@@ -726,14 +739,16 @@ public class CacheConfig<K, V> {
             if (loader != null && asyncLoader != null) {
                 throw CacheConfigurationException.conflictingSettings("loader", "asyncLoader");
             }
+        }
 
-            // Set default eviction strategy to TinyWindowLFU if none specified
+        /**
+         * Sets default values for configuration options that weren't explicitly set.
+         */
+        private void setDefaults() {
             if (evictionStrategy == null) {
                 long cacheSize = maximumSize != null ? maximumSize : 1000L;
                 evictionStrategy = new WindowTinyLFUEvictionStrategy<>(cacheSize);
             }
-
-            return new CacheConfig<>(this);
         }
     }
 }

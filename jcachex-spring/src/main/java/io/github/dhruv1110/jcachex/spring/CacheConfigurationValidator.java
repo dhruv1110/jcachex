@@ -59,6 +59,10 @@ public class CacheConfigurationValidator {
     private static final long MIN_SECONDS = 1;
     private static final long MAX_SECONDS = Long.MAX_VALUE;
 
+    // String constants for message formatting
+    private static final String COMPOSITE_STRATEGY = "COMPOSITE";
+    private static final String CACHE_PREFIX = "Cache '";
+
     /**
      * Validates the entire JCacheX configuration.
      *
@@ -118,65 +122,81 @@ public class CacheConfigurationValidator {
             return errors; // Null config is acceptable (uses defaults)
         }
 
-        String prefix = "Cache '" + cacheName + "': ";
+        // Validate different aspects of the configuration
+        errors.addAll(validateSizeSettings(cacheName, config));
+        errors.addAll(validateTimeSettings(cacheName, config));
+        errors.addAll(validateEvictionStrategy(cacheName, config));
+        errors.addAll(validateEvictionCompatibility(cacheName, config));
+        errors.addAll(validateCompositeStrategies(cacheName, config));
+        errors.addAll(validateConditionalConfigurations(cacheName, config));
 
-        // Validate size settings
+        return errors;
+    }
+
+    /**
+     * Validates size-related settings.
+     */
+    private List<String> validateSizeSettings(String cacheName, JCacheXProperties.CacheConfig config) {
+        List<String> errors = new ArrayList<>();
+        String prefix = CACHE_PREFIX + cacheName + "': ";
+
         if (config.getMaximumSize() != null) {
-            if (!"default".equals(cacheName)) {
-                if (config.getMaximumSize() < MIN_SIZE) {
-                    errors.add("Cache '" + cacheName + "': Maximum size must be positive");
-                }
-                if (config.getMaximumSize() > MAX_SIZE) {
-                    errors.add(prefix + "maximumSize must not exceed " + MAX_SIZE);
-                }
-            } else {
-                if (config.getMaximumSize() < MIN_SIZE) {
-                    errors.add("Maximum size must be positive");
-                }
-                if (config.getMaximumSize() > MAX_SIZE) {
-                    errors.add(prefix + "maximumSize must not exceed " + MAX_SIZE);
-                }
-            }
+            errors.addAll(validateLongRange(config.getMaximumSize(), MIN_SIZE, MAX_SIZE,
+                    "default".equals(cacheName) ? "Maximum size must be positive"
+                            : prefix + "Maximum size must be positive",
+                    prefix + "maximumSize must not exceed " + MAX_SIZE));
         }
 
         if (config.getMaximumWeight() != null) {
-            if (config.getMaximumWeight() < MIN_SIZE) {
-                errors.add(prefix + "maximumWeight must be positive");
-            }
-            if (config.getMaximumWeight() > MAX_SIZE) {
-                errors.add(prefix + "maximumWeight must not exceed " + MAX_SIZE);
-            }
+            errors.addAll(validateLongRange(config.getMaximumWeight(), MIN_SIZE, MAX_SIZE,
+                    prefix + "maximumWeight must be positive",
+                    prefix + "maximumWeight must not exceed " + MAX_SIZE));
         }
 
-        // Validate time settings
+        return errors;
+    }
+
+    /**
+     * Validates time-related settings.
+     */
+    private List<String> validateTimeSettings(String cacheName, JCacheXProperties.CacheConfig config) {
+        List<String> errors = new ArrayList<>();
+        String prefix = CACHE_PREFIX + cacheName + "': ";
+
         if (config.getExpireAfterSeconds() != null) {
-            if (config.getExpireAfterSeconds() < MIN_SECONDS) {
-                errors.add("Expiration time must be positive");
-            }
-            if (config.getExpireAfterSeconds() > MAX_SECONDS) {
-                errors.add(prefix + "expireAfterSeconds must not exceed " + MAX_SECONDS);
-            }
+            errors.addAll(validateLongRange(config.getExpireAfterSeconds(), MIN_SECONDS, MAX_SECONDS,
+                    "Expiration time must be positive",
+                    prefix + "expireAfterSeconds must not exceed " + MAX_SECONDS));
         }
 
         if (config.getExpireAfterAccessSeconds() != null) {
-            if (config.getExpireAfterAccessSeconds() < MIN_SECONDS) {
-                errors.add("Expire after access time must be positive");
-            }
-            if (config.getExpireAfterAccessSeconds() > MAX_SECONDS) {
-                errors.add(prefix + "expireAfterAccessSeconds must not exceed " + MAX_SECONDS);
-            }
+            errors.addAll(validateLongRange(config.getExpireAfterAccessSeconds(), MIN_SECONDS, MAX_SECONDS,
+                    "Expire after access time must be positive",
+                    prefix + "expireAfterAccessSeconds must not exceed " + MAX_SECONDS));
         }
 
         if (config.getRefreshAfterWriteSeconds() != null) {
-            if (config.getRefreshAfterWriteSeconds() < MIN_SECONDS) {
-                errors.add(prefix + "refreshAfterWriteSeconds must be positive");
-            }
-            if (config.getRefreshAfterWriteSeconds() > MAX_SECONDS) {
-                errors.add(prefix + "refreshAfterWriteSeconds must not exceed " + MAX_SECONDS);
-            }
+            errors.addAll(validateLongRange(config.getRefreshAfterWriteSeconds(), MIN_SECONDS, MAX_SECONDS,
+                    prefix + "refreshAfterWriteSeconds must be positive",
+                    prefix + "refreshAfterWriteSeconds must not exceed " + MAX_SECONDS));
         }
 
-        // Validate eviction strategy
+        if (config.getIdleTimeThresholdSeconds() != null) {
+            errors.addAll(validateLongRange(config.getIdleTimeThresholdSeconds(), MIN_SECONDS, MAX_SECONDS,
+                    prefix + "idleTimeThresholdSeconds must be positive",
+                    prefix + "idleTimeThresholdSeconds must not exceed " + MAX_SECONDS));
+        }
+
+        return errors;
+    }
+
+    /**
+     * Validates eviction strategy settings.
+     */
+    private List<String> validateEvictionStrategy(String cacheName, JCacheXProperties.CacheConfig config) {
+        List<String> errors = new ArrayList<>();
+        String prefix = CACHE_PREFIX + cacheName + "': ";
+
         if (StringUtils.hasText(config.getEvictionStrategy())) {
             String strategy = config.getEvictionStrategy().toUpperCase();
             if (!VALID_EVICTION_STRATEGIES.contains(strategy)) {
@@ -185,26 +205,61 @@ public class CacheConfigurationValidator {
             }
         }
 
-        // Validate idle time settings
-        if (config.getIdleTimeThresholdSeconds() != null) {
-            if (config.getIdleTimeThresholdSeconds() < MIN_SECONDS) {
-                errors.add(prefix + "idleTimeThresholdSeconds must be positive");
+        return errors;
+    }
+
+    /**
+     * Validates compatibility between eviction strategies and related settings.
+     */
+    private List<String> validateEvictionCompatibility(String cacheName, JCacheXProperties.CacheConfig config) {
+        List<String> errors = new ArrayList<>();
+        String prefix = CACHE_PREFIX + cacheName + "': ";
+
+        // Validate idle time settings compatibility
+        if (config.getIdleTimeThresholdSeconds() != null && config.getEvictionStrategy() != null) {
+            String strategy = config.getEvictionStrategy().toUpperCase();
+            if (!"IDLE_TIME".equals(strategy) && !COMPOSITE_STRATEGY.equals(strategy)) {
+                errors.add(prefix + "idleTimeThresholdSeconds can only be used with IDLE_TIME or " + COMPOSITE_STRATEGY
+                        + " eviction strategies");
             }
-            if (config.getEvictionStrategy() != null) {
-                String strategy = config.getEvictionStrategy().toUpperCase();
-                if (!"IDLE_TIME".equals(strategy) && !"COMPOSITE".equals(strategy)) {
-                    errors.add(prefix
-                            + "idleTimeThresholdSeconds can only be used with IDLE_TIME or COMPOSITE eviction strategies");
+        }
+
+        // Validate weight-based settings compatibility
+        if (config.getMaximumWeight() != null && config.getEvictionStrategy() != null) {
+            String strategy = config.getEvictionStrategy().toUpperCase();
+            if (!"WEIGHT".equals(strategy) && !COMPOSITE_STRATEGY.equals(strategy)) {
+                errors.add(prefix + "maximumWeight can only be used with WEIGHT or " + COMPOSITE_STRATEGY
+                        + " eviction strategies");
+            }
+        }
+
+        return errors;
+    }
+
+    /**
+     * Validates composite strategies.
+     */
+    private List<String> validateCompositeStrategies(String cacheName, JCacheXProperties.CacheConfig config) {
+        List<String> errors = new ArrayList<>();
+        String prefix = CACHE_PREFIX + cacheName + "': ";
+
+        if (config.getCompositeStrategies() != null) {
+            for (String strategy : config.getCompositeStrategies()) {
+                if (!VALID_EVICTION_STRATEGIES.contains(strategy.toUpperCase())) {
+                    errors.add(prefix + "Invalid composite strategy '" + strategy + "'");
                 }
             }
         }
 
-        // Validate weight-based settings
-        if (config.getMaximumWeight() != null &&
-                !"WEIGHT".equals(config.getEvictionStrategy()) &&
-                !"COMPOSITE".equals(config.getEvictionStrategy())) {
-            errors.add(prefix + "maximumWeight can only be used with WEIGHT or COMPOSITE eviction strategies");
-        }
+        return errors;
+    }
+
+    /**
+     * Validates conditional configurations (warming, distributed, network,
+     * resilience).
+     */
+    private List<String> validateConditionalConfigurations(String cacheName, JCacheXProperties.CacheConfig config) {
+        List<String> errors = new ArrayList<>();
 
         // Validate warming configuration
         if (config.getEnableWarming() != null && config.getEnableWarming()) {
@@ -227,20 +282,23 @@ public class CacheConfigurationValidator {
             errors.addAll(validateResilienceConfig(cacheName, config.getResilience()));
         }
 
-        // Validate composite strategies
-        if (config.getCompositeStrategies() != null) {
-            for (String strategy : config.getCompositeStrategies()) {
-                if (!VALID_EVICTION_STRATEGIES.contains(strategy.toUpperCase())) {
-                    errors.add(prefix + "Invalid composite strategy '" + strategy + "'");
-                }
+        return errors;
+    }
+
+    /**
+     * Helper method to validate long values within a range.
+     */
+    private List<String> validateLongRange(Long value, long min, long max, String minErrorMessage,
+            String maxErrorMessage) {
+        List<String> errors = new ArrayList<>();
+        if (value != null) {
+            if (value < min) {
+                errors.add(minErrorMessage);
+            }
+            if (value > max) {
+                errors.add(maxErrorMessage);
             }
         }
-
-        // Validate nested configurations
-        errors.addAll(validateNetworkConfig(cacheName, config.getNetwork()));
-        errors.addAll(validateDistributedConfig(cacheName, config.getDistributed()));
-        errors.addAll(validateResilienceConfig(cacheName, config.getResilience()));
-
         return errors;
     }
 
@@ -249,7 +307,7 @@ public class CacheConfigurationValidator {
      */
     private List<String> validateWarmingConfig(String cacheName, JCacheXProperties.CacheConfig config) {
         List<String> errors = new ArrayList<>();
-        String prefix = "Cache '" + cacheName + "' warming: ";
+        String prefix = CACHE_PREFIX + cacheName + "' warming: ";
 
         if (config.getWarmingBatchSize() != null && config.getWarmingBatchSize() < 1) {
             errors.add(prefix + "warmingBatchSize must be at least 1");
@@ -270,7 +328,7 @@ public class CacheConfigurationValidator {
         if (config == null) {
             return errors;
         }
-        String prefix = "Cache '" + cacheName + "' distributed: ";
+        String prefix = CACHE_PREFIX + cacheName + "' distributed: ";
 
         if (config.getReplicationFactor() != null && config.getReplicationFactor() < 1) {
             errors.add("Replication factor must be positive");
@@ -302,7 +360,7 @@ public class CacheConfigurationValidator {
         if (config == null) {
             return errors;
         }
-        String prefix = "Cache '" + cacheName + "' network: ";
+        String prefix = CACHE_PREFIX + cacheName + "' network: ";
 
         // Protocol
         if (config.getProtocol() != null && !VALID_NETWORK_PROTOCOLS.contains(config.getProtocol().toUpperCase())) {
@@ -338,7 +396,7 @@ public class CacheConfigurationValidator {
         if (config == null) {
             return errors;
         }
-        String prefix = "Cache '" + cacheName + "' resilience: ";
+        String prefix = CACHE_PREFIX + cacheName + "' resilience: ";
 
         if (config.getCircuitBreaker() != null) {
             JCacheXProperties.ResilienceConfig.CircuitBreakerConfig cb = config.getCircuitBreaker();
@@ -446,7 +504,7 @@ public class CacheConfigurationValidator {
             return recommendations;
         }
 
-        String prefix = "Cache '" + cacheName + "': ";
+        String prefix = CACHE_PREFIX + cacheName + "': ";
 
         // Recommend statistics for production
         if (config.getEnableStatistics() == null || !config.getEnableStatistics()) {

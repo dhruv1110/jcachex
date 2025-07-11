@@ -78,6 +78,8 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class JCacheXCacheFactory {
 
+    private static final String NULL_CACHE_NAME = "<null>";
+
     private final JCacheXProperties properties;
     private final EvictionStrategyFactory evictionStrategyFactory;
     private final ConcurrentMap<String, Cache<?, ?>> cacheRegistry = new ConcurrentHashMap<>();
@@ -109,7 +111,7 @@ public class JCacheXCacheFactory {
      */
     @SuppressWarnings("unchecked")
     public <K, V> Cache<K, V> createCache(String cacheName) {
-        String key = cacheName == null ? "<null>" : cacheName;
+        String key = cacheName == null ? NULL_CACHE_NAME : cacheName;
         return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, this::createCacheInternal);
     }
 
@@ -126,7 +128,7 @@ public class JCacheXCacheFactory {
      */
     @SuppressWarnings("unchecked")
     public <K, V> Cache<K, V> createCache(String cacheName, Class<K> keyType, Class<V> valueType) {
-        String key = cacheName == null ? "<null>" : cacheName;
+        String key = cacheName == null ? NULL_CACHE_NAME : cacheName;
         return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, name -> {
             CacheConfig.Builder<K, V> builder = createBaseConfiguration(name);
             CacheConfig<K, V> config = builder.build();
@@ -146,7 +148,7 @@ public class JCacheXCacheFactory {
      */
     @SuppressWarnings("unchecked")
     public <K, V> Cache<K, V> createCache(String cacheName, CacheConfigurator<K, V> configurator) {
-        String key = cacheName == null ? "<null>" : cacheName;
+        String key = cacheName == null ? NULL_CACHE_NAME : cacheName;
         return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, name -> {
             CacheConfig.Builder<K, V> builder = createBaseConfiguration(name);
             configurator.configure(builder);
@@ -170,7 +172,7 @@ public class JCacheXCacheFactory {
     @SuppressWarnings("unchecked")
     public <K, V> Cache<K, V> createCache(String cacheName, Class<K> keyType, Class<V> valueType,
             CacheConfigurator<K, V> configurator) {
-        String key = cacheName == null ? "<null>" : cacheName;
+        String key = cacheName == null ? NULL_CACHE_NAME : cacheName;
         return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, name -> {
             CacheConfig.Builder<K, V> builder = createBaseConfiguration(name);
             configurator.configure(builder);
