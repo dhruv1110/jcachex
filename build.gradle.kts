@@ -31,8 +31,10 @@ tasks.register("testAll") {
 
 tasks.register("detektAll") {
     group = "verification"
-    description = "Runs detekt for all subprojects"
-    dependsOn(subprojects.map { "${it.path}:detekt" })
+    description = "Runs detekt for core modules (excludes examples and benchmarks)"
+    dependsOn(subprojects.filter {
+        !it.path.startsWith(":example") && it.path != ":benchmarks"
+    }.map { "${it.path}:detekt" })
 }
 
 // Make root-level test and check tasks depend on all subprojects
@@ -63,8 +65,11 @@ subprojects {
 
     apply(plugin = "java")
     apply(plugin = "jacoco")
-    apply(plugin = "org.jlleitschuh.gradle.ktlint")
-    apply(plugin = "io.gitlab.arturbosch.detekt")
+    // Only apply ktlint and detekt to core modules, not examples or benchmarks
+    if (!project.path.startsWith(":example") && project.path != ":benchmarks") {
+        apply(plugin = "org.jlleitschuh.gradle.ktlint")
+        apply(plugin = "io.gitlab.arturbosch.detekt")
+    }
     apply(plugin = "maven-publish")
     apply(plugin = "signing")
 
@@ -163,10 +168,30 @@ subprojects {
             html.required.set(true)
             csv.required.set(false)
         }
+        // Exclude example packages from coverage analysis
+        executionData.setFrom(fileTree(layout.buildDirectory.dir("jacoco")).include("**/*.exec"))
+        classDirectories.setFrom(files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/io/github/dhruv1110/jcachex/example/**",
+                    "**/example/**"
+                )
+            }
+        }))
         finalizedBy(tasks.jacocoTestCoverageVerification)
     }
 
     tasks.jacocoTestCoverageVerification {
+        // Exclude example packages from coverage requirements
+        executionData.setFrom(fileTree(layout.buildDirectory.dir("jacoco")).include("**/*.exec"))
+        classDirectories.setFrom(files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/io/github/dhruv1110/jcachex/example/**",
+                    "**/example/**"
+                )
+            }
+        }))
         violationRules {
             rule {
                 limit {
@@ -181,7 +206,9 @@ subprojects {
     }
 
     afterEvaluate {
-        if (plugins.hasPlugin("io.gitlab.arturbosch.detekt")) {
+        // Only configure detekt for core modules, not examples or benchmarks
+        if (plugins.hasPlugin("io.gitlab.arturbosch.detekt") &&
+            !project.path.startsWith(":example") && project.path != ":benchmarks") {
             configure<io.gitlab.arturbosch.detekt.extensions.DetektExtension> {
                 buildUponDefaultConfig = true
                 config.setFrom(files("${rootProject.projectDir}/config/detekt/detekt.yml"))
@@ -190,8 +217,6 @@ subprojects {
 
             tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
                 jvmTarget = "1.8"
-                exclude("**/io/github/dhruv1110/jcachex/example/**") // Exclude example modules
-                exclude("**/example/**") // Additional exclude for example projects
                 reports {
                     html.required.set(true)
                     xml.required.set(true)

@@ -76,7 +76,8 @@ public final class StatisticsProvider {
      * @return the miss ratio between 0.0 and 1.0
      */
     public static double calculateMissRatio(long hitCount, long missCount) {
-        return 1.0 - calculateHitRatio(hitCount, missCount);
+        long total = hitCount + missCount;
+        return total > 0 ? (double) missCount / total : 0.0;
     }
 
     /**

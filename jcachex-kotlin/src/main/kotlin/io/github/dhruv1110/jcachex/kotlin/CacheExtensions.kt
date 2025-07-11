@@ -6,18 +6,18 @@ import io.github.dhruv1110.jcachex.Cache
 import io.github.dhruv1110.jcachex.CacheConfig
 import io.github.dhruv1110.jcachex.CacheStats
 import io.github.dhruv1110.jcachex.FrequencySketchType
-import io.github.dhruv1110.jcachex.impl.DefaultCache
-import io.github.dhruv1110.jcachex.impl.OptimizedCache
-import io.github.dhruv1110.jcachex.impl.JITOptimizedCache
 import io.github.dhruv1110.jcachex.impl.AllocationOptimizedCache
 import io.github.dhruv1110.jcachex.impl.CacheLocalityOptimizedCache
-import io.github.dhruv1110.jcachex.impl.ZeroCopyOptimizedCache
+import io.github.dhruv1110.jcachex.impl.DefaultCache
+import io.github.dhruv1110.jcachex.impl.HardwareOptimizedCache
+import io.github.dhruv1110.jcachex.impl.JITOptimizedCache
+import io.github.dhruv1110.jcachex.impl.JVMOptimizedCache
+import io.github.dhruv1110.jcachex.impl.MLOptimizedCache
+import io.github.dhruv1110.jcachex.impl.OptimizedCache
+import io.github.dhruv1110.jcachex.impl.ProfiledOptimizedCache
 import io.github.dhruv1110.jcachex.impl.ReadOnlyOptimizedCache
 import io.github.dhruv1110.jcachex.impl.WriteHeavyOptimizedCache
-import io.github.dhruv1110.jcachex.impl.JVMOptimizedCache
-import io.github.dhruv1110.jcachex.impl.HardwareOptimizedCache
-import io.github.dhruv1110.jcachex.impl.MLOptimizedCache
-import io.github.dhruv1110.jcachex.impl.ProfiledOptimizedCache
+import io.github.dhruv1110.jcachex.impl.ZeroCopyOptimizedCache
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -842,9 +842,7 @@ class CacheConfigBuilder<K, V> {
 /**
  * Creates a default cache with the given configuration.
  */
-fun <K, V> createCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit
-): io.github.dhruv1110.jcachex.Cache<K, V> {
+fun <K, V> createCache(configure: CacheConfigBuilder<K, V>.() -> Unit): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return DefaultCache(config)
 }
@@ -853,7 +851,7 @@ fun <K, V> createCache(
  * Creates an optimized cache with advanced eviction strategies.
  */
 fun <K, V> createOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit
+    configure: CacheConfigBuilder<K, V>.() -> Unit,
 ): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return OptimizedCache(config)
@@ -863,7 +861,7 @@ fun <K, V> createOptimizedCache(
  * Creates a JIT-optimized cache for high-performance scenarios.
  */
 fun <K, V> createJITOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit
+    configure: CacheConfigBuilder<K, V>.() -> Unit,
 ): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return JITOptimizedCache(config)
@@ -873,7 +871,7 @@ fun <K, V> createJITOptimizedCache(
  * Creates an allocation-optimized cache for memory-sensitive applications.
  */
 fun <K, V> createAllocationOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit
+    configure: CacheConfigBuilder<K, V>.() -> Unit,
 ): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return AllocationOptimizedCache(config)
@@ -883,7 +881,7 @@ fun <K, V> createAllocationOptimizedCache(
  * Creates a locality-optimized cache for better CPU cache performance.
  */
 fun <K, V> createLocalityOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit
+    configure: CacheConfigBuilder<K, V>.() -> Unit,
 ): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return CacheLocalityOptimizedCache(config)
@@ -893,7 +891,7 @@ fun <K, V> createLocalityOptimizedCache(
  * Creates a zero-copy optimized cache for minimal allocation overhead.
  */
 fun <K, V> createZeroCopyOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit
+    configure: CacheConfigBuilder<K, V>.() -> Unit,
 ): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return ZeroCopyOptimizedCache(config)
@@ -903,7 +901,7 @@ fun <K, V> createZeroCopyOptimizedCache(
  * Creates a read-only optimized cache for read-heavy workloads.
  */
 fun <K, V> createReadOnlyOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit
+    configure: CacheConfigBuilder<K, V>.() -> Unit,
 ): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return ReadOnlyOptimizedCache(config)
@@ -913,7 +911,7 @@ fun <K, V> createReadOnlyOptimizedCache(
  * Creates a write-heavy optimized cache for write-intensive workloads.
  */
 fun <K, V> createWriteHeavyOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit
+    configure: CacheConfigBuilder<K, V>.() -> Unit,
 ): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return WriteHeavyOptimizedCache(config)
@@ -923,7 +921,7 @@ fun <K, V> createWriteHeavyOptimizedCache(
  * Creates a JVM-optimized cache with GC-aware optimizations.
  */
 fun <K, V> createJVMOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit
+    configure: CacheConfigBuilder<K, V>.() -> Unit,
 ): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return JVMOptimizedCache(config)
@@ -933,7 +931,7 @@ fun <K, V> createJVMOptimizedCache(
  * Creates a hardware-optimized cache for specific hardware configurations.
  */
 fun <K, V> createHardwareOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit
+    configure: CacheConfigBuilder<K, V>.() -> Unit,
 ): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return HardwareOptimizedCache(config)
@@ -943,7 +941,7 @@ fun <K, V> createHardwareOptimizedCache(
  * Creates an ML-optimized cache with machine learning-based eviction.
  */
 fun <K, V> createMLOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit
+    configure: CacheConfigBuilder<K, V>.() -> Unit,
 ): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return MLOptimizedCache(config)
@@ -953,7 +951,7 @@ fun <K, V> createMLOptimizedCache(
  * Creates a profiled optimized cache for development and testing.
  */
 fun <K, V> createProfiledOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit
+    configure: CacheConfigBuilder<K, V>.() -> Unit,
 ): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return ProfiledOptimizedCache(config)
@@ -963,21 +961,22 @@ fun <K, V> createProfiledOptimizedCache(
  * Extension function to get cache type information.
  */
 val <K, V> Cache<K, V>.cacheType: String
-    get() = when (this) {
-        is DefaultCache -> "Default"
-        is OptimizedCache -> "Optimized"
-        is JITOptimizedCache -> "JIT-Optimized"
-        is AllocationOptimizedCache -> "Allocation-Optimized"
-        is CacheLocalityOptimizedCache -> "Locality-Optimized"
-        is ZeroCopyOptimizedCache -> "Zero-Copy-Optimized"
-        is ReadOnlyOptimizedCache -> "Read-Only-Optimized"
-        is WriteHeavyOptimizedCache -> "Write-Heavy-Optimized"
-        is JVMOptimizedCache -> "JVM-Optimized"
-        is HardwareOptimizedCache -> "Hardware-Optimized"
-        is MLOptimizedCache -> "ML-Optimized"
-        is ProfiledOptimizedCache -> "Profiled-Optimized"
-        else -> "Unknown"
-    }
+    get() =
+        when (this) {
+            is DefaultCache -> "Default"
+            is OptimizedCache -> "Optimized"
+            is JITOptimizedCache -> "JIT-Optimized"
+            is AllocationOptimizedCache -> "Allocation-Optimized"
+            is CacheLocalityOptimizedCache -> "Locality-Optimized"
+            is ZeroCopyOptimizedCache -> "Zero-Copy-Optimized"
+            is ReadOnlyOptimizedCache -> "Read-Only-Optimized"
+            is WriteHeavyOptimizedCache -> "Write-Heavy-Optimized"
+            is JVMOptimizedCache -> "JVM-Optimized"
+            is HardwareOptimizedCache -> "Hardware-Optimized"
+            is MLOptimizedCache -> "ML-Optimized"
+            is ProfiledOptimizedCache -> "Profiled-Optimized"
+            else -> "Unknown"
+        }
 
 /**
  * Performs batch operations on the cache.
