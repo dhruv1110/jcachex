@@ -48,7 +48,8 @@ import java.util.Set;
 public class CacheConfigurationValidator {
 
     private static final Set<String> VALID_EVICTION_STRATEGIES = new HashSet<>(Arrays.asList(
-            "LRU", "LFU", "FIFO", "FILO", "IDLE_TIME", "WEIGHT", "COMPOSITE"));
+            "LRU", "LFU", "FIFO", "FILO", "IDLE_TIME", "WEIGHT", "COMPOSITE",
+            "ENHANCED_LRU", "ENHANCED_LFU", "TINY_WINDOW_LFU"));
 
     private static final Set<String> VALID_NETWORK_PROTOCOLS = new HashSet<>(Arrays.asList(
             "TCP", "UDP", "HTTP", "HTTPS"));

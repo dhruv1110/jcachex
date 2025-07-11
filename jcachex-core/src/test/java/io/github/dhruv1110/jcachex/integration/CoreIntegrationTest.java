@@ -3,6 +3,7 @@ package io.github.dhruv1110.jcachex.integration;
 import io.github.dhruv1110.jcachex.*;
 import io.github.dhruv1110.jcachex.eviction.*;
 import io.github.dhruv1110.jcachex.exceptions.CacheConfigurationException;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;

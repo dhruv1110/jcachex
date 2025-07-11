@@ -2,6 +2,7 @@ package io.github.dhruv1110.jcachex.distributed;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheStats;
+import io.github.dhruv1110.jcachex.impl.DefaultDistributedCache;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -37,7 +38,7 @@ import java.util.concurrent.CompletableFuture;
  * </ul>
  *
  * <h3>Usage Examples:</h3>
- * 
+ *
  * <pre>{@code
  * // Basic distributed cache
  * DistributedCache<String, User> cache = DistributedCache.<String, User>builder()

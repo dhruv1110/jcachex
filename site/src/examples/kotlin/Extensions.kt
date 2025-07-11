@@ -12,12 +12,33 @@ data class User(
 
 class UserCacheService {
 
-    // DSL-style cache configuration
+    // DSL-style cache configuration (TinyWindowLFU is now default)
     private val userCache = cache<String, User> {
         maxSize = 1000
         expireAfterWrite = 2.hours
         expireAfterAccess = 30.minutes
-        evictionStrategy = EvictionStrategy.LRU
+        frequencySketchType = FrequencySketchType.BASIC
+        recordStats = true
+    }
+
+    // Alternative: Use specialized cache types for specific workloads
+    private val readHeavyCache = createReadOnlyOptimizedCache<String, User> {
+        maxSize = 5000
+        expireAfterWrite = 4.hours
+        recordStats = true
+    }
+
+    private val writeHeavyCache = createWriteHeavyOptimizedCache<String, UserSession> {
+        maxSize = 10000
+        expireAfterAccess = 30.minutes
+        recordStats = true
+    }
+
+    private val performanceCache = createJITOptimizedCache<String, User> {
+        maxSize = 1000
+        expireAfterWrite = 1.hours
+        evictionStrategy = EvictionStrategy.ENHANCED_LRU
+        frequencySketchType = FrequencySketchType.OPTIMIZED
         recordStats = true
     }
 

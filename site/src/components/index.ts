@@ -14,6 +14,7 @@ export { default as Examples } from './Examples';
 export { default as SpringGuide } from './SpringGuide';
 export { default as FAQ } from './FAQ';
 export { default as DocumentationPage } from './DocumentationPage';
+export { default as PerformanceBenchmarks } from './PerformanceBenchmarks';
 
 // Common components
 export * from './common';

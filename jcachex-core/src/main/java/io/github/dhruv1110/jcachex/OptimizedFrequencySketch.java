@@ -91,6 +91,10 @@ public class OptimizedFrequencySketch<K> {
      * @param key the key to increment
      */
     public void increment(K key) {
+        if (key == null) {
+            return;
+        }
+
         // Sample-based operation counting to avoid overhead
         if (shouldSample()) {
             if (++operationCount > RESET_THRESHOLD) {
@@ -115,6 +119,10 @@ public class OptimizedFrequencySketch<K> {
      * @return the frequency estimate (0-15)
      */
     public int frequency(K key) {
+        if (key == null) {
+            return 0;
+        }
+
         // Get hash code once
         final int keyHash = key.hashCode();
 

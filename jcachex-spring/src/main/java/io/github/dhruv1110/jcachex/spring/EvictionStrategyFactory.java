@@ -1,5 +1,6 @@
 package io.github.dhruv1110.jcachex.spring;
 
+import io.github.dhruv1110.jcachex.FrequencySketchType;
 import io.github.dhruv1110.jcachex.eviction.*;
 
 import java.util.HashMap;
@@ -121,10 +122,33 @@ public class EvictionStrategyFactory {
                 return new LRUEvictionStrategy<>();
             }
         });
+        strategyProviders.put("ENHANCED_LRU", new StrategyProvider() {
+            @Override
+            public <K, V> EvictionStrategy<K, V> create(JCacheXProperties.CacheConfig config) {
+                FrequencySketchType sketchType = parseFrequencySketchType(config.getFrequencySketchType());
+                long capacity = config.getMaximumSize() != null ? config.getMaximumSize() : 1000L;
+                return new EnhancedLRUEvictionStrategy<>(sketchType, capacity);
+            }
+        });
         strategyProviders.put("LFU", new StrategyProvider() {
             @Override
             public <K, V> EvictionStrategy<K, V> create(JCacheXProperties.CacheConfig config) {
                 return new LFUEvictionStrategy<>();
+            }
+        });
+        strategyProviders.put("ENHANCED_LFU", new StrategyProvider() {
+            @Override
+            public <K, V> EvictionStrategy<K, V> create(JCacheXProperties.CacheConfig config) {
+                FrequencySketchType sketchType = parseFrequencySketchType(config.getFrequencySketchType());
+                long capacity = config.getMaximumSize() != null ? config.getMaximumSize() : 1000L;
+                return new EnhancedLFUEvictionStrategy<>(sketchType, capacity);
+            }
+        });
+        strategyProviders.put("TINY_WINDOW_LFU", new StrategyProvider() {
+            @Override
+            public <K, V> EvictionStrategy<K, V> create(JCacheXProperties.CacheConfig config) {
+                long capacity = config.getMaximumSize() != null ? config.getMaximumSize() : 1000L;
+                return new WindowTinyLFUEvictionStrategy<>(capacity);
             }
         });
         strategyProviders.put("FIFO", new StrategyProvider() {
@@ -190,6 +214,25 @@ public class EvictionStrategyFactory {
         }
 
         return new CompositeEvictionStrategy<>(strategies);
+    }
+
+    /**
+     * Parses frequency sketch type from string configuration.
+     *
+     * @param sketchTypeStr the frequency sketch type string
+     * @return the parsed FrequencySketchType
+     */
+    private FrequencySketchType parseFrequencySketchType(String sketchTypeStr) {
+        if (sketchTypeStr == null) {
+            return FrequencySketchType.BASIC;
+        }
+
+        try {
+            return FrequencySketchType.valueOf(sketchTypeStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // Default to BASIC if unknown type
+            return FrequencySketchType.BASIC;
+        }
     }
 
     /**

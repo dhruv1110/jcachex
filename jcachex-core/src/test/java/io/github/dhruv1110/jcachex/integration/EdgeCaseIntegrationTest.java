@@ -2,6 +2,7 @@ package io.github.dhruv1110.jcachex.integration;
 
 import io.github.dhruv1110.jcachex.*;
 import io.github.dhruv1110.jcachex.eviction.*;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -254,6 +255,7 @@ class EdgeCaseIntegrationTest {
     void minimumSizeLimitTest() {
         Cache<String, String> cache = createCache(CacheConfig.<String, String>builder()
                 .maximumSize(1L)
+                .evictionStrategy(new io.github.dhruv1110.jcachex.eviction.FIFOEvictionStrategy<>())
                 .build());
 
         cache.put("key1", "value1");

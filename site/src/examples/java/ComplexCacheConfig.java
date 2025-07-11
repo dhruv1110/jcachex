@@ -57,7 +57,7 @@ public class ComplexCacheConfigExample {
                 .addStrategy(new IdleTimeEvictionStrategy<>(Duration.ofHours(2)))
                 .build();
 
-        // Advanced cache configuration
+        // Advanced cache configuration with new CacheBuilder
         CacheConfig<String, Product> config = CacheConfig.<String, Product>builder()
                 .maximumSize(10000L)
                 .maximumWeight(1024 * 1024) // 1MB max weight
@@ -70,7 +70,20 @@ public class ComplexCacheConfigExample {
                 .cleanupExecutor(executor)
                 .build();
 
-        Cache<String, Product> productCache = new DefaultCache<>(config);
+        // Use CacheBuilder with specific cache type for the workload
+        Cache<String, Product> productCache = CacheBuilder.newBuilder()
+                .cacheType(CacheType.JIT_OPTIMIZED) // Balanced performance
+                .config(config)
+                .build();
+
+        // Alternative: Use convenience factory for read-heavy workloads
+        Cache<String, Product> readOptimizedCache = CacheBuilder.forReadHeavyWorkload()
+                .maximumSize(5000L)
+                .expireAfterWrite(Duration.ofHours(4))
+                .weigher(new ProductWeigher())
+                .eventListener(new ProductionCacheListener<>())
+                .recordStats(true)
+                .build();
 
         // Cache warming with bulk operations
         warmupCache(productCache);

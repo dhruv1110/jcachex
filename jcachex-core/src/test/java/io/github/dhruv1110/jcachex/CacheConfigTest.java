@@ -162,7 +162,9 @@ class CacheConfigTest {
             assertNull(config.getExpireAfterWrite());
             assertNull(config.getExpireAfterAccess());
             assertNull(config.getRefreshAfterWrite());
-            assertNull(config.getEvictionStrategy());
+            assertNotNull(config.getEvictionStrategy()); // Default eviction strategy is now set
+            assertTrue(config
+                    .getEvictionStrategy() instanceof io.github.dhruv1110.jcachex.eviction.WindowTinyLFUEvictionStrategy);
             assertNull(config.getLoader());
             assertNull(config.getAsyncLoader());
             assertNull(config.getDirectory());
@@ -514,7 +516,9 @@ class CacheConfigTest {
             assertNull(config.getExpireAfterWrite());
             assertNull(config.getExpireAfterAccess());
             assertNull(config.getRefreshAfterWrite());
-            assertNull(config.getEvictionStrategy());
+            assertNotNull(config.getEvictionStrategy()); // Default eviction strategy is now applied
+            assertTrue(config
+                    .getEvictionStrategy() instanceof io.github.dhruv1110.jcachex.eviction.WindowTinyLFUEvictionStrategy);
             assertNull(config.getLoader());
             assertNull(config.getAsyncLoader());
             assertNull(config.getDirectory());

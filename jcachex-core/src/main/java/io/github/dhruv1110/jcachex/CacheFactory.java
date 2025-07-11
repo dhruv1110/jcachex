@@ -1,6 +1,7 @@
 package io.github.dhruv1110.jcachex;
 
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import io.github.dhruv1110.jcachex.observability.MetricsRegistry;
 import io.github.dhruv1110.jcachex.resilience.CircuitBreaker;
 import io.github.dhruv1110.jcachex.warming.CacheWarmingStrategy;
