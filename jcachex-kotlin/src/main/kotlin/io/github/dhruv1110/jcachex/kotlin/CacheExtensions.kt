@@ -22,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.future.await
 import kotlinx.coroutines.withContext
 
 /**
@@ -249,7 +250,7 @@ fun <K, V> Cache<K, V>.valuesList(): List<V> = values().toList()
 fun <K, V> Cache<K, V>.getDeferred(
     key: K,
     scope: CoroutineScope,
-): Deferred<V?> = scope.async { get(key) }
+): Deferred<V?> = scope.async { getAsync(key).await() }
 
 /**
  * Asynchronously puts a value for the given key as a Deferred.

@@ -2,12 +2,15 @@ package io.github.dhruv1110.jcachex.impl;
 
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheEntry;
+import io.github.dhruv1110.jcachex.CacheEventListener;
 import io.github.dhruv1110.jcachex.FrequencySketch;
 import io.github.dhruv1110.jcachex.concurrent.AccessBuffer;
 import io.github.dhruv1110.jcachex.concurrent.AccessBuffer.AccessRecord;
 import io.github.dhruv1110.jcachex.concurrent.AccessBuffer.AccessType;
 import io.github.dhruv1110.jcachex.eviction.WindowTinyLFUEvictionStrategy;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -60,7 +63,8 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
     protected OptimizedCacheBase(CacheConfig<K, V> config) {
         super(config);
 
-        // Initialize advanced eviction strategy
+        // Initialize advanced eviction strategy (use WindowTinyLFU as fallback for
+        // optimization)
         this.windowTinyLFUStrategy = new WindowTinyLFUEvictionStrategy<>(maximumSize);
 
         // Initialize access tracking
@@ -116,7 +120,9 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
             entry.updateExpirationOnAccess(config.getExpireAfterAccess());
         }
 
-        windowTinyLFUStrategy.update(key, entry);
+        // Use configured eviction strategy (from parent class) instead of hardcoded
+        // WindowTinyLFU
+        evictionStrategy.update(key, entry);
 
         // Record hit
         recordGetStatistics(true);
@@ -156,13 +162,20 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
         // Notify listeners
         notifyListeners(listener -> listener.onPut(key, value));
 
-        // Update eviction strategy (use WindowTinyLFU consistently)
-        windowTinyLFUStrategy.update(key, newEntry);
+        // Use configured eviction strategy (from parent class) instead of hardcoded
+        // WindowTinyLFU
+        evictionStrategy.update(key, newEntry);
 
         // Immediately enforce size limit if exceeded
         while (isSizeLimitReached()) {
-            if (!performSingleEviction()) {
-                break; // No more entries to evict
+            if (shouldAvoidEvictingNewEntries()) {
+                if (!performSingleEviction(key)) {
+                    break; // No more entries to evict
+                }
+            } else {
+                if (!performSingleEviction()) {
+                    break; // No more entries to evict
+                }
             }
         }
     }
@@ -171,26 +184,52 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
      * Performs a single eviction and returns true if successful.
      */
     private boolean performSingleEviction() {
-        K keyToEvict = windowTinyLFUStrategy.selectEvictionCandidate(data);
+        return performSingleEviction(null);
+    }
+
+    /**
+     * Performs a single eviction avoiding the specified key and returns true if
+     * successful.
+     */
+    private boolean performSingleEviction(K keyToAvoid) {
+        K keyToEvict = evictionStrategy.selectEvictionCandidate(data);
         if (keyToEvict == null) {
             return false;
         }
 
-        ReentrantReadWriteLock.WriteLock lock = getWriteLock(keyToEvict);
+        // If we should avoid evicting this key, try to find another candidate
+        if (keyToAvoid != null && keyToEvict.equals(keyToAvoid)) {
+            // Try to find another candidate by temporarily removing the key to avoid
+            if (data.size() > 1) {
+                // Create a temporary map without the key to avoid
+                Map<K, CacheEntry<V>> tempData = new HashMap<>(data);
+                tempData.remove(keyToAvoid);
+                K alternateKey = evictionStrategy.selectEvictionCandidate(tempData);
+                if (alternateKey == null) {
+                    return false;
+                }
+                keyToEvict = alternateKey;
+            } else {
+                return false; // Can't evict if it's the only entry and we want to avoid it
+            }
+        }
+
+        final K finalKeyToEvict = keyToEvict;
+        ReentrantReadWriteLock.WriteLock lock = getWriteLock(finalKeyToEvict);
         lock.lock();
         try {
-            CacheEntry<V> removed = data.remove(keyToEvict);
+            CacheEntry<V> removed = data.remove(finalKeyToEvict);
             if (removed != null) {
                 currentSize.decrementAndGet();
                 currentWeight.addAndGet(-removed.getWeight());
-                windowTinyLFUStrategy.remove(keyToEvict);
+                evictionStrategy.remove(finalKeyToEvict);
 
                 // Record eviction statistics
                 if (statsEnabled) {
                     stats.getEvictionCount().incrementAndGet();
                 }
 
-                notifyListeners(listener -> listener.onEvict(keyToEvict, removed.getValue(),
+                notifyListeners(listener -> listener.onEvict(finalKeyToEvict, removed.getValue(),
                         io.github.dhruv1110.jcachex.EvictionReason.SIZE));
                 return true;
             }
@@ -212,7 +251,7 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
         maintenanceLock.writeLock().lock();
         try {
             data.clear();
-            windowTinyLFUStrategy.clear();
+            evictionStrategy.clear();
             accessBuffer.clear();
             frequencySketch.clear();
             currentSize.set(0);
@@ -272,10 +311,10 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
         if (entry != null) {
             switch (record.type) {
                 case READ:
-                    windowTinyLFUStrategy.update(key, entry);
+                    evictionStrategy.update(key, entry);
                     break;
                 case WRITE:
-                    windowTinyLFUStrategy.update(key, entry);
+                    evictionStrategy.update(key, entry);
                     break;
                 case EVICT:
                     // Remove expired entry
@@ -283,7 +322,7 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
                         if (data.remove(key, entry)) {
                             currentSize.decrementAndGet();
                             currentWeight.addAndGet(-entry.getWeight());
-                            windowTinyLFUStrategy.remove(key);
+                            evictionStrategy.remove(key);
                         }
                     }
                     break;
@@ -312,8 +351,9 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
             // Clean up expired entries
             cleanupExpiredEntries();
 
-            // Reset frequency sketch periodically to prevent aging
-            if (version.get() % 1000 == 0) {
+            // Reset frequency sketch much less frequently to preserve LFU tracking
+            // Only clear after many more operations and only if using WindowTinyLFU
+            if (version.get() % 100000 == 0 && evictionStrategy instanceof WindowTinyLFUEvictionStrategy) {
                 frequencySketch.clear();
             }
         }
@@ -340,7 +380,7 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
             // Clear all data structures
             accessBuffer.clear();
             frequencySketch.clear();
-            windowTinyLFUStrategy.clear();
+            evictionStrategy.clear();
         }
 
         // Call parent shutdown
@@ -366,5 +406,14 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
      */
     protected long getVersion() {
         return version.get();
+    }
+
+    /**
+     * Determines if we should avoid evicting newly added entries.
+     * FILO and FIFO strategies should not avoid evicting new entries.
+     */
+    protected boolean shouldAvoidEvictingNewEntries() {
+        String strategyName = evictionStrategy.getClass().getSimpleName();
+        return !strategyName.contains("FILO") && !strategyName.contains("FIFO");
     }
 }

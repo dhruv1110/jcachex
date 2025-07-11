@@ -8,6 +8,7 @@ import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -168,13 +169,9 @@ public abstract class ConcurrentCacheBase<K, V> extends DataBackedCacheBase<K, V
             lock.unlock();
         }
 
-        // Check eviction outside of striped lock to avoid deadlock
+        // Check for eviction after adding the entry
         if (isSizeLimitReached()) {
-            if (shouldAvoidEvictingNewEntries()) {
-                evictEntries(key);
-            } else {
-                evictEntries();
-            }
+            evictEntries();
         }
     }
 
@@ -342,15 +339,15 @@ public abstract class ConcurrentCacheBase<K, V> extends DataBackedCacheBase<K, V
 
             // If the selected key is the one we want to avoid, try to find another
             if (candidateKey != null && keyToAvoid != null && candidateKey.equals(keyToAvoid)) {
-                // Try to find an alternative eviction candidate
-                K alternativeKey = null;
-                for (K candidate : data.keySet()) {
-                    if (!candidate.equals(keyToAvoid)) {
-                        alternativeKey = candidate;
-                        break;
-                    }
+                // Create a temporary map without the key to avoid and let eviction strategy
+                // decide
+                Map<K, CacheEntry<V>> tempData = new HashMap<>(data);
+                tempData.remove(keyToAvoid);
+                if (!tempData.isEmpty()) {
+                    candidateKey = evictionStrategy.selectEvictionCandidate(tempData);
+                } else {
+                    candidateKey = null; // No alternative candidate available
                 }
-                candidateKey = alternativeKey;
             }
 
             final K keyToEvict = candidateKey;
