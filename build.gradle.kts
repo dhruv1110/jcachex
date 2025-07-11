@@ -174,7 +174,8 @@ subprojects {
             fileTree(it) {
                 exclude(
                     "**/io/github/dhruv1110/jcachex/example/**",
-                    "**/example/**"
+                    "**/example/**",
+                    "**/io/github/dhruv1110/jcachex/benchmarks/**",
                 )
             }
         }))
@@ -188,7 +189,8 @@ subprojects {
             fileTree(it) {
                 exclude(
                     "**/io/github/dhruv1110/jcachex/example/**",
-                    "**/example/**"
+                    "**/example/**",
+                    "**/io/github/dhruv1110/jcachex/benchmarks/**",
                 )
             }
         }))

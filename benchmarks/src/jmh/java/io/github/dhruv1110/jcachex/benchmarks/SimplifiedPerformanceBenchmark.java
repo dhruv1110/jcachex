@@ -1,12 +1,8 @@
 package io.github.dhruv1110.jcachex.benchmarks;
 
 import io.github.dhruv1110.jcachex.*;
-import io.github.dhruv1110.jcachex.specialized.ReadOnlyOptimizedCache;
-import io.github.dhruv1110.jcachex.specialized.WriteHeavyOptimizedCache;
-import io.github.dhruv1110.jcachex.jvm.JVMOptimizedCache;
-import io.github.dhruv1110.jcachex.hardware.HardwareOptimizedCache;
-import io.github.dhruv1110.jcachex.ml.MLOptimizedCache;
 
+import io.github.dhruv1110.jcachex.impl.*;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
