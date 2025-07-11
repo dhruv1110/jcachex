@@ -81,16 +81,16 @@ public class DefaultCache<K, V> extends ConcurrentCacheBase<K, V> implements Aut
      */
     private void processEntry(K key, CacheEntry<V> entry, long currentTimeNanos) {
         if (entry.isExpired()) {
-            handleExpiredEntry(key, entry);
+            removeExpiredEntryDuringRefresh(key, entry);
         } else if (needsRefresh(entry, currentTimeNanos)) {
             scheduleEntryRefresh(key);
         }
     }
 
     /**
-     * Handles removal of an expired entry.
+     * Removes an expired entry during scheduled refresh operations.
      */
-    private void handleExpiredEntry(K key, CacheEntry<V> entry) {
+    private void removeExpiredEntryDuringRefresh(K key, CacheEntry<V> entry) {
         if (data.remove(key, entry)) {
             updateStatsAfterRemoval(key, entry);
             notifyListeners(listener -> listener.onExpire(key, entry.getValue()));
