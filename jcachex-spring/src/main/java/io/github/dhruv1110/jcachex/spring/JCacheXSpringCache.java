@@ -1,9 +1,10 @@
 package io.github.dhruv1110.jcachex.spring;
 
 import io.github.dhruv1110.jcachex.Cache;
+import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheStats;
-import io.github.dhruv1110.jcachex.DefaultCache;
-import org.springframework.cache.support.AbstractValueAdaptingCache;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
+import org.springframework.cache.support.SimpleValueWrapper;
 import org.springframework.lang.Nullable;
 
 import java.util.concurrent.Callable;
@@ -64,7 +65,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @see JCacheXCacheManager
  * @since 1.0.0
  */
-public class JCacheXSpringCache extends AbstractValueAdaptingCache {
+public class JCacheXSpringCache extends org.springframework.cache.support.AbstractValueAdaptingCache {
 
     private final String name;
     private final Cache<Object, Object> nativeCache;

@@ -2,7 +2,7 @@ package io.github.dhruv1110.jcachex.eviction;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.DefaultCache;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,9 +14,9 @@ class FILOEvictionStrategyTest {
     @BeforeEach
     void setUp() {
         CacheConfig<String, String> cacheConfig = new CacheConfig.Builder<String, String>()
-            .maximumSize(2L)
-            .evictionStrategy(new FILOEvictionStrategy<>())
-            .build();
+                .maximumSize(2L)
+                .evictionStrategy(new FILOEvictionStrategy<>())
+                .build();
         cache = new DefaultCache<>(cacheConfig);
         cache.put("A", "ValueA"); // order = 1
         cache.put("B", "ValueB"); // order = 2

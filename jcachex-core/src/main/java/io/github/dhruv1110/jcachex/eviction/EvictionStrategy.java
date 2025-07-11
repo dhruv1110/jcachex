@@ -1,6 +1,7 @@
 package io.github.dhruv1110.jcachex.eviction;
 
 import io.github.dhruv1110.jcachex.CacheEntry;
+import io.github.dhruv1110.jcachex.FrequencySketchType;
 
 import java.util.Map;
 
@@ -13,6 +14,56 @@ import java.util.Map;
  * @param <V> the type of mapped values
  */
 public interface EvictionStrategy<K, V> {
+
+    /**
+     * Enhanced LRU eviction strategy with frequency sketch.
+     */
+    static <K, V> EvictionStrategy<K, V> ENHANCED_LRU() {
+        return new EnhancedLRUEvictionStrategy<>(FrequencySketchType.BASIC, 1000);
+    }
+
+    /**
+     * Enhanced LFU eviction strategy with frequency sketch.
+     */
+    static <K, V> EvictionStrategy<K, V> ENHANCED_LFU() {
+        return new EnhancedLFUEvictionStrategy<>(FrequencySketchType.BASIC, 1000);
+    }
+
+    /**
+     * TinyWindowLFU eviction strategy (hybrid approach).
+     */
+    static <K, V> EvictionStrategy<K, V> TINY_WINDOW_LFU() {
+        return new WindowTinyLFUEvictionStrategy<>(1000);
+    }
+
+    /**
+     * Basic LRU eviction strategy.
+     */
+    static <K, V> EvictionStrategy<K, V> LRU() {
+        return new LRUEvictionStrategy<>();
+    }
+
+    /**
+     * Basic LFU eviction strategy.
+     */
+    static <K, V> EvictionStrategy<K, V> LFU() {
+        return new LFUEvictionStrategy<>();
+    }
+
+    /**
+     * FIFO eviction strategy.
+     */
+    static <K, V> EvictionStrategy<K, V> FIFO() {
+        return new FIFOEvictionStrategy<>();
+    }
+
+    /**
+     * FILO eviction strategy.
+     */
+    static <K, V> EvictionStrategy<K, V> FILO() {
+        return new FILOEvictionStrategy<>();
+    }
+
     /**
      * Selects a candidate for eviction from the given entries.
      *

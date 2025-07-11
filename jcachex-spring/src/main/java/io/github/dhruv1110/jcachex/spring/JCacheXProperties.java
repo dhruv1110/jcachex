@@ -154,7 +154,9 @@ public class JCacheXProperties {
         private Long expireAfterSeconds;
         private Long expireAfterAccessSeconds;
         private Long refreshAfterWriteSeconds;
-        private String evictionStrategy = "LRU";
+        private String evictionStrategy = "TINY_WINDOW_LFU";
+        private String frequencySketchType = "BASIC";
+        private String cacheType = "DEFAULT";
         private Boolean enableStatistics = false;
         private Boolean enableJmx = false;
         private Boolean enableObservability = false;
@@ -242,6 +244,22 @@ public class JCacheXProperties {
 
         public void setEvictionStrategy(String evictionStrategy) {
             this.evictionStrategy = evictionStrategy;
+        }
+
+        public String getFrequencySketchType() {
+            return frequencySketchType;
+        }
+
+        public void setFrequencySketchType(String frequencySketchType) {
+            this.frequencySketchType = frequencySketchType;
+        }
+
+        public String getCacheType() {
+            return cacheType;
+        }
+
+        public void setCacheType(String cacheType) {
+            this.cacheType = cacheType;
         }
 
         public Boolean getEnableStatistics() {

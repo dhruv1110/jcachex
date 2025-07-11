@@ -355,4 +355,22 @@ public class CacheStats {
                 ", totalLoadTime=" + totalLoadTime.get() +
                 '}';
     }
+
+    /**
+     * Compatibility method for getHitRate() - alias for hitRate().
+     *
+     * @return the hit rate as a value between 0.0 and 1.0
+     */
+    public double getHitRate() {
+        return hitRate();
+    }
+
+    /**
+     * Compatibility method for getMissRate() - alias for missRate().
+     *
+     * @return the miss rate as a value between 0.0 and 1.0
+     */
+    public double getMissRate() {
+        return missRate();
+    }
 }

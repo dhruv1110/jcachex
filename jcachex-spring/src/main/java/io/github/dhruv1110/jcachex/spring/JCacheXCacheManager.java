@@ -2,7 +2,7 @@ package io.github.dhruv1110.jcachex.spring;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.DefaultCache;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import org.springframework.cache.CacheManager;
 import org.springframework.lang.Nullable;
 

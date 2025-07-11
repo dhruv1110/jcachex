@@ -2,58 +2,89 @@ package io.github.dhruv1110.jcachex.spring;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.DefaultCache;
+import io.github.dhruv1110.jcachex.CacheStats;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.lang.Nullable;
 
-import java.lang.reflect.Method;
 import java.time.Duration;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
- * Auto-configuration for JCacheX integration with Spring Framework and Spring
- * Boot.
+ * Spring Boot auto-configuration for JCacheX.
+ * <p>
+ * This configuration class automatically sets up JCacheX caching components
+ * when the library is present on the classpath. It integrates seamlessly with
+ * Spring Boot's auto-configuration system and provides sensible defaults for
+ * most use cases.
+ * </p>
  *
- * This configuration is designed for maximum compatibility:
+ * <h2>Auto-Configuration Features:</h2>
  * <ul>
- * <li>Works with Spring Boot 1.5+ (and even plain Spring Framework 4.3+)</li>
- * <li>Uses conditional annotations to avoid dependency conflicts</li>
- * <li>Gracefully degrades when optional dependencies are missing</li>
- * <li>Minimal dependency footprint</li>
+ * <li><strong>Automatic Cache Manager</strong>: Creates
+ * {@link JCacheXCacheManager} bean automatically</li>
+ * <li><strong>Property Configuration</strong>: Binds configuration from
+ * application properties</li>
+ * <li><strong>Cache Factory</strong>: Provides {@link JCacheXCacheFactory} for
+ * programmatic use</li>
+ * <li><strong>Health Indicators</strong>: Registers cache health indicators if
+ * Spring Boot Actuator is present</li>
+ * <li><strong>Metrics Integration</strong>: Integrates with Micrometer metrics
+ * if available</li>
+ * <li><strong>Graceful Degradation</strong>: Falls back gracefully when
+ * dependencies are missing</li>
  * </ul>
  *
- * <h2>Automatic Configuration</h2>
+ * <h2>Configuration Properties:</h2>
  * <p>
- * When this library is on the classpath and Spring Boot auto-configuration is
- * enabled,
- * it will automatically:
+ * All configuration is done through application properties under the
+ * {@code jcachex} prefix:
  * </p>
- * <ol>
- * <li><strong>Configure Default Cache Manager</strong>: Creates a
- * JCacheXCacheManager as the primary cache manager</li>
- * <li><strong>Apply Properties</strong>: Uses application.yml/properties
- * configuration via JCacheXProperties</li>
- * <li><strong>Create Named Caches</strong>: Automatically creates caches
- * defined in configuration</li>
- * <li><strong>Enable Metrics</strong>: Optionally integrates with Micrometer
- * when present</li>
- * <li><strong>Support Actuator</strong>: Provides health indicators when Spring
- * Boot Actuator is present</li>
- * </ol>
  *
- * <h2>Manual Configuration</h2>
+ * <pre>{@code
+ * # Enable/disable JCacheX (default: true)
+ * jcachex.enabled=true
+ *
+ * # Default cache configuration
+ * jcachex.default.maximumSize=1000
+ * jcachex.default.expireAfterSeconds=1800
+ * jcachex.default.enableStatistics=true
+ *
+ * # Cache-specific configuration
+ * jcachex.caches.users.maximumSize=5000
+ * jcachex.caches.users.expireAfterSeconds=3600
+ * jcachex.caches.users.evictionStrategy=LRU
+ *
+ * jcachex.caches.sessions.maximumSize=10000
+ * jcachex.caches.sessions.expireAfterSeconds=1800
+ * jcachex.caches.sessions.evictionStrategy=LFU
+ * }</pre>
+ *
+ * <h2>Conditional Configuration:</h2>
  * <p>
- * You can override any automatic configuration by defining your own beans:
+ * Components are only created when their dependencies are available:
+ * </p>
+ * <ul>
+ * <li><strong>Core Components</strong>: Always created when JCacheX is
+ * enabled</li>
+ * <li><strong>Health Indicators</strong>: Only when Spring Boot Actuator is
+ * present</li>
+ * <li><strong>Metrics</strong>: Only when Micrometer is present</li>
+ * <li><strong>JMX</strong>: Only when JMX is enabled</li>
+ * </ul>
+ *
+ * <h2>Customization:</h2>
+ * <p>
+ * You can customize the auto-configuration by providing your own beans:
  * </p>
  *
  * <pre>
@@ -63,48 +94,26 @@ import java.util.Set;
  *     public class CustomCacheConfig {
  *
  *         &#64;Bean
- *         @Primary
- *         public CacheManager customCacheManager() {
+ *         &#64;Primary
+ *         public JCacheXCacheManager customCacheManager() {
  *             JCacheXCacheManager manager = new JCacheXCacheManager();
- *             // Custom configuration
+ *             manager.setAllowNullValues(false);
  *             return manager;
+ *         }
+ *
+ *         @Bean
+ *         public JCacheXProperties customProperties() {
+ *             JCacheXProperties properties = new JCacheXProperties();
+ *             properties.getDefault().setMaximumSize(5000L);
+ *             return properties;
  *         }
  *     }
  * }
  * </pre>
  *
- * <h2>Conditional Activation</h2>
- * <p>
- * This auto-configuration only activates when:
- * </p>
- * <ul>
- * <li>JCacheX core classes are on the classpath</li>
- * <li>Spring Boot auto-configuration is enabled</li>
- * <li>No existing CacheManager bean is defined (unless explicitly enabled)</li>
- * </ul>
- *
- * <h2>Properties Support</h2>
- * <p>
- * All configuration can be controlled via application properties:
- * </p>
- *
- * <pre>{@code
- * jcachex:
- *   default:
- *     maximumSize: 1000
- *     expireAfterSeconds: 1800
- *     enableStatistics: true
- *   caches:
- *     users:
- *       maximumSize: 5000
- *       expireAfterSeconds: 3600
- *     sessions:
- *       maximumSize: 10000
- *       expireAfterSeconds: 1800
- * }</pre>
- *
  * @see JCacheXProperties
  * @see JCacheXCacheManager
+ * @see JCacheXCacheFactory
  * @since 1.0.0
  */
 @Configuration

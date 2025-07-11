@@ -1,6 +1,7 @@
 package io.github.dhruv1110.jcachex;
 
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
+import io.github.dhruv1110.jcachex.eviction.WindowTinyLFUEvictionStrategy;
 import io.github.dhruv1110.jcachex.exceptions.CacheConfigurationException;
 
 import java.time.Duration;
@@ -70,7 +71,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * @param <K> the type of keys maintained by this cache
  * @param <V> the type of mapped values
- * @see DefaultCache
+ * @see io.github.dhruv1110.jcachex.impl.DefaultCache
  * @see CacheEventListener
  * @see EvictionStrategy
  * @since 1.0.0
@@ -82,6 +83,7 @@ public class CacheConfig<K, V> {
     private final Duration expireAfterWrite;
     private final Duration expireAfterAccess;
     private final EvictionStrategy<K, V> evictionStrategy;
+    private final FrequencySketchType frequencySketchType;
     private final boolean weakKeys;
     private final boolean weakValues;
     private final boolean softValues;
@@ -101,6 +103,7 @@ public class CacheConfig<K, V> {
         this.expireAfterWrite = builder.expireAfterWrite;
         this.expireAfterAccess = builder.expireAfterAccess;
         this.evictionStrategy = builder.evictionStrategy;
+        this.frequencySketchType = builder.frequencySketchType;
         this.weakKeys = builder.weakKeys;
         this.weakValues = builder.weakValues;
         this.softValues = builder.softValues;
@@ -167,10 +170,20 @@ public class CacheConfig<K, V> {
      * Returns the eviction strategy used to determine which entries to remove
      * when the cache size or weight limits are exceeded.
      *
-     * @return the eviction strategy, or null if not set (will use LRU by default)
+     * @return the eviction strategy, or null if not set (will use TinyWindowLFU by
+     *         default)
      */
     public EvictionStrategy<K, V> getEvictionStrategy() {
         return evictionStrategy;
+    }
+
+    /**
+     * Returns the frequency sketch type used for tracking access patterns.
+     *
+     * @return the frequency sketch type, defaults to BASIC
+     */
+    public FrequencySketchType getFrequencySketchType() {
+        return frequencySketchType;
     }
 
     /**
@@ -325,6 +338,7 @@ public class CacheConfig<K, V> {
         private Duration expireAfterWrite;
         private Duration expireAfterAccess;
         private EvictionStrategy<K, V> evictionStrategy;
+        private FrequencySketchType frequencySketchType = FrequencySketchType.BASIC;
         private boolean weakKeys;
         private boolean weakValues;
         private boolean softValues;
@@ -457,7 +471,8 @@ public class CacheConfig<K, V> {
          * Sets the eviction strategy used to determine which entries to remove
          * when the cache size or weight limits are exceeded.
          * <p>
-         * If not set, the cache will use LRU (Least Recently Used) eviction by default.
+         * If not set, the cache will use TinyWindowLFU eviction by default for optimal
+         * performance.
          * </p>
          *
          * @param evictionStrategy the eviction strategy to use
@@ -465,6 +480,22 @@ public class CacheConfig<K, V> {
          */
         public Builder<K, V> evictionStrategy(EvictionStrategy<K, V> evictionStrategy) {
             this.evictionStrategy = evictionStrategy;
+            return this;
+        }
+
+        /**
+         * Sets the frequency sketch type to use for tracking access patterns.
+         * <p>
+         * Frequency sketches are used by eviction strategies to track access frequency
+         * with minimal memory overhead. Different types provide different trade-offs
+         * between memory usage, accuracy, and performance.
+         * </p>
+         *
+         * @param frequencySketchType the frequency sketch type to use
+         * @return this builder instance
+         */
+        public Builder<K, V> frequencySketchType(FrequencySketchType frequencySketchType) {
+            this.frequencySketchType = frequencySketchType;
             return this;
         }
 
@@ -694,6 +725,12 @@ public class CacheConfig<K, V> {
 
             if (loader != null && asyncLoader != null) {
                 throw CacheConfigurationException.conflictingSettings("loader", "asyncLoader");
+            }
+
+            // Set default eviction strategy to TinyWindowLFU if none specified
+            if (evictionStrategy == null) {
+                long cacheSize = maximumSize != null ? maximumSize : 1000L;
+                evictionStrategy = new WindowTinyLFUEvictionStrategy<>(cacheSize);
             }
 
             return new CacheConfig<>(this);

@@ -2,8 +2,8 @@ package io.github.dhruv1110.jcachex.benchmarks;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.DefaultCache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import org.openjdk.jmh.annotations.*;
 
 import java.time.Duration;

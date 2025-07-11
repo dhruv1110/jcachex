@@ -22,6 +22,11 @@ export const NAVIGATION_ITEMS: NavigationItem[] = [
         path: '/spring'
     },
     {
+        id: 'performance',
+        label: 'Performance',
+        path: '/performance'
+    },
+    {
         id: 'documentation',
         label: 'Documentation',
         children: [
@@ -87,6 +92,11 @@ export const MOBILE_NAVIGATION_ITEMS: NavigationItem[] = [
         path: '/spring'
     },
     {
+        id: 'performance',
+        label: 'Performance',
+        path: '/performance'
+    },
+    {
         id: 'faq',
         label: 'FAQ',
         path: '/faq'
@@ -115,6 +125,11 @@ export const QUICK_LINKS: NavigationItem[] = [
         id: 'spring-setup',
         label: 'Spring Setup',
         path: '/spring#setup'
+    },
+    {
+        id: 'performance',
+        label: 'Performance Benchmarks',
+        path: '/performance'
     },
     {
         id: 'api-reference',

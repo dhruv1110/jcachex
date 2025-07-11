@@ -2,7 +2,7 @@ package io.github.dhruv1110.jcachex.spring;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.DefaultCache;
+import io.github.dhruv1110.jcachex.impl.*;
 
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
@@ -129,7 +129,9 @@ public class JCacheXCacheFactory {
         String key = cacheName == null ? "<null>" : cacheName;
         return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, name -> {
             CacheConfig.Builder<K, V> builder = createBaseConfiguration(name);
-            return new DefaultCache<>(builder.build());
+            CacheConfig<K, V> config = builder.build();
+            String cacheType = getCacheTypeForName(name);
+            return createCacheByType(cacheType, config);
         });
     }
 
@@ -148,7 +150,9 @@ public class JCacheXCacheFactory {
         return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, name -> {
             CacheConfig.Builder<K, V> builder = createBaseConfiguration(name);
             configurator.configure(builder);
-            return new DefaultCache<>(builder.build());
+            CacheConfig<K, V> config = builder.build();
+            String cacheType = getCacheTypeForName(name);
+            return createCacheByType(cacheType, config);
         });
     }
 
@@ -170,7 +174,9 @@ public class JCacheXCacheFactory {
         return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, name -> {
             CacheConfig.Builder<K, V> builder = createBaseConfiguration(name);
             configurator.configure(builder);
-            return new DefaultCache<>(builder.build());
+            CacheConfig<K, V> config = builder.build();
+            String cacheType = getCacheTypeForName(name);
+            return createCacheByType(cacheType, config);
         });
     }
 
@@ -234,7 +240,77 @@ public class JCacheXCacheFactory {
      */
     private Cache<?, ?> createCacheInternal(String cacheName) {
         CacheConfig.Builder<Object, Object> builder = createBaseConfiguration(cacheName);
-        return new DefaultCache<>(builder.build());
+        CacheConfig<Object, Object> config = builder.build();
+
+        // Determine cache type from configuration
+        String cacheType = getCacheTypeForName(cacheName);
+
+        return createCacheByType(cacheType, config);
+    }
+
+    /**
+     * Gets the cache type configuration for a specific cache name.
+     */
+    private String getCacheTypeForName(String cacheName) {
+        // Check named cache configuration first
+        if (properties.getCaches() != null && properties.getCaches().containsKey(cacheName)) {
+            JCacheXProperties.CacheConfig namedConfig = properties.getCaches().get(cacheName);
+            if (namedConfig != null && namedConfig.getCacheType() != null) {
+                return namedConfig.getCacheType();
+            }
+        }
+
+        // Fall back to default configuration
+        JCacheXProperties.CacheConfig defaultConfig = properties.getDefaultConfig();
+        if (defaultConfig != null && defaultConfig.getCacheType() != null) {
+            return defaultConfig.getCacheType();
+        }
+
+        return "DEFAULT";
+    }
+
+    /**
+     * Creates a cache instance based on the specified type.
+     */
+    @SuppressWarnings("unchecked")
+    private <K, V> Cache<K, V> createCacheByType(String cacheType, CacheConfig<K, V> config) {
+        switch (cacheType.toUpperCase()) {
+            case "OPTIMIZED":
+                return new OptimizedCache<>(config);
+            case "JIT_OPTIMIZED":
+            case "JIT-OPTIMIZED":
+                return new JITOptimizedCache<>(config);
+            case "ALLOCATION_OPTIMIZED":
+            case "ALLOCATION-OPTIMIZED":
+                return new AllocationOptimizedCache<>(config);
+            case "LOCALITY_OPTIMIZED":
+            case "LOCALITY-OPTIMIZED":
+                return new CacheLocalityOptimizedCache<>(config);
+            case "ZERO_COPY_OPTIMIZED":
+            case "ZERO-COPY-OPTIMIZED":
+                return new ZeroCopyOptimizedCache<>(config);
+            case "READ_ONLY_OPTIMIZED":
+            case "READ-ONLY-OPTIMIZED":
+                return new ReadOnlyOptimizedCache<>(config);
+            case "WRITE_HEAVY_OPTIMIZED":
+            case "WRITE-HEAVY-OPTIMIZED":
+                return new WriteHeavyOptimizedCache<>(config);
+            case "JVM_OPTIMIZED":
+            case "JVM-OPTIMIZED":
+                return new JVMOptimizedCache<>(config);
+            case "HARDWARE_OPTIMIZED":
+            case "HARDWARE-OPTIMIZED":
+                return new HardwareOptimizedCache<>(config);
+            case "ML_OPTIMIZED":
+            case "ML-OPTIMIZED":
+                return new MLOptimizedCache<>(config);
+            case "PROFILED_OPTIMIZED":
+            case "PROFILED-OPTIMIZED":
+                return new ProfiledOptimizedCache<>(config);
+            case "DEFAULT":
+            default:
+                return new DefaultCache<>(config);
+        }
     }
 
     /**
@@ -290,9 +366,21 @@ public class JCacheXCacheFactory {
             try {
                 builder.evictionStrategy(evictionStrategyFactory.createStrategy(config.getEvictionStrategy(), config));
             } catch (IllegalArgumentException e) {
-                // Log warning and use default LRU strategy
+                // Log warning and use default strategy
                 System.err.println("Warning: Invalid eviction strategy '" + config.getEvictionStrategy() +
-                        "', using LRU instead. " + e.getMessage());
+                        "', using default instead. " + e.getMessage());
+            }
+        }
+
+        if (config.getFrequencySketchType() != null) {
+            try {
+                io.github.dhruv1110.jcachex.FrequencySketchType sketchType = io.github.dhruv1110.jcachex.FrequencySketchType
+                        .valueOf(config.getFrequencySketchType().toUpperCase());
+                builder.frequencySketchType(sketchType);
+            } catch (IllegalArgumentException e) {
+                // Log warning and use default
+                System.err.println("Warning: Invalid frequency sketch type '" + config.getFrequencySketchType() +
+                        "', using BASIC instead. " + e.getMessage());
             }
         }
 

@@ -124,9 +124,9 @@ const HomeComponent: React.FC = () => {
 
                         <Box sx={{ display: 'flex', gap: 4, justifyContent: 'center', flexWrap: 'wrap' }}>
                             {[
-                                { number: '1M+', label: 'Operations/sec' },
-                                { number: '<1ms', label: 'Latency' },
-                                { number: 'Zero', label: 'Dependencies' }
+                                { number: '7.9ns', label: 'Fastest GET (ZeroCopy)' },
+                                { number: '2.6x', label: 'Faster than Caffeine' },
+                                { number: 'O(1)', label: 'Eviction Strategies' }
                             ].map((stat, index) => (
                                 <Box key={index} sx={{ textAlign: 'center' }}>
                                     <Typography variant="h4" sx={{ fontWeight: 700, color: 'primary.main' }}>
@@ -137,6 +137,18 @@ const HomeComponent: React.FC = () => {
                                     </Typography>
                                 </Box>
                             ))}
+                        </Box>
+
+                        <Box sx={{ textAlign: 'center', mt: 4 }}>
+                            <Button
+                                component={Link}
+                                to="/performance"
+                                variant="outlined"
+                                size="medium"
+                                sx={{ px: 3, py: 1 }}
+                            >
+                                View Performance Benchmarks
+                            </Button>
                         </Box>
                     </Box>
                 </Container>
@@ -276,6 +288,107 @@ const HomeComponent: React.FC = () => {
 
                     <Box sx={{ maxWidth: 900, mx: 'auto' }}>
                         <CodeTabs tabs={INSTALLATION_TABS} />
+                    </Box>
+                </Container>
+            </Box>
+
+            {/* Performance Section */}
+            <Box sx={{ py: 8, bgcolor: 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%)' }}>
+                <Container maxWidth="lg">
+                    <Box sx={{ textAlign: 'center', mb: 6 }}>
+                        <Chip
+                            label="🚀 Performance"
+                            sx={{ mb: 2, px: 2, py: 1, bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }}
+                            variant="outlined"
+                        />
+                        <Typography variant="h2" component="h2" sx={{ mb: 2, fontWeight: 700, color: 'white' }}>
+                            Industry-Leading Performance
+                        </Typography>
+                        <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.8)', maxWidth: '600px', mx: 'auto' }}>
+                            Outperform industry leaders with our optimized cache implementations
+                        </Typography>
+                    </Box>
+
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: {
+                                xs: '1fr',
+                                md: 'repeat(3, 1fr)'
+                            },
+                            gap: 4,
+                            mb: 6
+                        }}
+                    >
+                        {[
+                            {
+                                title: 'ZeroCopy Cache',
+                                performance: '7.9ns',
+                                description: '2.6x faster than Caffeine',
+                                icon: '🏆'
+                            },
+                            {
+                                title: 'Locality Optimized',
+                                performance: '9.7ns',
+                                description: '1.9x faster than Caffeine',
+                                icon: '⚡'
+                            },
+                            {
+                                title: 'O(1) Eviction',
+                                performance: '100%',
+                                description: 'All strategies optimized',
+                                icon: '🎯'
+                            }
+                        ].map((perf, index) => (
+                            <Card
+                                key={index}
+                                sx={{
+                                    bgcolor: 'rgba(255,255,255,0.1)',
+                                    backdropFilter: 'blur(10px)',
+                                    border: '1px solid rgba(255,255,255,0.2)',
+                                    transition: 'transform 0.2s ease-in-out',
+                                    '&:hover': {
+                                        transform: 'translateY(-4px)',
+                                        bgcolor: 'rgba(255,255,255,0.15)'
+                                    }
+                                }}
+                            >
+                                <CardContent sx={{ p: 3, textAlign: 'center' }}>
+                                    <Typography variant="h3" sx={{ mb: 1 }}>
+                                        {perf.icon}
+                                    </Typography>
+                                    <Typography variant="h6" sx={{ mb: 1, fontWeight: 600, color: 'white' }}>
+                                        {perf.title}
+                                    </Typography>
+                                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#fbbf24', mb: 1 }}>
+                                        {perf.performance}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                                        {perf.description}
+                                    </Typography>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </Box>
+
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Button
+                            component={Link}
+                            to="/performance"
+                            variant="contained"
+                            size="large"
+                            sx={{
+                                bgcolor: 'white',
+                                color: 'primary.main',
+                                px: 4,
+                                py: 1.5,
+                                '&:hover': {
+                                    bgcolor: 'rgba(255,255,255,0.9)'
+                                }
+                            }}
+                        >
+                            View Detailed Performance Benchmarks
+                        </Button>
                     </Box>
                 </Container>
             </Box>
