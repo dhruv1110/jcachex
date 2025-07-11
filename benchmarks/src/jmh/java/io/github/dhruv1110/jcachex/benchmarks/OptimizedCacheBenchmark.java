@@ -2,8 +2,8 @@ package io.github.dhruv1110.jcachex.benchmarks;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.DefaultCache;
-import io.github.dhruv1110.jcachex.OptimizedCache;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
+import io.github.dhruv1110.jcachex.impl.OptimizedCache;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
