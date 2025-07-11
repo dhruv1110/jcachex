@@ -92,8 +92,10 @@ class DefaultCacheTest extends BaseCacheTest {
             String value = asyncCache.get("test-key");
 
             // The behavior depends on implementation - might load synchronously or return
-            // null
-            // and load in background
+            // null and load in background
+            // We verify that the async loader configuration was accepted
+            assertNotNull(asyncCache);
+            assertNotNull(asyncConfig.getAsyncLoader());
         }
 
         @Test

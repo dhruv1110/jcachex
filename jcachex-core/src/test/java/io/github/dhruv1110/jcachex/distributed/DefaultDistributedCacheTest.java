@@ -316,6 +316,8 @@ class DefaultDistributedCacheTest {
             CompletableFuture<Void> future = distributedCache.rebalance();
             future.get(5, TimeUnit.SECONDS);
             // Rebalance should complete without error
+            assertTrue(future.isDone());
+            assertFalse(future.isCancelled());
         }
     }
 

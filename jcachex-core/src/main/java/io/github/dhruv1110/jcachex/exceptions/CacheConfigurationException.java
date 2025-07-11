@@ -13,7 +13,7 @@ package io.github.dhruv1110.jcachex.exceptions;
  * </ul>
  *
  * <h3>Usage Examples:</h3>
- * 
+ *
  * <pre>{@code
  * try {
  *     CacheConfig<String, String> config = CacheConfig.<String, String>builder()
@@ -29,7 +29,7 @@ package io.github.dhruv1110.jcachex.exceptions;
  */
 public class CacheConfigurationException extends CacheException {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1003L;
 
     /**
      * Constructs a new cache configuration exception with the specified detail
