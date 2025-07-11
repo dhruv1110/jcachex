@@ -183,6 +183,7 @@ subprojects {
     }
 
     tasks.jacocoTestCoverageVerification {
+        dependsOn(tasks.compileJava, tasks.processResources)
         // Exclude example packages from coverage requirements
         executionData.setFrom(fileTree(layout.buildDirectory.dir("jacoco")).include("**/*.exec"))
         classDirectories.setFrom(files(classDirectories.files.map {

@@ -71,7 +71,7 @@ import java.util.concurrent.CompletableFuture;
  *
  * @param <K> the type of keys maintained by this cache
  * @param <V> the type of mapped values
- * @see DefaultCache
+ * @see io.github.dhruv1110.jcachex.impl.DefaultCache
  * @see CacheEventListener
  * @see EvictionStrategy
  * @since 1.0.0
