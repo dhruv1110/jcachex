@@ -107,9 +107,7 @@ public final class HardwareOptimizedCache<K, V> implements Cache<K, V> {
 
         HardwareEntry<V> entry = data.get(key);
         if (entry == null) {
-            if (statsEnabled) {
-                missCount.incrementAndGet();
-            }
+            StatisticsProvider.recordMiss(missCount, statsEnabled);
 
             // Trigger predictive prefetching
             triggerPredictivePrefetch(key, hashCode);
@@ -120,14 +118,9 @@ public final class HardwareOptimizedCache<K, V> implements Cache<K, V> {
         V value = cacheLineOptimizer.optimizeAccess(entry);
         if (value != null) {
             entry.recordAccess();
-
-            if (statsEnabled) {
-                hitCount.incrementAndGet();
-            }
+            StatisticsProvider.recordHit(hitCount, statsEnabled);
         } else {
-            if (statsEnabled) {
-                missCount.incrementAndGet();
-            }
+            StatisticsProvider.recordMiss(missCount, statsEnabled);
         }
 
         return value;
@@ -196,18 +189,12 @@ public final class HardwareOptimizedCache<K, V> implements Cache<K, V> {
 
     @Override
     public final CacheStats stats() {
-        CacheStats stats = new CacheStats();
-        stats.getHitCount().set(hitCount.get());
-        stats.getMissCount().set(missCount.get());
-        return stats;
+        return StatisticsProvider.createBasicStats(hitCount, missCount);
     }
 
     @Override
     public final CacheConfig<K, V> config() {
-        return CacheConfig.<K, V>builder()
-                .maximumSize(maximumSize)
-                .recordStats(statsEnabled)
-                .build();
+        return ConfigurationProvider.createBasicConfig(maximumSize, statsEnabled);
     }
 
     @Override

@@ -86,7 +86,9 @@ public class FILOEvictionStrategy<K, V> implements EvictionStrategy<K, V> {
                 keyToNode.put(key, node);
                 addToHead(node);
             }
-            // For FILO, we don't update position on access - only on insertion
+            // For FILO, we don't update position on access or reinsert - only on first
+            // insertion
+            // The existing node stays in its original position to maintain insertion order
         } finally {
             writeLock.unlock();
         }

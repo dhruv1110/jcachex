@@ -182,10 +182,7 @@ public final class CacheLocalityOptimizedCache<K, V> implements Cache<K, V> {
 
     @Override
     public final CacheConfig<K, V> config() {
-        return CacheConfig.<K, V>builder()
-                .maximumSize(maximumSize)
-                .recordStats(statsEnabled)
-                .build();
+        return ConfigurationProvider.createBasicConfig(maximumSize, statsEnabled);
     }
 
     @Override

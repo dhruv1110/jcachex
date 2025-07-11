@@ -34,7 +34,7 @@ public class CacheEntry<V> {
     // Time tracking using nanoTime for performance (no Instant objects for hot
     // paths)
     private final long creationTimeNanos;
-    private final long expirationTimeNanos; // -1 = no expiration, 1 = expired
+    private volatile long expirationTimeNanos; // -1 = no expiration, 1 = expired
     private volatile long lastAccessTimeNanos;
 
     // Access tracking - using single AtomicLong instead of separate counter
@@ -163,5 +163,30 @@ public class CacheEntry<V> {
 
     public long getCreationTimeNanos() {
         return creationTimeNanos;
+    }
+
+    /**
+     * Updates the expiration time based on access time.
+     * Used for expireAfterAccess functionality.
+     *
+     * @param accessExpirationDuration the duration from now when the entry should
+     *                                 expire
+     */
+    public void updateExpirationOnAccess(java.time.Duration accessExpirationDuration) {
+        if (accessExpirationDuration != null) {
+            try {
+                long durationMillis = accessExpirationDuration.toMillis();
+                if (durationMillis > 365L * 24 * 60 * 60 * 1000) { // > 1 year
+                    this.expirationTimeNanos = Long.MAX_VALUE;
+                } else if (durationMillis <= 0) {
+                    this.expirationTimeNanos = 1L; // Already expired
+                } else {
+                    long result = System.nanoTime() + durationMillis * 1_000_000L;
+                    this.expirationTimeNanos = result <= 1L ? 2L : result; // Avoid special values
+                }
+            } catch (Exception e) {
+                // Keep original expiration on error
+            }
+        }
     }
 }

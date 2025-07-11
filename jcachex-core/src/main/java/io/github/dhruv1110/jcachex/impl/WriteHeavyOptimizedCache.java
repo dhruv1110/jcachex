@@ -201,18 +201,12 @@ public final class WriteHeavyOptimizedCache<K, V> implements Cache<K, V> {
 
     @Override
     public final CacheStats stats() {
-        CacheStats stats = new CacheStats();
-        stats.getHitCount().set(hitCount.get());
-        stats.getMissCount().set(missCount.get());
-        return stats;
+        return StatisticsProvider.createBasicStats(hitCount, missCount);
     }
 
     @Override
     public final CacheConfig<K, V> config() {
-        return CacheConfig.<K, V>builder()
-                .maximumSize(maximumSize)
-                .recordStats(statsEnabled)
-                .build();
+        return ConfigurationProvider.createBasicConfig(maximumSize, statsEnabled);
     }
 
     @Override
