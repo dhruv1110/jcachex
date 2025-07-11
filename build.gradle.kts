@@ -190,6 +190,8 @@ subprojects {
 
             tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
                 jvmTarget = "1.8"
+                exclude("**/io/github/dhruv1110/jcachex/example/**") // Exclude example modules
+                exclude("**/example/**") // Additional exclude for example projects
                 reports {
                     html.required.set(true)
                     xml.required.set(true)

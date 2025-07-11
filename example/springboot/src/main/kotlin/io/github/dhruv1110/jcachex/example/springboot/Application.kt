@@ -1,8 +1,10 @@
 package io.github.dhruv1110.jcachex.example.springboot
 
-import io.github.dhruv1110.jcachex.*
+import io.github.dhruv1110.jcachex.Cache
+import io.github.dhruv1110.jcachex.CacheBuilder
 import io.github.dhruv1110.jcachex.FrequencySketchType
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.cache.annotation.Cacheable
@@ -12,7 +14,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.beans.factory.annotation.Qualifier
 import java.time.Duration
 
 @SpringBootApplication
@@ -126,8 +127,10 @@ class UserController(
 
         // Simulate expensive profile computation
         Thread.sleep(500)
-        val profile = UserProfile(id, "Profile for User $id", "user$id@example.com",
-            mapOf("theme" to "dark", "language" to "en"))
+        val profile = UserProfile(
+            id, "Profile for User $id", "user$id@example.com",
+            mapOf("theme" to "dark", "language" to "en")
+        )
 
         // Store in performance cache
         performanceCache.put(cacheKey, profile.toJson())
@@ -229,8 +232,10 @@ class SessionController(
     @GetMapping("/sessions/{userId}")
     fun createSession(@PathVariable userId: String): UserSession {
         val sessionId = "session-${System.currentTimeMillis()}-$userId"
-        val session = UserSession(sessionId, userId, System.currentTimeMillis(),
-            mapOf("ip" to "192.168.1.1", "userAgent" to "Mozilla/5.0"))
+        val session = UserSession(
+            sessionId, userId, System.currentTimeMillis(),
+            mapOf("ip" to "192.168.1.1", "userAgent" to "Mozilla/5.0")
+        )
 
         // Store in write-optimized cache
         sessionCache.put(sessionId, session)
@@ -322,7 +327,8 @@ data class UserProfile(
     val email: String,
     val preferences: Map<String, String> = emptyMap()
 ) {
-    fun toJson(): String = """{"userId":"$userId","displayName":"$displayName","email":"$email","preferences":${preferences}}"""
+    fun toJson(): String =
+        """{"userId":"$userId","displayName":"$displayName","email":"$email","preferences":${preferences}}"""
 
     companion object {
         fun fromJson(json: String): UserProfile {
