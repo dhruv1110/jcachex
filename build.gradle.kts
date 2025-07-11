@@ -3,7 +3,7 @@ import org.jreleaser.model.Active
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.22" apply false
-    id("io.gitlab.arturbosch.detekt") version "1.23.5" apply false
+    id("io.gitlab.arturbosch.detekt") version "1.23.8" apply false
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0" apply false
     id("jacoco")
     id("maven-publish")
