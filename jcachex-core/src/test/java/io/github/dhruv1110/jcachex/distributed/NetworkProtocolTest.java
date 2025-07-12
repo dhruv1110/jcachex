@@ -346,9 +346,13 @@ class NetworkProtocolTest {
         void testProtocolLifecycle() throws ExecutionException, InterruptedException, TimeoutException {
             CompletableFuture<Void> startFuture = tcpProtocol.start();
             startFuture.get(5, TimeUnit.SECONDS);
+            assertTrue(startFuture.isDone());
+            assertFalse(startFuture.isCancelled());
 
             CompletableFuture<Void> stopFuture = tcpProtocol.stop();
             stopFuture.get(5, TimeUnit.SECONDS);
+            assertTrue(stopFuture.isDone());
+            assertFalse(stopFuture.isCancelled());
         }
 
         @Test

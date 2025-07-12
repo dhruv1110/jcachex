@@ -68,30 +68,37 @@ public interface CacheEventListener<K, V> {
         return new CacheEventListener<K, V>() {
             @Override
             public void onPut(K key, V value) {
+                // No-op implementation: intentionally empty
             }
 
             @Override
             public void onRemove(K key, V value) {
+                // No-op implementation: intentionally empty
             }
 
             @Override
             public void onEvict(K key, V value, EvictionReason reason) {
+                // No-op implementation: intentionally empty
             }
 
             @Override
             public void onExpire(K key, V value) {
+                // No-op implementation: intentionally empty
             }
 
             @Override
             public void onLoad(K key, V value) {
+                // No-op implementation: intentionally empty
             }
 
             @Override
             public void onLoadError(K key, Throwable error) {
+                // No-op implementation: intentionally empty
             }
 
             @Override
             public void onClear() {
+                // No-op implementation: intentionally empty
             }
         };
     }

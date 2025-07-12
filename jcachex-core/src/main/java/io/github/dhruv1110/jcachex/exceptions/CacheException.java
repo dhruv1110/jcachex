@@ -9,7 +9,7 @@ package io.github.dhruv1110.jcachex.exceptions;
  * </p>
  *
  * <h3>Exception Hierarchy:</h3>
- * 
+ *
  * <pre>
  * CacheException
  * ├── CacheConfigurationException
@@ -23,7 +23,7 @@ package io.github.dhruv1110.jcachex.exceptions;
  * </pre>
  *
  * <h3>Usage Examples:</h3>
- * 
+ *
  * <pre>{@code
  * try {
  *     cache.put(key, value);
@@ -38,7 +38,7 @@ package io.github.dhruv1110.jcachex.exceptions;
  */
 public class CacheException extends RuntimeException {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1001L;
 
     /**
      * Error classification for handling different types of cache errors.

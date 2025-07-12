@@ -72,31 +72,63 @@ public class DefaultCache<K, V> extends ConcurrentCacheBase<K, V> implements Aut
     protected void scheduleRefresh() {
         scheduler.scheduleAtFixedRate(() -> {
             long currentTimeNanos = System.nanoTime();
-            data.forEach((key, entry) -> {
-                if (entry.isExpired()) {
-                    // Handle expired entries
-                    if (data.remove(key, entry)) {
-                        currentSize.decrementAndGet();
-                        currentWeight.addAndGet(-entry.getWeight());
-                        evictionStrategy.remove(key);
-                        notifyListeners(listener -> listener.onExpire(key, entry.getValue()));
-                    }
-                } else if (config.getRefreshAfterWrite() != null) {
-                    long refreshThresholdNanos = entry.getCreationTimeNanos() + config.getRefreshAfterWrite().toNanos();
-                    if (currentTimeNanos > refreshThresholdNanos) {
-                        // Trigger async refresh and update the cache entry
-                        scheduler.execute(() -> {
-                            V newValue = loadValue(key);
-                            if (newValue != null) {
-                                // Replace the old entry with the refreshed value
-                                put(key, newValue);
-                                notifyListeners(listener -> listener.onLoad(key, newValue));
-                            }
-                        });
-                    }
-                }
-            });
+            data.forEach((key, entry) -> processEntry(key, entry, currentTimeNanos));
         }, 0, REFRESH_INTERVAL_SECONDS, TimeUnit.SECONDS);
+    }
+
+    /**
+     * Processes a single cache entry for expiration and refresh.
+     */
+    private void processEntry(K key, CacheEntry<V> entry, long currentTimeNanos) {
+        if (entry.isExpired()) {
+            removeExpiredEntryDuringRefresh(key, entry);
+        } else if (needsRefresh(entry, currentTimeNanos)) {
+            scheduleEntryRefresh(key);
+        }
+    }
+
+    /**
+     * Removes an expired entry during scheduled refresh operations.
+     */
+    private void removeExpiredEntryDuringRefresh(K key, CacheEntry<V> entry) {
+        if (data.remove(key, entry)) {
+            updateStatsAfterRemoval(key, entry);
+            notifyListeners(listener -> listener.onExpire(key, entry.getValue()));
+        }
+    }
+
+    /**
+     * Checks if an entry needs to be refreshed.
+     */
+    private boolean needsRefresh(CacheEntry<V> entry, long currentTimeNanos) {
+        if (config.getRefreshAfterWrite() == null) {
+            return false;
+        }
+
+        long refreshThresholdNanos = entry.getCreationTimeNanos() + config.getRefreshAfterWrite().toNanos();
+        return currentTimeNanos > refreshThresholdNanos;
+    }
+
+    /**
+     * Schedules asynchronous refresh for an entry.
+     */
+    private void scheduleEntryRefresh(K key) {
+        scheduler.execute(() -> {
+            V newValue = loadValue(key);
+            if (newValue != null) {
+                put(key, newValue);
+                notifyListeners(listener -> listener.onLoad(key, newValue));
+            }
+        });
+    }
+
+    /**
+     * Updates statistics after removing an entry.
+     */
+    private void updateStatsAfterRemoval(K key, CacheEntry<V> entry) {
+        currentSize.decrementAndGet();
+        currentWeight.addAndGet(-entry.getWeight());
+        evictionStrategy.remove(key);
     }
 
     /**

@@ -67,14 +67,17 @@ class EdgeCaseIntegrationTest {
 
             @Override
             public void update(String key, CacheEntry<String> entry) {
+                // Intentionally empty for testing null-returning eviction strategy
             }
 
             @Override
             public void remove(String key) {
+                // Intentionally empty for testing null-returning eviction strategy
             }
 
             @Override
             public void clear() {
+                // Intentionally empty for testing null-returning eviction strategy
             }
         };
 
@@ -217,6 +220,9 @@ class EdgeCaseIntegrationTest {
                             case 3:
                                 cache.containsKey(key);
                                 break;
+                            default:
+                                // This should never happen since random.nextInt(4) returns 0-3
+                                throw new IllegalStateException("Unexpected value: " + random.nextInt(4));
                         }
                     }
                 } catch (Exception e) {

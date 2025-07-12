@@ -13,7 +13,7 @@ package io.github.dhruv1110.jcachex.exceptions;
  * </ul>
  *
  * <h3>Usage Examples:</h3>
- * 
+ *
  * <pre>{@code
  * try {
  *     cache.put(key, value);
@@ -32,7 +32,7 @@ package io.github.dhruv1110.jcachex.exceptions;
  */
 public class CacheOperationException extends CacheException {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1002L;
 
     /**
      * Constructs a new cache operation exception with the specified detail message.

@@ -16,6 +16,10 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import java.time.Duration
 
+object Constants {
+    const val PERCENTAGE_FORMAT = "%.2f%%"
+}
+
 @SpringBootApplication
 @EnableCaching
 class Application
@@ -144,7 +148,7 @@ class UserController(
         return mapOf(
             "userCache" to mapOf(
                 "size" to userCache.size(),
-                "hitRate" to String.format("%.2f%%", stats.hitRate() * 100),
+                "hitRate" to String.format(Constants.PERCENTAGE_FORMAT, stats.hitRate() * 100),
                 "hitCount" to stats.hitCount(),
                 "missCount" to stats.missCount(),
                 "evictionCount" to stats.evictionCount(),
@@ -152,7 +156,7 @@ class UserController(
             ),
             "performanceCache" to mapOf(
                 "size" to performanceCache.size(),
-                "hitRate" to String.format("%.2f%%", performanceCache.stats().hitRate() * 100)
+                "hitRate" to String.format(Constants.PERCENTAGE_FORMAT, performanceCache.stats().hitRate() * 100)
             )
         )
     }
@@ -307,7 +311,7 @@ class AnalyticsController(
         return mapOf(
             "cacheType" to "JIT_OPTIMIZED with ENHANCED_LFU",
             "frequencySketch" to "OPTIMIZED",
-            "hitRate" to String.format("%.2f%%", stats.hitRate() * 100),
+            "hitRate" to String.format(Constants.PERCENTAGE_FORMAT, stats.hitRate() * 100),
             "evictionCount" to stats.evictionCount(),
             "size" to analyticsCache.size()
         )

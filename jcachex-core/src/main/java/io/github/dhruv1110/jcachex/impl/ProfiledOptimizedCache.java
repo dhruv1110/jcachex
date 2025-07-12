@@ -35,6 +35,9 @@ import java.time.Duration;
  */
 public final class ProfiledOptimizedCache<K, V> implements Cache<K, V> {
 
+    // Constants for operation names
+    private static final String OP_GET_HIT = "get_hit";
+
     // Core data structures
     private final ConcurrentHashMap<K, ProfiledEntry<V>> data;
     private final AtomicLong hitCount;
@@ -133,7 +136,7 @@ public final class ProfiledOptimizedCache<K, V> implements Cache<K, V> {
             // Record performance
             long latency = System.nanoTime() - startTime;
             latencyTracker.recordHit(latency);
-            profiler.recordOperation("get_hit", latency);
+            profiler.recordOperation(OP_GET_HIT, latency);
 
             return value;
         } else {
@@ -586,8 +589,8 @@ public final class ProfiledOptimizedCache<K, V> implements Cache<K, V> {
             boolean shouldOptimizeCacheLines = false;
 
             // Analyze get operations
-            if (analysis.hasOperationStats("get_hit")) {
-                double avgLatency = analysis.getAverageLatency("get_hit");
+            if (analysis.hasOperationStats(OP_GET_HIT)) {
+                double avgLatency = analysis.getAverageLatency(OP_GET_HIT);
                 if (avgLatency > 50_000) { // > 50 microseconds
                     hasBottlenecks = true;
                     shouldOptimizeHotPath = true;
@@ -689,7 +692,7 @@ public final class ProfiledOptimizedCache<K, V> implements Cache<K, V> {
 
         final boolean hasMemoryBottlenecks() {
             // Simplified memory bottleneck detection
-            return getAverageLatency("get_hit") > 10_000; // > 10 microseconds
+            return getAverageLatency(OP_GET_HIT) > 10_000; // > 10 microseconds
         }
     }
 

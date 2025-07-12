@@ -96,51 +96,72 @@ public abstract class ConcurrentCacheBase<K, V> extends DataBackedCacheBase<K, V
     protected V doGet(K key) {
         CacheEntry<V> entry = data.get(key);
         if (entry != null) {
-            // Check expiration
-            if (isEntryExpired(entry)) {
-                // Remove expired entry
-                ReentrantReadWriteLock.WriteLock lock = getWriteLock(key);
-                lock.lock();
-                try {
-                    // Double-check after acquiring lock
-                    entry = data.get(key);
-                    if (entry != null && isEntryExpired(entry)) {
-                        data.remove(key);
-                        evictionStrategy.remove(key);
-                        currentSize.decrementAndGet();
-                        currentWeight.addAndGet(-entry.getWeight());
-                        // Cache miss due to expiration, try to load
-                        V loadedValue = loadValue(key);
-                        // Record as miss even if load succeeded
-                        recordGetStatistics(false);
-                        return loadedValue;
-                    }
-                } finally {
-                    lock.unlock();
-                }
-            }
-
-            if (entry != null) {
-                // Update access information
-                entry.incrementAccessCount();
-
-                // Update expiration time for access-based expiration
-                if (config.getExpireAfterAccess() != null) {
-                    entry.updateExpirationOnAccess(config.getExpireAfterAccess());
-                }
-
-                evictionStrategy.update(key, entry);
-                // Record hit
-                recordGetStatistics(true);
-                return entry.getValue();
-            }
+            return handleExistingEntry(key, entry);
         }
 
         // Cache miss - try to load value
         V loadedValue = loadValue(key);
-        // Record as miss even if load succeeded
         recordGetStatistics(false);
         return loadedValue;
+    }
+
+    /**
+     * Handles processing of an existing cache entry.
+     */
+    private V handleExistingEntry(K key, CacheEntry<V> entry) {
+        if (isEntryExpired(entry)) {
+            return handleExpiredEntry(key, entry);
+        }
+
+        return processValidEntry(key, entry);
+    }
+
+    /**
+     * Handles an expired cache entry.
+     */
+    private V handleExpiredEntry(K key, CacheEntry<V> entry) {
+        ReentrantReadWriteLock.WriteLock lock = getWriteLock(key);
+        lock.lock();
+        try {
+            // Double-check after acquiring lock
+            entry = data.get(key);
+            if (entry != null && isEntryExpired(entry)) {
+                removeExpiredEntry(key, entry);
+                V loadedValue = loadValue(key);
+                recordGetStatistics(false);
+                return loadedValue;
+            }
+        } finally {
+            lock.unlock();
+        }
+
+        // Entry was refreshed by another thread, process it normally
+        return entry != null ? processValidEntry(key, entry) : null;
+    }
+
+    /**
+     * Removes an expired entry from the cache.
+     */
+    private void removeExpiredEntry(K key, CacheEntry<V> entry) {
+        data.remove(key);
+        evictionStrategy.remove(key);
+        currentSize.decrementAndGet();
+        currentWeight.addAndGet(-entry.getWeight());
+    }
+
+    /**
+     * Processes a valid (non-expired) cache entry.
+     */
+    private V processValidEntry(K key, CacheEntry<V> entry) {
+        entry.incrementAccessCount();
+
+        if (config.getExpireAfterAccess() != null) {
+            entry.updateExpirationOnAccess(config.getExpireAfterAccess());
+        }
+
+        evictionStrategy.update(key, entry);
+        recordGetStatistics(true);
+        return entry.getValue();
     }
 
     @Override
@@ -329,46 +350,80 @@ public abstract class ConcurrentCacheBase<K, V> extends DataBackedCacheBase<K, V
      * Evict entries based on the eviction strategy, avoiding a specific key.
      */
     protected void evictEntries(K keyToAvoid) {
-        // Only evict one entry at a time to avoid over-eviction
-        if (isSizeLimitReached()) {
-            K candidateKey = evictionStrategy.selectEvictionCandidate(data);
+        if (!isSizeLimitReached()) {
+            return;
+        }
 
-            // If the selected key is the one we want to avoid, try to find another
-            if (candidateKey != null && keyToAvoid != null && candidateKey.equals(keyToAvoid)) {
-                // Create a temporary map without the key to avoid and let eviction strategy
-                // decide
-                Map<K, CacheEntry<V>> tempData = new HashMap<>(data);
-                tempData.remove(keyToAvoid);
-                if (!tempData.isEmpty()) {
-                    candidateKey = evictionStrategy.selectEvictionCandidate(tempData);
-                } else {
-                    candidateKey = null; // No alternative candidate available
-                }
+        K candidateKey = selectEvictionCandidate(keyToAvoid);
+        if (candidateKey != null && isValidEvictionCandidate(candidateKey, keyToAvoid)) {
+            performEviction(candidateKey);
+        }
+    }
+
+    /**
+     * Selects an eviction candidate, avoiding a specific key if possible.
+     */
+    private K selectEvictionCandidate(K keyToAvoid) {
+        K candidateKey = evictionStrategy.selectEvictionCandidate(data);
+
+        if (shouldFindAlternativeCandidate(candidateKey, keyToAvoid)) {
+            candidateKey = findAlternativeEvictionCandidate(keyToAvoid);
+        }
+
+        return candidateKey;
+    }
+
+    /**
+     * Checks if we need to find an alternative eviction candidate.
+     */
+    private boolean shouldFindAlternativeCandidate(K candidateKey, K keyToAvoid) {
+        return candidateKey != null && keyToAvoid != null && candidateKey.equals(keyToAvoid);
+    }
+
+    /**
+     * Finds an alternative eviction candidate by excluding the key to avoid.
+     */
+    private K findAlternativeEvictionCandidate(K keyToAvoid) {
+        Map<K, CacheEntry<V>> tempData = new HashMap<>(data);
+        tempData.remove(keyToAvoid);
+        return tempData.isEmpty() ? null : evictionStrategy.selectEvictionCandidate(tempData);
+    }
+
+    /**
+     * Checks if the candidate key is valid for eviction.
+     */
+    private boolean isValidEvictionCandidate(K candidateKey, K keyToAvoid) {
+        return candidateKey != null && (keyToAvoid == null || !candidateKey.equals(keyToAvoid));
+    }
+
+    /**
+     * Performs the actual eviction of the specified key.
+     */
+    private void performEviction(K keyToEvict) {
+        ReentrantReadWriteLock.WriteLock lock = getWriteLock(keyToEvict);
+        lock.lock();
+        try {
+            CacheEntry<V> removed = data.remove(keyToEvict);
+            if (removed != null) {
+                updateEvictionStats(keyToEvict, removed);
+                notifyListeners(listener -> listener.onEvict(keyToEvict, removed.getValue(),
+                        io.github.dhruv1110.jcachex.EvictionReason.SIZE));
             }
+        } finally {
+            lock.unlock();
+        }
+    }
 
-            final K keyToEvict = candidateKey;
-            if (keyToEvict != null && (keyToAvoid == null || !keyToEvict.equals(keyToAvoid))) {
-                ReentrantReadWriteLock.WriteLock lock = getWriteLock(keyToEvict);
-                lock.lock();
-                try {
-                    CacheEntry<V> removed = data.remove(keyToEvict);
-                    if (removed != null) {
-                        currentSize.decrementAndGet();
-                        currentWeight.addAndGet(-removed.getWeight());
-                        evictionStrategy.remove(keyToEvict);
+    /**
+     * Updates statistics and counters after eviction.
+     */
+    private void updateEvictionStats(K keyToEvict, CacheEntry<V> removed) {
+        currentSize.decrementAndGet();
+        currentWeight.addAndGet(-removed.getWeight());
+        evictionStrategy.remove(keyToEvict);
 
-                        // Record eviction statistics
-                        if (statsEnabled) {
-                            stats.getEvictionCount().incrementAndGet();
-                        }
-
-                        notifyListeners(listener -> listener.onEvict(keyToEvict, removed.getValue(),
-                                io.github.dhruv1110.jcachex.EvictionReason.SIZE));
-                    }
-                } finally {
-                    lock.unlock();
-                }
-            }
+        if (statsEnabled) {
+            stats.getEvictionCount().incrementAndGet();
         }
     }
 
