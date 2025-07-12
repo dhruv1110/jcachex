@@ -467,7 +467,7 @@ public abstract class UnifiedCacheBase<K, V> implements Cache<K, V> {
      * Gets the stripe index for a key.
      */
     protected int getStripeIndex(K key) {
-        return Math.abs(key.hashCode()) % STRIPE_COUNT;
+        return key.hashCode() & (STRIPE_COUNT - 1);
     }
 
     /**

@@ -278,7 +278,7 @@ public abstract class ConcurrentCacheBase<K, V> extends DataBackedCacheBase<K, V
      * Get the stripe index for a key to enable striped locking.
      */
     protected int getStripeIndex(K key) {
-        return Math.abs(key.hashCode()) & (STRIPE_COUNT - 1);
+        return key.hashCode() & (STRIPE_COUNT - 1);
     }
 
     /**
@@ -305,9 +305,6 @@ public abstract class ConcurrentCacheBase<K, V> extends DataBackedCacheBase<K, V
         }
     }
 
-    /**
-     * Evict entries based on the eviction strategy.
-     */
     /**
      * Determines if we should avoid evicting newly added entries.
      * FILO and FIFO strategies should not avoid evicting new entries.
