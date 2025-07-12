@@ -2,6 +2,7 @@ package io.github.dhruv1110.jcachex.impl;
 
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheEntry;
+import io.github.dhruv1110.jcachex.impl.base.OptimizedCacheBase;
 
 /**
  * JIT-optimized cache implementation focused on hot path performance.

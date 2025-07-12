@@ -1,8 +1,10 @@
-package io.github.dhruv1110.jcachex.spring;
+package io.github.dhruv1110.jcachex.spring.distributed;
 
 import io.github.dhruv1110.jcachex.CacheFactory;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
 import io.github.dhruv1110.jcachex.distributed.NetworkProtocol;
+import io.github.dhruv1110.jcachex.spring.configuration.JCacheXAutoConfiguration;
+import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;

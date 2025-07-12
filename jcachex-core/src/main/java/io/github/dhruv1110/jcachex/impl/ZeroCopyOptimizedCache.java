@@ -178,62 +178,53 @@ public final class ZeroCopyOptimizedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public final boolean containsKey(K key) {
-        return key != null && data.containsKey(key);
-    }
-
-    @Override
     public final CacheStats stats() {
-        return StatisticsProvider.createBasicStats(hitCount, missCount);
+        return CacheCommonOperations.createStats(hitCount, missCount);
     }
 
     @Override
     public final CacheConfig<K, V> config() {
-        return ConfigurationProvider.createBasicConfig(maximumSize, statsEnabled);
+        return CacheCommonOperations.createConfig(maximumSize, statsEnabled);
     }
 
     @Override
     public final Set<K> keys() {
-        return data.keySet();
+        return CacheCommonOperations.createKeysView(data);
     }
 
     @Override
     public final Collection<V> values() {
-        return data.values().stream()
-                .map(DirectEntry::getValueZeroCopy)
-                .filter(v -> v != null)
-                .collect(java.util.stream.Collectors.toList());
+        return CacheCommonOperations.createValuesView(data, DirectEntry::getValueZeroCopy);
     }
 
     @Override
     public final Set<Map.Entry<K, V>> entries() {
-        return data.entrySet().stream()
-                .map(e -> {
-                    V value = e.getValue().getValueZeroCopy();
-                    return value != null ? (Map.Entry<K, V>) new AbstractMap.SimpleEntry<>(e.getKey(), value) : null;
-                })
-                .filter(e -> e != null)
-                .collect(java.util.stream.Collectors.toSet());
+        return CacheCommonOperations.createEntriesView(data, DirectEntry::getValueZeroCopy);
+    }
+
+    @Override
+    public final boolean containsKey(K key) {
+        return CacheCommonOperations.containsKey(key, data);
     }
 
     @Override
     public final CompletableFuture<V> getAsync(K key) {
-        return CompletableFuture.completedFuture(get(key));
+        return CacheCommonOperations.createAsyncGet(key, () -> get(key));
     }
 
     @Override
     public final CompletableFuture<Void> putAsync(K key, V value) {
-        return CompletableFuture.runAsync(() -> put(key, value));
+        return CacheCommonOperations.createAsyncPut(key, value, () -> put(key, value));
     }
 
     @Override
     public final CompletableFuture<V> removeAsync(K key) {
-        return CompletableFuture.completedFuture(remove(key));
+        return CacheCommonOperations.createAsyncRemove(key, () -> remove(key));
     }
 
     @Override
     public final CompletableFuture<Void> clearAsync() {
-        return CompletableFuture.runAsync(this::clear);
+        return CacheCommonOperations.createAsyncClear(this::clear);
     }
 
     /**

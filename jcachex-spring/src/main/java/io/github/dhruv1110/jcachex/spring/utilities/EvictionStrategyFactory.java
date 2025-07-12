@@ -1,7 +1,8 @@
-package io.github.dhruv1110.jcachex.spring;
+package io.github.dhruv1110.jcachex.spring.utilities;
 
 import io.github.dhruv1110.jcachex.FrequencySketchType;
 import io.github.dhruv1110.jcachex.eviction.*;
+import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
 
 import java.util.HashMap;
 import java.util.Map;

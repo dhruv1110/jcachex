@@ -71,23 +71,6 @@ public final class CacheProfileBuilder {
     }
 
     /**
-     * Creates a new profile builder for a custom profile.
-     *
-     * @param customName the custom profile name
-     * @return a new builder instance
-     * @deprecated Use ProfileName enum for type safety
-     */
-    @Deprecated
-    public static CacheProfileBuilder create(String customName) {
-        if (customName == null || customName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Profile name cannot be null or empty");
-        }
-        // For backward compatibility, create a custom profile
-        // This would need to be handled differently in a real implementation
-        throw new UnsupportedOperationException("Custom profile names not yet supported. Use ProfileName enum.");
-    }
-
-    /**
      * Sets the profile description.
      *
      * @param description human-readable description

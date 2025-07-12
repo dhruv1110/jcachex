@@ -191,47 +191,43 @@ public final class JVMOptimizedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public final boolean containsKey(K key) {
-        return key != null && data.containsKey(key);
-    }
-
-    @Override
     public final CacheStats stats() {
-        return StatisticsProvider.createBasicStats(hitCount, missCount);
+        return CacheCommonOperations.createStats(hitCount, missCount);
     }
 
     @Override
     public final CacheConfig<K, V> config() {
-        return ConfigurationProvider.createBasicConfig(maximumSize, statsEnabled);
+        return CacheCommonOperations.createConfig(maximumSize, statsEnabled);
     }
 
     @Override
     public final Set<K> keys() {
-        return data.keySet();
+        return CacheCommonOperations.createKeysView(data);
     }
 
     @Override
     public final Collection<V> values() {
-        return data.values().stream()
-                .map(JVMEntry::getValue)
-                .collect(java.util.stream.Collectors.toList());
+        return CacheCommonOperations.createValuesView(data, JVMEntry::getValue);
     }
 
     @Override
     public final Set<Map.Entry<K, V>> entries() {
-        return data.entrySet().stream()
-                .map(e -> (Map.Entry<K, V>) new AbstractMap.SimpleEntry<>(e.getKey(), e.getValue().getValue()))
-                .collect(java.util.stream.Collectors.toSet());
+        return CacheCommonOperations.createEntriesView(data, JVMEntry::getValue);
+    }
+
+    @Override
+    public final boolean containsKey(K key) {
+        return CacheCommonOperations.containsKey(key, data);
     }
 
     @Override
     public final CompletableFuture<V> getAsync(K key) {
-        return CompletableFuture.completedFuture(get(key));
+        return CacheCommonOperations.createAsyncGet(key, () -> get(key));
     }
 
     @Override
     public final CompletableFuture<Void> putAsync(K key, V value) {
-        return CompletableFuture.runAsync(() -> put(key, value));
+        return CacheCommonOperations.createAsyncPut(key, value, () -> put(key, value));
     }
 
     @Override

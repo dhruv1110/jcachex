@@ -1,8 +1,14 @@
-package io.github.dhruv1110.jcachex.spring;
+package io.github.dhruv1110.jcachex.spring.core;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
+import io.github.dhruv1110.jcachex.UnifiedCacheBuilder;
+import io.github.dhruv1110.jcachex.CacheBuilder;
 import io.github.dhruv1110.jcachex.impl.*;
+import io.github.dhruv1110.jcachex.profiles.CacheProfile;
+import io.github.dhruv1110.jcachex.profiles.ProfileRegistry;
+import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
+import io.github.dhruv1110.jcachex.spring.utilities.EvictionStrategyFactory;
 
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,8 +84,6 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class JCacheXCacheFactory {
 
-    private static final String NULL_CACHE_NAME = "<null>";
-
     private final JCacheXProperties properties;
     private final EvictionStrategyFactory evictionStrategyFactory;
     private final ConcurrentMap<String, Cache<?, ?>> cacheRegistry = new ConcurrentHashMap<>();
@@ -111,7 +115,7 @@ public class JCacheXCacheFactory {
      */
     @SuppressWarnings("unchecked")
     public <K, V> Cache<K, V> createCache(String cacheName) {
-        String key = cacheName == null ? NULL_CACHE_NAME : cacheName;
+        String key = cacheName == null ? "<null>" : cacheName;
         return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, this::createCacheInternal);
     }
 
@@ -128,13 +132,8 @@ public class JCacheXCacheFactory {
      */
     @SuppressWarnings("unchecked")
     public <K, V> Cache<K, V> createCache(String cacheName, Class<K> keyType, Class<V> valueType) {
-        String key = cacheName == null ? NULL_CACHE_NAME : cacheName;
-        return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, name -> {
-            CacheConfig.Builder<K, V> builder = createBaseConfiguration(name);
-            CacheConfig<K, V> config = builder.build();
-            String cacheType = getCacheTypeForName(name);
-            return createCacheByType(cacheType, config);
-        });
+        String key = cacheName == null ? "<null>" : cacheName;
+        return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, this::createCacheWithModernPatterns);
     }
 
     /**
@@ -148,13 +147,20 @@ public class JCacheXCacheFactory {
      */
     @SuppressWarnings("unchecked")
     public <K, V> Cache<K, V> createCache(String cacheName, CacheConfigurator<K, V> configurator) {
-        String key = cacheName == null ? NULL_CACHE_NAME : cacheName;
+        String key = cacheName == null ? "<null>" : cacheName;
         return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, name -> {
+            // For custom configurators, we need to create a base cache and apply custom
+            // config
+            Cache<K, V> baseCache = createCacheWithModernPatterns(name);
+
+            // If we need to apply custom configuration, we'll create a new cache
+            // with the configurator applied to the base configuration
             CacheConfig.Builder<K, V> builder = createBaseConfiguration(name);
             configurator.configure(builder);
             CacheConfig<K, V> config = builder.build();
-            String cacheType = getCacheTypeForName(name);
-            return createCacheByType(cacheType, config);
+
+            // Create cache using the DefaultCache with custom config
+            return new DefaultCache<>(config);
         });
     }
 
@@ -172,13 +178,15 @@ public class JCacheXCacheFactory {
     @SuppressWarnings("unchecked")
     public <K, V> Cache<K, V> createCache(String cacheName, Class<K> keyType, Class<V> valueType,
             CacheConfigurator<K, V> configurator) {
-        String key = cacheName == null ? NULL_CACHE_NAME : cacheName;
+        String key = cacheName == null ? "<null>" : cacheName;
         return (Cache<K, V>) cacheRegistry.computeIfAbsent(key, name -> {
+            // For custom configurators, apply custom config to base configuration
             CacheConfig.Builder<K, V> builder = createBaseConfiguration(name);
             configurator.configure(builder);
             CacheConfig<K, V> config = builder.build();
-            String cacheType = getCacheTypeForName(name);
-            return createCacheByType(cacheType, config);
+
+            // Create cache using the DefaultCache with custom config
+            return new DefaultCache<>(config);
         });
     }
 
@@ -238,80 +246,223 @@ public class JCacheXCacheFactory {
     }
 
     /**
-     * Creates a cache instance using the internal logic.
+     * Creates a cache instance using the internal logic with new design patterns.
      */
     private Cache<?, ?> createCacheInternal(String cacheName) {
-        CacheConfig.Builder<Object, Object> builder = createBaseConfiguration(cacheName);
-        CacheConfig<Object, Object> config = builder.build();
-
-        // Determine cache type from configuration
-        String cacheType = getCacheTypeForName(cacheName);
-
-        return createCacheByType(cacheType, config);
+        return createCacheWithModernPatterns(cacheName);
     }
 
     /**
-     * Gets the cache type configuration for a specific cache name.
-     */
-    private String getCacheTypeForName(String cacheName) {
-        // Check named cache configuration first
-        if (properties.getCaches() != null && properties.getCaches().containsKey(cacheName)) {
-            JCacheXProperties.CacheConfig namedConfig = properties.getCaches().get(cacheName);
-            if (namedConfig != null && namedConfig.getCacheType() != null) {
-                return namedConfig.getCacheType();
-            }
-        }
-
-        // Fall back to default configuration
-        JCacheXProperties.CacheConfig defaultConfig = properties.getDefaultConfig();
-        if (defaultConfig != null && defaultConfig.getCacheType() != null) {
-            return defaultConfig.getCacheType();
-        }
-
-        return "DEFAULT";
-    }
-
-    /**
-     * Creates a cache instance based on the specified type.
+     * Creates a cache instance using modern design patterns with profile support.
+     *
+     * This method uses the new UnifiedCacheBuilder and profile system to create
+     * optimal cache instances based on configuration.
      */
     @SuppressWarnings("unchecked")
-    private <K, V> Cache<K, V> createCacheByType(String cacheType, CacheConfig<K, V> config) {
+    private <K, V> Cache<K, V> createCacheWithModernPatterns(String cacheName) {
+        JCacheXProperties.CacheConfig cacheConfig = getCacheConfig(cacheName);
+
+        // Check if a profile is specified in configuration
+        String profileName = cacheConfig.getProfile();
+        if (profileName != null && !profileName.trim().isEmpty()) {
+            return createCacheWithProfile(cacheName, profileName, cacheConfig);
+        }
+
+        // Check if a specific cache type is requested (for backward compatibility)
+        String cacheType = cacheConfig.getCacheType();
+        if (cacheType != null && !cacheType.trim().isEmpty() && !"DEFAULT".equalsIgnoreCase(cacheType)) {
+            return createCacheWithType(cacheName, cacheType, cacheConfig);
+        }
+
+        // Use smart defaults when no profile or specific type is specified
+        return createCacheWithSmartDefaults(cacheName, cacheConfig);
+    }
+
+    /**
+     * Creates a cache using the UnifiedCacheBuilder with the specified profile.
+     */
+    @SuppressWarnings("unchecked")
+    private <K, V> Cache<K, V> createCacheWithProfile(String cacheName, String profileName,
+            JCacheXProperties.CacheConfig cacheConfig) {
+
+        CacheProfile<?, ?> profile = getProfileByName(profileName);
+        UnifiedCacheBuilder<Object, Object> builder = UnifiedCacheBuilder.forProfile(profile);
+
+        // Apply cache name
+        builder.name(cacheName);
+
+        // Apply configuration settings
+        applyCacheConfiguration(builder, cacheConfig);
+
+        return (Cache<K, V>) builder.build();
+    }
+
+    /**
+     * Creates a cache using CacheBuilder with the specified cache type for backward
+     * compatibility.
+     */
+    @SuppressWarnings("unchecked")
+    private <K, V> Cache<K, V> createCacheWithType(String cacheName, String cacheType,
+            JCacheXProperties.CacheConfig cacheConfig) {
+
+        CacheBuilder.CacheType builderCacheType = mapCacheType(cacheType);
+        CacheBuilder<Object, Object> builder = CacheBuilder.<Object, Object>newBuilder()
+                .cacheType(builderCacheType);
+
+        // Apply configuration settings via CacheConfig
+        CacheConfig.Builder<Object, Object> configBuilder = CacheConfig.newBuilder();
+        applyCacheConfig(configBuilder, cacheConfig);
+        CacheConfig<Object, Object> config = configBuilder.build();
+
+        // Apply settings to CacheBuilder
+        applyCacheConfigToBuilder(builder, config);
+
+        return (Cache<K, V>) builder.build();
+    }
+
+    /**
+     * Creates a cache using smart defaults when no profile or type is specified.
+     */
+    @SuppressWarnings("unchecked")
+    private <K, V> Cache<K, V> createCacheWithSmartDefaults(String cacheName,
+            JCacheXProperties.CacheConfig cacheConfig) {
+
+        UnifiedCacheBuilder<Object, Object> builder = UnifiedCacheBuilder.withSmartDefaults();
+
+        // Apply cache name
+        builder.name(cacheName);
+
+        // Apply configuration settings
+        applyCacheConfiguration(builder, cacheConfig);
+
+        return (Cache<K, V>) builder.build();
+    }
+
+    /**
+     * Gets the cache configuration for the specified cache name.
+     */
+    private JCacheXProperties.CacheConfig getCacheConfig(String cacheName) {
+        JCacheXProperties.CacheConfig namedConfig = null;
+        if (properties.getCaches() != null) {
+            namedConfig = properties.getCaches().get(cacheName);
+        }
+
+        // Return named config if available, otherwise default config
+        return namedConfig != null ? namedConfig : properties.getDefaultConfig();
+    }
+
+    /**
+     * Gets a cache profile by name with proper fallback handling.
+     */
+    @SuppressWarnings("unchecked")
+    private CacheProfile<Object, Object> getProfileByName(String profileName) {
+        if (profileName == null || profileName.trim().isEmpty()) {
+            return ProfileRegistry.getDefaultProfile();
+        }
+
+        CacheProfile<Object, Object> profile = ProfileRegistry.getProfile(profileName.toUpperCase());
+        return profile != null ? profile : ProfileRegistry.getDefaultProfile();
+    }
+
+    /**
+     * Maps string cache type to CacheBuilder.CacheType enum.
+     */
+    private CacheBuilder.CacheType mapCacheType(String cacheType) {
+        if (cacheType == null)
+            return CacheBuilder.CacheType.DEFAULT;
+
         switch (cacheType.toUpperCase()) {
             case "OPTIMIZED":
-                return new OptimizedCache<>(config);
+                return CacheBuilder.CacheType.OPTIMIZED;
             case "JIT_OPTIMIZED":
             case "JIT-OPTIMIZED":
-                return new JITOptimizedCache<>(config);
+                return CacheBuilder.CacheType.JIT_OPTIMIZED;
             case "ALLOCATION_OPTIMIZED":
             case "ALLOCATION-OPTIMIZED":
-                return new AllocationOptimizedCache<>(config);
+                return CacheBuilder.CacheType.ALLOCATION_OPTIMIZED;
             case "LOCALITY_OPTIMIZED":
             case "LOCALITY-OPTIMIZED":
-                return new CacheLocalityOptimizedCache<>(config);
+                return CacheBuilder.CacheType.LOCALITY_OPTIMIZED;
             case "ZERO_COPY_OPTIMIZED":
             case "ZERO-COPY-OPTIMIZED":
-                return new ZeroCopyOptimizedCache<>(config);
+                return CacheBuilder.CacheType.ZERO_COPY_OPTIMIZED;
             case "READ_ONLY_OPTIMIZED":
             case "READ-ONLY-OPTIMIZED":
-                return new ReadOnlyOptimizedCache<>(config);
+                return CacheBuilder.CacheType.READ_ONLY_OPTIMIZED;
             case "WRITE_HEAVY_OPTIMIZED":
             case "WRITE-HEAVY-OPTIMIZED":
-                return new WriteHeavyOptimizedCache<>(config);
+                return CacheBuilder.CacheType.WRITE_HEAVY_OPTIMIZED;
             case "JVM_OPTIMIZED":
             case "JVM-OPTIMIZED":
-                return new JVMOptimizedCache<>(config);
+                return CacheBuilder.CacheType.JVM_OPTIMIZED;
             case "HARDWARE_OPTIMIZED":
             case "HARDWARE-OPTIMIZED":
-                return new HardwareOptimizedCache<>(config);
+                return CacheBuilder.CacheType.HARDWARE_OPTIMIZED;
             case "ML_OPTIMIZED":
             case "ML-OPTIMIZED":
-                return new MLOptimizedCache<>(config);
+                return CacheBuilder.CacheType.ML_OPTIMIZED;
             case "PROFILED_OPTIMIZED":
             case "PROFILED-OPTIMIZED":
-                return new ProfiledOptimizedCache<>(config);
+                return CacheBuilder.CacheType.PROFILED_OPTIMIZED;
             case "DEFAULT":
             default:
-                return new DefaultCache<>(config);
+                return CacheBuilder.CacheType.DEFAULT;
+        }
+    }
+
+    /**
+     * Applies cache configuration to UnifiedCacheBuilder.
+     */
+    private void applyCacheConfiguration(UnifiedCacheBuilder<Object, Object> builder,
+            JCacheXProperties.CacheConfig config) {
+
+        if (config.getMaximumSize() != null) {
+            builder.maximumSize(config.getMaximumSize());
+        }
+
+        if (config.getExpireAfterSeconds() != null) {
+            builder.expireAfterWrite(Duration.ofSeconds(config.getExpireAfterSeconds()));
+        }
+
+        if (config.getExpireAfterAccessSeconds() != null) {
+            builder.expireAfterAccess(Duration.ofSeconds(config.getExpireAfterAccessSeconds()));
+        }
+
+        if (config.getRefreshAfterWriteSeconds() != null) {
+            builder.refreshAfterWrite(Duration.ofSeconds(config.getRefreshAfterWriteSeconds()));
+        }
+
+        // Enable statistics based on configuration
+        boolean enableStats = config.getEnableStatistics() == null || config.getEnableStatistics();
+        builder.recordStats(enableStats);
+    }
+
+    /**
+     * Applies CacheConfig settings to CacheBuilder for backward compatibility.
+     */
+    private void applyCacheConfigToBuilder(CacheBuilder<Object, Object> builder, CacheConfig<Object, Object> config) {
+        if (config.getMaximumSize() != null) {
+            builder.maximumSize(config.getMaximumSize());
+        }
+
+        if (config.getMaximumWeight() != null) {
+            builder.maximumWeight(config.getMaximumWeight());
+        }
+
+        if (config.getExpireAfterWrite() != null) {
+            builder.expireAfterWrite(config.getExpireAfterWrite());
+        }
+
+        if (config.getExpireAfterAccess() != null) {
+            builder.expireAfterAccess(config.getExpireAfterAccess());
+        }
+
+        if (config.getRefreshAfterWrite() != null) {
+            builder.refreshAfterWrite(config.getRefreshAfterWrite());
+        }
+
+        if (config.isRecordStats()) {
+            builder.recordStats();
         }
     }
 

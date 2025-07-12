@@ -1,14 +1,13 @@
-package io.github.dhruv1110.jcachex.impl;
+package io.github.dhruv1110.jcachex.impl.base;
 
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.CacheEntry;
+import io.github.dhruv1110.jcachex.impl.ConfigurationProvider;
 
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.function.Function;
 
 /**
  * Abstract base class for cache implementations that store data in a

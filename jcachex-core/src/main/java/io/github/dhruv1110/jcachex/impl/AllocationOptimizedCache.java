@@ -2,8 +2,9 @@ package io.github.dhruv1110.jcachex.impl;
 
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheEntry;
+import io.github.dhruv1110.jcachex.impl.base.OptimizedCacheBase;
+
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Allocation-optimized cache implementation that minimizes object allocation

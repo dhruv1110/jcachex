@@ -1,4 +1,4 @@
-package io.github.dhruv1110.jcachex.spring;
+package io.github.dhruv1110.jcachex.spring.core;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
@@ -6,6 +6,8 @@ import io.github.dhruv1110.jcachex.UnifiedCacheBuilder;
 import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import io.github.dhruv1110.jcachex.profiles.CacheProfile;
 import io.github.dhruv1110.jcachex.profiles.ProfileRegistry;
+import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
+import io.github.dhruv1110.jcachex.spring.utilities.EvictionStrategyFactory;
 import org.springframework.cache.CacheManager;
 import org.springframework.lang.Nullable;
 

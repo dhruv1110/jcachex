@@ -1,4 +1,4 @@
-package io.github.dhruv1110.jcachex.impl;
+package io.github.dhruv1110.jcachex.impl.base;
 
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheEntry;
@@ -7,18 +7,14 @@ import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy;
 
 import java.time.Instant;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 /**
  * Base class for concurrent cache implementations providing thread-safety
@@ -282,7 +278,7 @@ public abstract class ConcurrentCacheBase<K, V> extends DataBackedCacheBase<K, V
      * Get the stripe index for a key to enable striped locking.
      */
     protected int getStripeIndex(K key) {
-        return Math.abs(key.hashCode()) & (STRIPE_COUNT - 1);
+        return key.hashCode() & (STRIPE_COUNT - 1);
     }
 
     /**
@@ -309,9 +305,6 @@ public abstract class ConcurrentCacheBase<K, V> extends DataBackedCacheBase<K, V
         }
     }
 
-    /**
-     * Evict entries based on the eviction strategy.
-     */
     /**
      * Determines if we should avoid evicting newly added entries.
      * FILO and FIFO strategies should not avoid evicting new entries.

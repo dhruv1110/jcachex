@@ -1,8 +1,9 @@
-package io.github.dhruv1110.jcachex.spring;
+package io.github.dhruv1110.jcachex.spring.distributed;
 
 import io.github.dhruv1110.jcachex.CacheFactory;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache.ConsistencyLevel;
+import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
 
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;

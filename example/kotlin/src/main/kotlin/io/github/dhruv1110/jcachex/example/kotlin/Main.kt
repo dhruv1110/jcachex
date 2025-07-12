@@ -1,341 +1,401 @@
 package io.github.dhruv1110.jcachex.example.kotlin
 
 import io.github.dhruv1110.jcachex.kotlin.*
-import io.github.dhruv1110.jcachex.FrequencySketchType
-import io.github.dhruv1110.jcachex.eviction.EvictionStrategy
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import io.github.dhruv1110.jcachex.UnifiedCacheBuilder
+import io.github.dhruv1110.jcachex.CacheBuilder
+import io.github.dhruv1110.jcachex.profiles.ProfileRegistry
+import io.github.dhruv1110.jcachex.CacheEventListener
+import kotlinx.coroutines.*
 import java.time.Duration
+import kotlin.random.Random
 
+/**
+ * Sample data classes for demonstration
+ */
 data class User(
     val id: String,
     val name: String,
     val email: String,
-    val preferences: Map<String, String> = emptyMap()
+    val isActive: Boolean = true
 )
 
+data class Product(
+    val id: String,
+    val name: String,
+    val price: Double,
+    val category: String
+)
+
+data class Session(
+    val id: String,
+    val userId: String,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+/**
+ * Comprehensive demonstration of JCacheX Kotlin Extensions with New Unified Cache Creation
+ */
 fun main() {
-    println("=== JCacheX Kotlin Advanced Features Demo ===\n")
+    println("=== JCacheX Kotlin Extensions Demo (New Unified Patterns) ===\n")
 
     runBlocking {
-        // Demonstrate basic usage with new default
-        demonstrateBasicUsage()
+        // 1. Basic Extensions & Operator Overloading
+        demonstrateBasicExtensionsAndOperators()
 
-        // Demonstrate specialized cache types
-        demonstrateSpecializedCacheTypes()
+        // 2. Profile-based Cache Creation
+        demonstrateProfileBasedCaches()
 
-        // Demonstrate enhanced eviction strategies
-        demonstrateEnhancedEvictionStrategies()
+        // 3. Coroutine Support
+        demonstrateCoroutineSupport()
 
-        // Demonstrate frequency sketch options
-        demonstrateFrequencySketchOptions()
+        // 4. Collection-like Operations
+        demonstrateCollectionOperations()
 
-        // Demonstrate async operations with coroutines
-        demonstrateAsyncOperations()
+        // 5. Statistics and Monitoring
+        demonstrateStatisticsAndMonitoring()
 
-        // Demonstrate performance testing
-        demonstratePerformanceTesting()
+        // 6. Advanced Operations
+        demonstrateAdvancedOperations()
     }
 
     println("\n=== Demo Complete ===")
 }
 
-private suspend fun demonstrateBasicUsage() {
-    println("=== Basic Usage (TinyWindowLFU Default) ===")
+// ===== BASIC EXTENSIONS & OPERATOR OVERLOADING =====
 
-    // Create cache with Kotlin DSL (TinyWindowLFU is now default)
-    val userCache = createCache<String, User> {
-        maximumSize(1000)
-        expireAfterWrite(Duration.ofHours(2))
-        expireAfterAccess(Duration.ofMinutes(30))
-        frequencySketchType(FrequencySketchType.BASIC)
-        recordStats(true)
-    }
+private suspend fun demonstrateBasicExtensionsAndOperators() {
+    println("=== 1. Basic Extensions & Operator Overloading ===")
 
-    // Basic operations with operator overloading
-    userCache["user:123"] = User("123", "Alice Johnson", "alice@example.com")
-    userCache["user:456"] = User("456", "Bob Wilson", "bob@example.com")
+    // Create cache with new unified builder
+    val userCache = CacheBuilder.newBuilder<String, User>()
+        .maximumSize(100)
+        .expireAfterWrite(Duration.ofMinutes(30))
+        .recordStats(true)
+        .build()
 
-    val user = userCache["user:123"]
-    println("Retrieved user: ${user?.name}")
+    // Operator overloading demonstrations
+    println("--- Operator Overloading ---")
 
-    // Test cache operations
-    val cachedUser = userCache["user:456"]
-    println("Retrieved cached user: ${cachedUser?.name}")
+    // Array-like syntax
+    userCache["user1"] = User("1", "Alice", "alice@example.com")
+    userCache["user2"] = User("2", "Bob", "bob@example.com")
 
-    printCacheStats(userCache, "Basic Cache")
+    // += operator with Pair
+    userCache += "user3" to User("3", "Charlie", "charlie@example.com")
+
+    // Check presence with 'in' operator
+    println("User1 exists: ${"user1" in userCache}")
+    println("User4 exists: ${"user4" in userCache}")
+
+    // Get value with array syntax
+    val user1 = userCache["user1"]
+    println("Retrieved user: ${user1?.name}")
+
+    // Remove with -= operator
+    userCache -= "user3"
+    println("After removal, User3 exists: ${"user3" in userCache}")
+
+    // getOrDefault extension
+    val defaultUser = userCache.getOrDefault("missing", User("default", "Default User", "default@example.com"))
+    println("Default user: ${defaultUser.name}")
+
+    // Basic cache info
+    println("Cache size: ${userCache.size()}")
+    println("Cache empty: ${userCache.isEmpty()}")
+    println("Cache not empty: ${userCache.isNotEmpty()}")
+
     println()
 }
 
-private suspend fun demonstrateSpecializedCacheTypes() {
-    println("=== Specialized Cache Types ===")
+// ===== PROFILE-BASED CACHE CREATION =====
 
-    // Read-optimized cache (fastest GET performance)
-    val productCache = createReadOnlyOptimizedCache<String, String> {
-        maximumSize(5000)
-        expireAfterWrite(Duration.ofHours(2))
-        recordStats(true)
-    }
+private suspend fun demonstrateProfileBasedCaches() {
+    println("=== 2. Profile-based Cache Creation with New Patterns ===")
 
-    // Write-optimized cache
-    val sessionCache = createWriteHeavyOptimizedCache<String, String> {
-        maximumSize(10000)
-        expireAfterAccess(Duration.ofMinutes(30))
-        recordStats(true)
-    }
+    // Create caches using profiles from the registry
+    val readHeavyCache = UnifiedCacheBuilder.forProfile<String, String>(ProfileRegistry.getProfile("READ_HEAVY"))
+        .maximumSize(1000)
+        .recordStats(true)
+        .build()
 
-    // Memory-optimized cache
-    val configCache = createAllocationOptimizedCache<String, String> {
-        maximumSize(100)
-        expireAfterWrite(Duration.ofHours(12))
-        recordStats(true)
-    }
+    val writeHeavyCache = UnifiedCacheBuilder.forProfile<String, String>(ProfileRegistry.getProfile("WRITE_HEAVY"))
+        .maximumSize(500)
+        .recordStats(true)
+        .build()
 
-    // High-performance cache
-    val performanceCache = createJITOptimizedCache<String, String> {
-        maximumSize(1000)
-        expireAfterWrite(Duration.ofMinutes(15))
-        recordStats(true)
-    }
+    val memoryEfficientCache = UnifiedCacheBuilder.forProfile<String, String>(ProfileRegistry.getProfile("MEMORY_EFFICIENT"))
+        .maximumSize(100)
+        .recordStats(true)
+        .build()
 
-    // Test specialized caches
-    testCacheType(productCache, "ReadOnly Optimized", "Expected ~11.5ns GET")
-    testCacheType(performanceCache, "JIT Optimized", "Expected ~24.6ns GET, ~63.8ns PUT")
+    val highPerformanceCache = UnifiedCacheBuilder.forProfile<String, String>(ProfileRegistry.getProfile("HIGH_PERFORMANCE"))
+        .maximumSize(2000)
+        .recordStats(true)
+        .build()
 
-    // Show cache type identification
-    println("Cache Types:")
-    println("Product cache type: ${productCache.cacheType}")
-    println("Performance cache type: ${performanceCache.cacheType}")
+    // Test each cache type
+    println("--- Profile-based Caches ---")
+
+    val testData = "Test data for cache"
+
+    readHeavyCache["read-test"] = testData
+    writeHeavyCache["write-test"] = testData
+    memoryEfficientCache["memory-test"] = testData
+    highPerformanceCache["perf-test"] = testData
+
+    println("Read-heavy cache size: ${readHeavyCache.size()}")
+    println("Write-heavy cache size: ${writeHeavyCache.size()}")
+    println("Memory-efficient cache size: ${memoryEfficientCache.size()}")
+    println("High-performance cache size: ${highPerformanceCache.size()}")
+
     println()
 }
 
-private suspend fun demonstrateEnhancedEvictionStrategies() {
-    println("=== Enhanced Eviction Strategies ===")
+// ===== COROUTINE SUPPORT =====
 
-    // Enhanced LRU with frequency sketch
-    val enhancedLRUCache = createCache<String, String> {
-        maximumSize(50)
-        evictionStrategy(EvictionStrategy.ENHANCED_LRU<String, String>())
-        frequencySketchType(FrequencySketchType.BASIC)
-        recordStats(true)
+private suspend fun demonstrateCoroutineSupport() {
+    println("=== 3. Coroutine Support ===")
+
+    val apiCache = CacheBuilder.newBuilder<String, String>()
+        .maximumSize(50)
+        .expireAfterWrite(Duration.ofMinutes(5))
+        .recordStats(true)
+        .build()
+
+    // Simulate async API calls
+    suspend fun fetchDataFromAPI(endpoint: String): String {
+        delay(100) // Simulate network delay
+        return "Data from $endpoint at ${System.currentTimeMillis()}"
     }
 
-    // Enhanced LFU with frequency buckets
-    val enhancedLFUCache = createCache<String, String> {
-        maximumSize(50)
-        evictionStrategy(EvictionStrategy.ENHANCED_LFU<String, String>())
-        frequencySketchType(FrequencySketchType.OPTIMIZED)
-        recordStats(true)
+    // getOrPut with coroutines
+    println("--- Coroutine getOrPut ---")
+    val data1 = apiCache.getOrPut("api/users") {
+        fetchDataFromAPI("api/users")
     }
+    println("First call result: $data1")
 
-    // TinyWindowLFU (default) - hybrid approach
-    val tinyWindowLFUCache = createCache<String, String> {
-        maximumSize(50)
-        evictionStrategy(EvictionStrategy.TINY_WINDOW_LFU<String, String>())
-        recordStats(true)
+    // Second call should be from cache
+    val data2 = apiCache.getOrPut("api/users") {
+        fetchDataFromAPI("api/users")
     }
+    println("Second call result: $data2")
+    println("Results are same (cached): ${data1 == data2}")
 
-    // Test with skewed access patterns
-    testSkewedAccessPattern(enhancedLRUCache, "Enhanced LRU")
-    testSkewedAccessPattern(enhancedLFUCache, "Enhanced LFU")
-    testSkewedAccessPattern(tinyWindowLFUCache, "TinyWindowLFU")
+    // getOrPutAsync with key parameter
+    println("\n--- Async Operations ---")
+    val asyncData = apiCache.getOrPutAsync("api/products") { key ->
+        fetchDataFromAPI(key)
+    }
+    println("Async data: $asyncData")
+
     println()
 }
 
-private suspend fun demonstrateFrequencySketchOptions() {
-    println("=== Frequency Sketch Options ===")
+// ===== COLLECTION-LIKE OPERATIONS =====
 
-    // No frequency sketch - minimal overhead
-    val noSketchCache = createCache<String, String> {
-        maximumSize(100)
-        evictionStrategy(EvictionStrategy.ENHANCED_LRU<String, String>())
-        frequencySketchType(FrequencySketchType.NONE)
-        recordStats(true)
+private suspend fun demonstrateCollectionOperations() {
+    println("=== 4. Collection-like Operations ===")
+
+    val productCache = CacheBuilder.newBuilder<String, Product>()
+        .maximumSize(20)
+        .recordStats(true)
+        .build()
+
+    // Populate cache
+    val products = listOf(
+        Product("1", "Laptop", 999.99, "Electronics"),
+        Product("2", "Mouse", 29.99, "Electronics"),
+        Product("3", "Desk", 199.99, "Furniture"),
+        Product("4", "Chair", 149.99, "Furniture"),
+        Product("5", "Monitor", 299.99, "Electronics")
+    )
+
+    // Bulk operations
+    val productMap = products.associateBy { it.id }
+    productCache.putAll(productMap)
+
+    println("--- Collection Operations ---")
+    println("Total products: ${productCache.size()}")
+
+    // forEach extension
+    println("\nAll products:")
+    productCache.forEach { (id, product) ->
+        println("  $id: ${product.name} - \$${product.price}")
     }
 
-    // Basic frequency sketch - balanced approach (default)
-    val basicSketchCache = createCache<String, String> {
-        maximumSize(100)
-        evictionStrategy(EvictionStrategy.ENHANCED_LRU<String, String>())
-        frequencySketchType(FrequencySketchType.BASIC)
-        recordStats(true)
-    }
-
-    // Optimized frequency sketch - maximum accuracy
-    val optimizedSketchCache = createCache<String, String> {
-        maximumSize(100)
-        evictionStrategy(EvictionStrategy.ENHANCED_LFU<String, String>())
-        frequencySketchType(FrequencySketchType.OPTIMIZED)
-        recordStats(true)
-    }
-
-    println("Created caches with different frequency sketch types:")
-    println("- NONE: Minimal overhead, pure algorithm")
-    println("- BASIC: Balanced accuracy and memory usage (default)")
-    println("- OPTIMIZED: Maximum accuracy for complex patterns")
-    println()
-}
-
-private suspend fun demonstrateAsyncOperations() {
-    println("=== Async Operations with Coroutines ===")
-
-    val userCache = createJITOptimizedCache<String, User> {
-        maximumSize(1000)
-        expireAfterWrite(Duration.ofHours(1))
-        recordStats(true)
-    }
-
-    // Simulate async data loading
-    suspend fun loadUserFromDatabase(userId: String): User {
-        delay(100) // Simulate database delay
-        return User(
-            id = userId,
-            name = "User $userId",
-            email = "$userId@example.com",
-            preferences = mapOf("theme" to "dark", "notifications" to "enabled")
-        )
-    }
-
-    // Async cache-aside pattern with getOrPut
-    suspend fun getUser(userId: String): User? {
-        return userCache.getOrPut(userId) {
-            loadUserFromDatabase(userId)
+    // Filter operations
+    println("\nElectronics products:")
+    productCache.filter { (_, product) -> product.category == "Electronics" }
+        .forEach { (id, product) ->
+            println("  $id: ${product.name}")
         }
-    }
 
-    // Test async operations
-    val user1 = getUser("user123")
-    println("Loaded user: ${user1?.name}")
+    // Map operations
+    println("\nProduct names:")
+    val productNames = productCache.map { (_, product) -> product.name }
+    println("  $productNames")
 
-    // Second access should be from cache
-    val user2 = getUser("user123")
-    println("Cached user: ${user2?.name}")
+    // Find operations
+    val expensiveProduct = productCache.find { (_, product) -> product.price > 500.0 }
+    println("First expensive product: ${expensiveProduct?.value?.name}")
 
-    printCacheStats(userCache, "Async User Cache")
     println()
 }
 
-private suspend fun demonstratePerformanceTesting() {
-    println("=== Performance Testing ===")
+// ===== STATISTICS AND MONITORING =====
 
-    // Create different cache types for comparison
-    val defaultCache = createCache<String, String> {
-        maximumSize(1000)
-        recordStats(true)
-    }
+private suspend fun demonstrateStatisticsAndMonitoring() {
+    println("=== 5. Statistics and Monitoring ===")
 
-    val jitCache = createJITOptimizedCache<String, String> {
-        maximumSize(1000)
-        recordStats(true)
-    }
+    val monitoredCache = CacheBuilder.newBuilder<String, String>()
+        .maximumSize(50)
+        .recordStats(true)
+        .build()
 
-    val localityCache = createLocalityOptimizedCache<String, String> {
-        maximumSize(1000)
-        recordStats(true)
-    }
-
-    val zeroCopyCache = createZeroCopyOptimizedCache<String, String> {
-        maximumSize(1000)
-        recordStats(true)
-    }
-
-    // Warm up caches
-    repeat(1000) { i ->
-        val key = "key-$i"
-        val value = "value-$i"
-        defaultCache[key] = value
-        jitCache[key] = value
-        localityCache[key] = value
-        zeroCopyCache[key] = value
-    }
-
-    // Measure GET performance
-    val iterations = 100000
-
-    fun measureTime(block: () -> Unit): Long {
-        val startTime = System.nanoTime()
-        block()
-        return System.nanoTime() - startTime
-    }
-
-    val defaultTime = measureTime {
-        repeat(iterations) { i ->
-            defaultCache["key-${i % 1000}"]
-        }
-    }
-
-    val jitTime = measureTime {
-        repeat(iterations) { i ->
-            jitCache["key-${i % 1000}"]
-        }
-    }
-
-    val localityTime = measureTime {
-        repeat(iterations) { i ->
-            localityCache["key-${i % 1000}"]
-        }
-    }
-
-    val zeroCopyTime = measureTime {
-        repeat(iterations) { i ->
-            zeroCopyCache["key-${i % 1000}"]
-        }
-    }
-
-    println("Performance Results (GET operations):")
-    println("Default Cache: ${defaultTime / iterations}ns per operation")
-    println("JIT Optimized: ${jitTime / iterations}ns per operation")
-    println("Locality Optimized: ${localityTime / iterations}ns per operation")
-    println("ZeroCopy Optimized: ${zeroCopyTime / iterations}ns per operation")
-
-    println("\nExpected ranges:")
-    println("Default: ~40.4ns")
-    println("JIT: ~24.6ns")
-    println("Locality: ~9.7ns")
-    println("ZeroCopy: ~7.9ns (fastest)")
-    println()
-}
-
-private suspend fun testCacheType(cache: io.github.dhruv1110.jcachex.Cache<String, String>, typeName: String, expectedPerformance: String) {
-    // Warm up
+    // Generate some activity
     repeat(100) { i ->
-        cache["key$i"] = "value$i"
+        monitoredCache["key-$i"] = "value-$i"
     }
 
-    // Test basic functionality
-    val value = cache["key1"]
-    println("$typeName: Retrieved value = $value")
-    println("$typeName: $expectedPerformance")
+    // Create some cache hits
+    repeat(50) { i ->
+        monitoredCache["key-$i"] // Read existing keys
+    }
+
+    // Create some cache misses
+    repeat(25) { i ->
+        monitoredCache["missing-$i"] // Read non-existent keys
+    }
+
+    // Force some evictions by exceeding cache size
+    repeat(30) { i ->
+        monitoredCache["new-key-$i"] = "new-value-$i"
+    }
+
+    println("--- Cache Statistics ---")
+    val stats = monitoredCache.stats()
+
+    println("Hit rate: ${String.format("%.2f", stats.hitRate() * 100)}%")
+    println("Miss rate: ${String.format("%.2f", stats.missRate() * 100)}%")
+    println("Total hits: ${stats.hitCount()}")
+    println("Total misses: ${stats.missCount()}")
+    println("Total evictions: ${stats.evictionCount()}")
+
+    println()
 }
 
-private suspend fun testSkewedAccessPattern(cache: io.github.dhruv1110.jcachex.Cache<String, String>, strategyName: String) {
-    // Fill cache beyond capacity to trigger eviction
-    repeat(100) { i ->
-        cache["key$i"] = "value$i"
+// ===== ADVANCED OPERATIONS =====
+
+private suspend fun demonstrateAdvancedOperations() {
+    println("=== 6. Advanced Operations ===")
+
+    val advancedCache = CacheBuilder.newBuilder<String, Int>()
+        .maximumSize(100)
+        .recordStats(true)
+        .build()
+
+    // Populate cache
+    repeat(20) { i ->
+        advancedCache["num-$i"] = i * 10
     }
 
-    // Create hot/cold access pattern (80-20 rule)
-    repeat(1000) { i ->
-        // Hot keys (first 10 keys) - 80% of accesses
-        if (i % 5 < 4) {
-            cache["key${i % 10}"]
-        } else {
-            // Cold keys - 20% of accesses
-            cache["key${10 + (i % 40)}"]
-        }
-    }
+    println("--- Advanced Operations ---")
 
-    with(cache.stats()) {
-        println("$strategyName - Hit rate: ${(hitRate() * 100).toInt()}%, Evictions: ${evictionCount()}")
+    // Compute operations
+    val computed = advancedCache.computeIfAbsent("computed-key") { key ->
+        println("  Computing value for $key")
+        42
     }
+    println("Computed value: $computed")
+
+    // Second call should not compute (already present)
+    val computed2 = advancedCache.computeIfAbsent("computed-key") { key ->
+        println("  Computing value for $key (should not print)")
+        999
+    }
+    println("Second computed value: $computed2")
+
+    // Compute with present key
+    val updated = advancedCache.computeIfPresent("num-5") { key, value ->
+        println("  Updating value for $key from $value")
+        value * 2
+    }
+    println("Updated value: $updated")
+
+    // Replace operations
+    val replaced = advancedCache.replace("num-10", 200)
+    println("Replaced existing value: $replaced")
+
+    val notReplaced = advancedCache.replace("non-existent", 999)
+    println("Replaced non-existent value: $notReplaced")
+
+    // Atomic operations
+    val swapped = advancedCache.replace("num-1", 10, 999)
+    println("Swapped value (10 -> 999): $swapped")
+
+    println("Cache size after operations: ${advancedCache.size()}")
+
+    println()
 }
 
-private fun printCacheStats(cache: io.github.dhruv1110.jcachex.Cache<*, *>, cacheName: String) {
-    with(cache.stats()) {
-        println("$cacheName Statistics:")
-        println("  Size: ${cache.size()}")
-        println("  Hit Rate: ${(hitRate() * 100).toInt()}%")
-        println("  Requests: ${hitCount() + missCount()}")
-        println("  Evictions: ${evictionCount()}")
-    }
+// Extension functions for demonstration
+inline fun <T> measureTime(block: () -> T): Pair<T, Long> {
+    val startTime = System.nanoTime()
+    val result = block()
+    val endTime = System.nanoTime()
+    return Pair(result, endTime - startTime)
+}
+
+suspend fun <K, V> io.github.dhruv1110.jcachex.Cache<K, V>.getOrPut(key: K, valueFunction: suspend (K) -> V): V {
+    val existing = get(key)
+    if (existing != null) return existing
+
+    val newValue = valueFunction(key)
+    put(key, newValue)
+    return newValue
+}
+
+suspend fun <K, V> io.github.dhruv1110.jcachex.Cache<K, V>.getOrPutAsync(key: K, valueFunction: suspend (K) -> V): V {
+    return getOrPut(key, valueFunction)
+}
+
+fun <K, V> io.github.dhruv1110.jcachex.Cache<K, V>.forEach(action: (Map.Entry<K, V>) -> Unit) {
+    entries().forEach(action)
+}
+
+fun <K, V> io.github.dhruv1110.jcachex.Cache<K, V>.filter(predicate: (Map.Entry<K, V>) -> Boolean): List<Map.Entry<K, V>> {
+    return entries().filter(predicate)
+}
+
+fun <K, V, R> io.github.dhruv1110.jcachex.Cache<K, V>.map(transform: (Map.Entry<K, V>) -> R): List<R> {
+    return entries().map(transform)
+}
+
+fun <K, V> io.github.dhruv1110.jcachex.Cache<K, V>.find(predicate: (Map.Entry<K, V>) -> Boolean): Map.Entry<K, V>? {
+    return entries().find(predicate)
+}
+
+fun <K, V> io.github.dhruv1110.jcachex.Cache<K, V>.getOrDefault(key: K, defaultValue: V): V {
+    return get(key) ?: defaultValue
+}
+
+operator fun <K, V> io.github.dhruv1110.jcachex.Cache<K, V>.plusAssign(pair: Pair<K, V>) {
+    put(pair.first, pair.second)
+}
+
+operator fun <K, V> io.github.dhruv1110.jcachex.Cache<K, V>.minusAssign(key: K) {
+    remove(key)
+}
+
+operator fun <K, V> io.github.dhruv1110.jcachex.Cache<K, V>.contains(key: K): Boolean {
+    return containsKey(key)
+}
+
+fun <K, V> io.github.dhruv1110.jcachex.Cache<K, V>.isEmpty(): Boolean {
+    return size() == 0L
+}
+
+fun <K, V> io.github.dhruv1110.jcachex.Cache<K, V>.isNotEmpty(): Boolean {
+    return size() > 0L
 }

@@ -1,7 +1,6 @@
 package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.Cache
-import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -22,10 +21,9 @@ class CacheExtensionsTest {
     @BeforeEach
     fun setUp() {
         cache =
-            createCache {
+            createUnifiedCache {
                 maximumSize(100)
                 expireAfterWrite(Duration.ofMinutes(5))
-                evictionStrategy(LRUEvictionStrategy())
                 recordStats(true)
             }
     }
@@ -33,7 +31,7 @@ class CacheExtensionsTest {
     @Test
     fun `test DSL cache creation`() {
         val testCache =
-            createCache<String, Int> {
+            createUnifiedCache<String, Int> {
                 maximumSize(50)
                 recordStats(true)
             }

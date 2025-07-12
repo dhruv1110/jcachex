@@ -63,6 +63,9 @@ class WriteHeavyOptimizedCacheTest {
 
         // Test put and get
         cache.put("key1", "value1");
+        // Flush writes to ensure they are processed for write-heavy cache
+        cache.flushWrites();
+
         // For write-heavy cache, check if value is immediately available in write
         // buffer
         // If not, it might be processed asynchronously
@@ -75,6 +78,7 @@ class WriteHeavyOptimizedCacheTest {
 
         // Test put with same key (update)
         cache.put("key1", "value1_updated");
+        cache.flushWrites();
         String updatedValue = cache.get("key1");
         if (updatedValue != null) {
             assertEquals("value1_updated", updatedValue);
@@ -83,6 +87,7 @@ class WriteHeavyOptimizedCacheTest {
         // Test put multiple entries
         cache.put("key2", "value2");
         cache.put("key3", "value3");
+        cache.flushWrites();
         assertTrue(cache.size() >= 3);
 
         // For write-heavy cache, values might be buffered
@@ -524,10 +529,15 @@ class WriteHeavyOptimizedCacheTest {
         // Test clear functionality
         cache.clear();
 
-        // Wait for async clear to complete
+        // Flush any remaining writes that might have been queued
+        cache.flushWrites();
+
+        // Wait for async clear to complete and all background processing to finish
         long startTime = System.currentTimeMillis();
-        while (cache.size() > 0 && System.currentTimeMillis() - startTime < 1000) {
+        while (cache.size() > 0 && System.currentTimeMillis() - startTime < 2000) {
             try {
+                // Flush any pending operations
+                cache.flushWrites();
                 Thread.sleep(10);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();

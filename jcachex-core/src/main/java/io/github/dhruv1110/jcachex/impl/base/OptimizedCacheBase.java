@@ -1,13 +1,13 @@
-package io.github.dhruv1110.jcachex.impl;
+package io.github.dhruv1110.jcachex.impl.base;
 
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheEntry;
-import io.github.dhruv1110.jcachex.CacheEventListener;
 import io.github.dhruv1110.jcachex.FrequencySketch;
 import io.github.dhruv1110.jcachex.concurrent.AccessBuffer;
 import io.github.dhruv1110.jcachex.concurrent.AccessBuffer.AccessRecord;
 import io.github.dhruv1110.jcachex.concurrent.AccessBuffer.AccessType;
 import io.github.dhruv1110.jcachex.eviction.WindowTinyLFUEvictionStrategy;
+import io.github.dhruv1110.jcachex.impl.base.ConcurrentCacheBase;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,7 +1,9 @@
-package io.github.dhruv1110.jcachex.spring;
+package io.github.dhruv1110.jcachex.spring.distributed;
 
 import io.github.dhruv1110.jcachex.CacheFactory;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
+import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
+import io.github.dhruv1110.jcachex.spring.core.JCacheXSpringCache;
 import org.springframework.cache.CacheManager;
 import org.springframework.lang.Nullable;
 
@@ -35,7 +37,7 @@ import java.util.concurrent.ConcurrentMap;
  * </ul>
  *
  * <h2>Usage Examples:</h2>
- * 
+ *
  * <pre>
  * {
  *     &#64;code

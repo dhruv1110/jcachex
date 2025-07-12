@@ -273,42 +273,38 @@ public final class ProfiledOptimizedCache<K, V> implements Cache<K, V> {
     }
 
     @Override
-    public final boolean containsKey(K key) {
-        return key != null && data.containsKey(key);
-    }
-
-    @Override
     public final CacheStats stats() {
-        return StatisticsProvider.createBasicStats(hitCount, missCount);
+        return CacheCommonOperations.createStats(hitCount, missCount);
     }
 
     @Override
     public final CacheConfig<K, V> config() {
-        return ConfigurationProvider.createBasicConfig(maximumSize, statsEnabled);
+        return CacheCommonOperations.createConfig(maximumSize, statsEnabled);
     }
 
     @Override
     public final Set<K> keys() {
-        return data.keySet();
+        return CacheCommonOperations.createKeysView(data);
     }
 
     @Override
     public final Collection<V> values() {
-        return data.values().stream()
-                .map(ProfiledEntry::getValue)
-                .collect(java.util.stream.Collectors.toList());
+        return CacheCommonOperations.createValuesView(data, ProfiledEntry::getValue);
     }
 
     @Override
     public final Set<Map.Entry<K, V>> entries() {
-        return data.entrySet().stream()
-                .map(e -> (Map.Entry<K, V>) new AbstractMap.SimpleEntry<>(e.getKey(), e.getValue().getValue()))
-                .collect(java.util.stream.Collectors.toSet());
+        return CacheCommonOperations.createEntriesView(data, ProfiledEntry::getValue);
+    }
+
+    @Override
+    public final boolean containsKey(K key) {
+        return CacheCommonOperations.containsKey(key, data);
     }
 
     @Override
     public final CompletableFuture<V> getAsync(K key) {
-        return CompletableFuture.completedFuture(get(key));
+        return CacheCommonOperations.createAsyncGet(key, () -> get(key));
     }
 
     @Override
