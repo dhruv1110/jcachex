@@ -310,15 +310,13 @@ public class JCacheXSpringCache extends org.springframework.cache.support.Abstra
      */
     @Nullable
     public CacheStats getStats() {
-        if (nativeCache instanceof DefaultCache) {
-            lock.readLock().lock();
-            try {
-                return ((DefaultCache<Object, Object>) nativeCache).stats();
-            } finally {
-                lock.readLock().unlock();
-            }
+        lock.readLock().lock();
+        try {
+            // All JCacheX cache implementations should support stats()
+            return nativeCache.stats();
+        } finally {
+            lock.readLock().unlock();
         }
-        return null;
     }
 
     /**

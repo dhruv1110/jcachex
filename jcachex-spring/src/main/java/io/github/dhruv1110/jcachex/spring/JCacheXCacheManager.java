@@ -2,7 +2,10 @@ package io.github.dhruv1110.jcachex.spring;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
+import io.github.dhruv1110.jcachex.UnifiedCacheBuilder;
 import io.github.dhruv1110.jcachex.impl.DefaultCache;
+import io.github.dhruv1110.jcachex.profiles.CacheProfile;
+import io.github.dhruv1110.jcachex.profiles.ProfileRegistry;
 import org.springframework.cache.CacheManager;
 import org.springframework.lang.Nullable;
 
@@ -267,16 +270,53 @@ public class JCacheXCacheManager implements CacheManager {
      * Creates a new cache with the specified name and configuration.
      *
      * This method applies configuration from properties if available, falling back
-     * to default configuration for unknown caches.
+     * to default configuration for unknown caches. It now uses the
+     * UnifiedCacheBuilder
+     * with profile support for optimal cache selection.
      *
      * @param cacheName the name of the cache to create
      * @return the created Spring Cache wrapper
      */
     private JCacheXSpringCache createCache(String cacheName) {
         JCacheXProperties.CacheConfig cacheConfig = getCacheConfig(cacheName);
-        CacheConfig<Object, Object> jcacheXConfig = buildJCacheXConfig(cacheName, cacheConfig);
-        Cache<Object, Object> jcacheXCache = new DefaultCache<>(jcacheXConfig);
 
+        // Use UnifiedCacheBuilder with profile support
+        UnifiedCacheBuilder<Object, Object> builder;
+
+        // Check if a profile is specified in configuration
+        String profileName = cacheConfig.getProfile();
+        if (profileName != null && !profileName.isEmpty()) {
+            CacheProfile<?, ?> profile = getProfileByName(profileName);
+            builder = UnifiedCacheBuilder.forProfile(profile);
+        } else {
+            // Use smart defaults if no profile specified
+            builder = UnifiedCacheBuilder.withSmartDefaults();
+        }
+
+        // Apply configuration settings
+        builder.name(cacheName);
+
+        if (cacheConfig.getMaximumSize() != null) {
+            builder.maximumSize(cacheConfig.getMaximumSize());
+        }
+
+        if (cacheConfig.getExpireAfterSeconds() != null) {
+            builder.expireAfterWrite(Duration.ofSeconds(cacheConfig.getExpireAfterSeconds()));
+        }
+
+        if (cacheConfig.getExpireAfterAccessSeconds() != null) {
+            builder.expireAfterAccess(Duration.ofSeconds(cacheConfig.getExpireAfterAccessSeconds()));
+        }
+
+        if (cacheConfig.getRefreshAfterWriteSeconds() != null) {
+            builder.refreshAfterWrite(Duration.ofSeconds(cacheConfig.getRefreshAfterWriteSeconds()));
+        }
+
+        // Enable statistics based on configuration
+        boolean enableStats = cacheConfig.getEnableStatistics() != null ? cacheConfig.getEnableStatistics() : true;
+        builder.recordStats(enableStats);
+
+        Cache<Object, Object> jcacheXCache = builder.build();
         return new JCacheXSpringCache(cacheName, jcacheXCache, allowNullValues);
     }
 
@@ -294,6 +334,22 @@ public class JCacheXCacheManager implements CacheManager {
 
         // Return named config if available, otherwise default config
         return namedConfig != null ? namedConfig : properties.getDefaultConfig();
+    }
+
+    /**
+     * Gets a cache profile by name.
+     *
+     * @param profileName the profile name
+     * @return the cache profile
+     */
+    @SuppressWarnings("unchecked")
+    private CacheProfile<Object, Object> getProfileByName(String profileName) {
+        if (profileName == null || profileName.trim().isEmpty()) {
+            return ProfileRegistry.getDefaultProfile();
+        }
+
+        CacheProfile<Object, Object> profile = ProfileRegistry.getProfile(profileName.toUpperCase());
+        return profile != null ? profile : ProfileRegistry.getDefaultProfile();
     }
 
     /**

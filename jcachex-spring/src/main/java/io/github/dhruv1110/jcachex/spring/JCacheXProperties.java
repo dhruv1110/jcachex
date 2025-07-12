@@ -157,6 +157,7 @@ public class JCacheXProperties {
         private String evictionStrategy = "TINY_WINDOW_LFU";
         private String frequencySketchType = "BASIC";
         private String cacheType = "DEFAULT";
+        private String profile = ""; // Cache profile name for optimized configuration
         private Boolean enableStatistics = false;
         private Boolean enableJmx = false;
         private Boolean enableObservability = false;
@@ -260,6 +261,14 @@ public class JCacheXProperties {
 
         public void setCacheType(String cacheType) {
             this.cacheType = cacheType;
+        }
+
+        public String getProfile() {
+            return profile;
+        }
+
+        public void setProfile(String profile) {
+            this.profile = profile;
         }
 
         public Boolean getEnableStatistics() {

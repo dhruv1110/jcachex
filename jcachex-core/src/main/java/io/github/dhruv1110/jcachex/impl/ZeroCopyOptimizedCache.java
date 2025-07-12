@@ -20,6 +20,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.time.Instant;
 import java.time.Duration;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * Zero-copy optimized cache implementation that minimizes data copying
@@ -232,6 +236,18 @@ public final class ZeroCopyOptimizedCache<K, V> implements Cache<K, V> {
         return CompletableFuture.runAsync(this::clear);
     }
 
+    /**
+     * Cleanup resources when cache is garbage collected
+     */
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            clear();
+        } finally {
+            super.finalize();
+        }
+    }
+
     // Zero-copy entry creation
     private final DirectEntry<V> createEntryZeroCopy(V value, DirectBuffer buffer) {
         // Serialize directly to buffer without intermediate allocation
@@ -411,14 +427,18 @@ public final class ZeroCopyOptimizedCache<K, V> implements Cache<K, V> {
         private final AtomicLong position;
         private final int size;
         private final RandomAccessFile file;
+        private final String filePath;
 
         MemoryMappedRegion(int size) {
             this.size = size;
             this.position = new AtomicLong(0);
 
             try {
-                // Create temporary file for memory mapping
-                this.file = new RandomAccessFile("jcachex-mmap-" + System.currentTimeMillis(), "rw");
+                // Create temporary file for memory mapping in system temp directory
+                String tempDir = System.getProperty("java.io.tmpdir");
+                this.filePath = tempDir + File.separator + "jcachex-mmap-" + System.currentTimeMillis() + "-"
+                        + Thread.currentThread().getId();
+                this.file = new RandomAccessFile(this.filePath, "rw");
                 this.file.setLength(size);
 
                 // Map the file into memory
@@ -449,8 +469,22 @@ public final class ZeroCopyOptimizedCache<K, V> implements Cache<K, V> {
 
             try {
                 file.close();
+
+                // Delete the temporary file from disk
+                File tempFile = new File(filePath);
+                if (tempFile.exists()) {
+                    boolean deleted = tempFile.delete();
+                    if (!deleted) {
+                        // If deletion fails, mark for deletion on exit
+                        tempFile.deleteOnExit();
+                    }
+                }
             } catch (IOException e) {
-                // Ignore close errors
+                // Ignore close errors but try to clean up the file
+                File tempFile = new File(filePath);
+                if (tempFile.exists()) {
+                    tempFile.deleteOnExit();
+                }
             }
         }
     }

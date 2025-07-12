@@ -6,6 +6,7 @@ import io.github.dhruv1110.jcachex.Cache
 import io.github.dhruv1110.jcachex.CacheConfig
 import io.github.dhruv1110.jcachex.CacheStats
 import io.github.dhruv1110.jcachex.FrequencySketchType
+import io.github.dhruv1110.jcachex.UnifiedCacheBuilder
 import io.github.dhruv1110.jcachex.impl.AllocationOptimizedCache
 import io.github.dhruv1110.jcachex.impl.CacheLocalityOptimizedCache
 import io.github.dhruv1110.jcachex.impl.DefaultCache
@@ -18,6 +19,9 @@ import io.github.dhruv1110.jcachex.impl.ProfiledOptimizedCache
 import io.github.dhruv1110.jcachex.impl.ReadOnlyOptimizedCache
 import io.github.dhruv1110.jcachex.impl.WriteHeavyOptimizedCache
 import io.github.dhruv1110.jcachex.impl.ZeroCopyOptimizedCache
+import io.github.dhruv1110.jcachex.profiles.CacheProfile
+import io.github.dhruv1110.jcachex.profiles.ProfileRegistry
+import io.github.dhruv1110.jcachex.profiles.WorkloadCharacteristics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -837,11 +841,238 @@ class CacheConfigBuilder<K, V> {
     fun build(): io.github.dhruv1110.jcachex.CacheConfig<K, V> = builder.build()
 }
 
+// ===== PROFILE-BASED CACHE CREATION =====
+
+/**
+ * Creates a cache using the UnifiedCacheBuilder with profile support.
+ *
+ * This is the recommended way to create caches as it automatically selects
+ * the optimal cache implementation and configuration based on the specified
+ * use case profile.
+ *
+ * @param profile the cache profile to use
+ * @param configure the configuration block
+ * @return a configured cache instance
+ */
+inline fun <K, V> createCacheWithProfile(
+    profile: CacheProfile<*, *>,
+    configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {},
+): Cache<K, V> {
+    val builder = UnifiedCacheBuilder.forProfile<K, V>(profile)
+    val scope = UnifiedCacheBuilderScope(builder)
+    scope.configure()
+    return builder.build()
+}
+
+/**
+ * Creates a cache with smart defaults based on workload characteristics.
+ *
+ * @param configure the configuration block
+ * @return a configured cache instance
+ */
+inline fun <K, V> createSmartCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit): Cache<K, V> {
+    val builder = UnifiedCacheBuilder.withSmartDefaults<K, V>()
+    val scope = UnifiedCacheBuilderScope(builder)
+    scope.configure()
+    return builder.build()
+}
+
+/**
+ * Creates a cache using the UnifiedCacheBuilder with the DEFAULT profile.
+ *
+ * @param configure the configuration block
+ * @return a configured cache instance
+ */
+inline fun <K, V> createUnifiedCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> {
+    val builder = UnifiedCacheBuilder.create<K, V>()
+    val scope = UnifiedCacheBuilderScope(builder)
+    scope.configure()
+    return builder.build()
+}
+
+/**
+ * DSL scope for UnifiedCacheBuilder providing a Kotlin-idiomatic configuration experience.
+ */
+@Suppress("TooManyFunctions")
+class UnifiedCacheBuilderScope<K, V>(private val builder: UnifiedCacheBuilder<K, V>) {
+    fun name(name: String) = apply { builder.name(name) }
+
+    fun maximumSize(size: Long) = apply { builder.maximumSize(size) }
+
+    fun maximumWeight(weight: Long) = apply { builder.maximumWeight(weight) }
+
+    fun expireAfterWrite(duration: java.time.Duration) = apply { builder.expireAfterWrite(duration) }
+
+    fun expireAfterAccess(duration: java.time.Duration) = apply { builder.expireAfterAccess(duration) }
+
+    fun refreshAfterWrite(duration: java.time.Duration) = apply { builder.refreshAfterWrite(duration) }
+
+    fun loader(loader: (K) -> V) = apply { builder.loader(loader) }
+
+    fun asyncLoader(loader: (K) -> java.util.concurrent.CompletableFuture<V>) = apply { builder.asyncLoader(loader) }
+
+    fun weigher(weigher: (K, V) -> Long) = apply { builder.weigher(weigher) }
+
+    fun recordStats(enable: Boolean = true) = apply { builder.recordStats(enable) }
+
+    fun listener(listener: io.github.dhruv1110.jcachex.CacheEventListener<K, V>) = apply { builder.listener(listener) }
+
+    fun workloadCharacteristics(characteristics: WorkloadCharacteristics) =
+        apply {
+            builder.workloadCharacteristics(characteristics)
+        }
+
+    fun workloadCharacteristics(configure: WorkloadCharacteristicsScope.() -> Unit) =
+        apply {
+            val scope = WorkloadCharacteristicsScope()
+            scope.configure()
+            builder.workloadCharacteristics(scope.build())
+        }
+}
+
+/**
+ * DSL scope for WorkloadCharacteristics.
+ */
+class WorkloadCharacteristicsScope {
+    private val builder = WorkloadCharacteristics.builder()
+
+    fun readToWriteRatio(ratio: Double) = apply { builder.readToWriteRatio(ratio) }
+
+    fun accessPattern(pattern: WorkloadCharacteristics.AccessPattern) = apply { builder.accessPattern(pattern) }
+
+    fun memoryConstraint(constraint: WorkloadCharacteristics.MemoryConstraint) =
+        apply {
+            builder.memoryConstraint(constraint)
+        }
+
+    fun concurrencyLevel(level: WorkloadCharacteristics.ConcurrencyLevel) =
+        apply {
+            builder.concurrencyLevel(level)
+        }
+
+    fun requiresConsistency(required: Boolean) = apply { builder.requiresConsistency(required) }
+
+    fun requiresAsyncOperations(required: Boolean) = apply { builder.requiresAsyncOperations(required) }
+
+    fun expectedSize(size: Long) = apply { builder.expectedSize(size) }
+
+    fun hitRateExpectation(rate: Double) = apply { builder.hitRateExpectation(rate) }
+
+    fun build(): WorkloadCharacteristics = builder.build()
+}
+
+// ===== PROFILE CONVENIENCE FUNCTIONS =====
+
+/**
+ * Creates a cache optimized for read-heavy workloads.
+ *
+ * @param configure the configuration block
+ * @return a cache optimized for read-heavy operations
+ */
+inline fun <K, V> createReadHeavyCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> =
+    createCacheWithProfile(ProfileRegistry.getProfile("READ_HEAVY"), configure)
+
+/**
+ * Creates a cache optimized for write-heavy workloads.
+ *
+ * @param configure the configuration block
+ * @return a cache optimized for write-heavy operations
+ */
+inline fun <K, V> createWriteHeavyCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> =
+    createCacheWithProfile(ProfileRegistry.getProfile("WRITE_HEAVY"), configure)
+
+/**
+ * Creates a memory-efficient cache for constrained environments.
+ *
+ * @param configure the configuration block
+ * @return a memory-efficient cache
+ */
+inline fun <K, V> createMemoryEfficientCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> =
+    createCacheWithProfile(ProfileRegistry.getProfile("MEMORY_EFFICIENT"), configure)
+
+/**
+ * Creates a high-performance cache for maximum throughput.
+ *
+ * @param configure the configuration block
+ * @return a high-performance cache
+ */
+inline fun <K, V> createHighPerformanceCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> =
+    createCacheWithProfile(ProfileRegistry.getProfile("HIGH_PERFORMANCE"), configure)
+
+/**
+ * Creates a cache optimized for session storage.
+ *
+ * @param configure the configuration block
+ * @return a cache optimized for session storage
+ */
+inline fun <K, V> createSessionCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> =
+    createCacheWithProfile(ProfileRegistry.getProfile("SESSION_CACHE"), configure)
+
+/**
+ * Creates a cache optimized for API response caching.
+ *
+ * @param configure the configuration block
+ * @return a cache optimized for API responses
+ */
+inline fun <K, V> createApiCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> =
+    createCacheWithProfile(ProfileRegistry.getProfile("API_CACHE"), configure)
+
+/**
+ * Creates a cache optimized for expensive computation results.
+ *
+ * @param configure the configuration block
+ * @return a cache optimized for computation results
+ */
+inline fun <K, V> createComputeCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> =
+    createCacheWithProfile(ProfileRegistry.getProfile("COMPUTE_CACHE"), configure)
+
+/**
+ * Creates a machine learning optimized cache with predictive capabilities.
+ *
+ * @param configure the configuration block
+ * @return a cache optimized for ML workloads
+ */
+inline fun <K, V> createMLOptimizedCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> =
+    createCacheWithProfile(ProfileRegistry.getProfile("ML_OPTIMIZED"), configure)
+
+/**
+ * Creates a zero-copy optimized cache for minimal memory allocation.
+ *
+ * @param configure the configuration block
+ * @return a cache optimized for zero-copy operations
+ */
+inline fun <K, V> createZeroCopyCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> =
+    createCacheWithProfile(ProfileRegistry.getProfile("ZERO_COPY"), configure)
+
+/**
+ * Creates a hardware-optimized cache leveraging CPU features.
+ *
+ * @param configure the configuration block
+ * @return a cache optimized for specific hardware
+ */
+inline fun <K, V> createHardwareOptimizedCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> =
+    createCacheWithProfile(ProfileRegistry.getProfile("HARDWARE_OPTIMIZED"), configure)
+
+/**
+ * Creates a distributed cache for cluster environments.
+ *
+ * @param configure the configuration block
+ * @return a cache optimized for distributed environments
+ */
+inline fun <K, V> createDistributedCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> =
+    createCacheWithProfile(ProfileRegistry.getProfile("DISTRIBUTED"), configure)
+
 // ===== ADDITIONAL UTILITY FUNCTIONS =====
 
 /**
  * Creates a default cache with the given configuration.
+ *
+ * @deprecated Use createUnifiedCache or createCacheWithProfile for better performance
  */
+@Deprecated(
+    "Use createUnifiedCache() or createCacheWithProfile() for optimal performance",
+    ReplaceWith("createUnifiedCache(configure)"),
+)
 fun <K, V> createCache(configure: CacheConfigBuilder<K, V>.() -> Unit): io.github.dhruv1110.jcachex.Cache<K, V> {
     val config = cacheConfig(configure)
     return DefaultCache(config)
@@ -927,25 +1158,9 @@ fun <K, V> createJVMOptimizedCache(
     return JVMOptimizedCache(config)
 }
 
-/**
- * Creates a hardware-optimized cache for specific hardware configurations.
- */
-fun <K, V> createHardwareOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit,
-): io.github.dhruv1110.jcachex.Cache<K, V> {
-    val config = cacheConfig(configure)
-    return HardwareOptimizedCache(config)
-}
-
-/**
- * Creates an ML-optimized cache with machine learning-based eviction.
- */
-fun <K, V> createMLOptimizedCache(
-    configure: CacheConfigBuilder<K, V>.() -> Unit,
-): io.github.dhruv1110.jcachex.Cache<K, V> {
-    val config = cacheConfig(configure)
-    return MLOptimizedCache(config)
-}
+// Note: createHardwareOptimizedCache and createMLOptimizedCache are now provided
+// by the unified profile system above. These legacy functions have been removed
+// to avoid conflicts.
 
 /**
  * Creates a profiled optimized cache for development and testing.
