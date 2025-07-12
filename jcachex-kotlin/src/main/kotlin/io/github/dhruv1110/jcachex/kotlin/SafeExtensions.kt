@@ -2,21 +2,28 @@ package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.Cache
 
-/**
+/*
  * Safe extensions for cache operations.
  *
- * These extensions provide safe operations using Result types and conditional
- * operations to handle potential errors gracefully.
+ * These extensions provide safe cache operations that return Result types
+ * instead of throwing exceptions.
  */
 
 /**
- * Safely gets a value, returning a Result.
+ * Safely gets a value from the cache, returning a Result.
  */
-fun <K, V> Cache<K, V>.getOrNull(key: K): Result<V?> = runCatching { get(key) }
+fun <K, V> Cache<K, V>.safeGet(key: K): Result<V?> = runCatching { get(key) }
+
+/**
+ * Safely gets a value from the cache, returning a Result.
+ * Alias for safeGet for compatibility.
+ */
+fun <K, V> Cache<K, V>.getOrNull(key: K): Result<V?> = safeGet(key)
 
 /**
  * Safely puts a value, returning a Result.
  */
+
 fun <K, V> Cache<K, V>.putOrNull(
     key: K,
     value: V,
@@ -25,11 +32,13 @@ fun <K, V> Cache<K, V>.putOrNull(
 /**
  * Safely removes a value, returning a Result.
  */
+
 fun <K, V> Cache<K, V>.removeOrNull(key: K): Result<V?> = runCatching { remove(key) }
 
 /**
  * Executes the given action if the cache contains the key.
  */
+
 inline fun <K, V> Cache<K, V>.ifContains(
     key: K,
     action: (V) -> Unit,
@@ -40,6 +49,7 @@ inline fun <K, V> Cache<K, V>.ifContains(
 /**
  * Executes the given action if the cache does not contain the key.
  */
+
 inline fun <K, V> Cache<K, V>.ifNotContains(
     key: K,
     action: () -> Unit,

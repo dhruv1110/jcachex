@@ -5,7 +5,6 @@ package io.github.dhruv1110.jcachex.kotlin.integration
 import io.github.dhruv1110.jcachex.Cache
 import io.github.dhruv1110.jcachex.CacheEventListener
 import io.github.dhruv1110.jcachex.EvictionReason
-import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy
 import io.github.dhruv1110.jcachex.kotlin.*
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.AfterEach
@@ -103,11 +102,12 @@ class KotlinCoreIntegrationTest {
                     override fun onClear() = Unit
                 }
 
-            val cache = createUnifiedCache<String, String> {
-                maximumSize(100L)
-                expireAfterWrite(Duration.ofMinutes(10))
-                recordStats(true)
-            }
+            val cache =
+                createUnifiedCache<String, String> {
+                    maximumSize(100L)
+                    expireAfterWrite(Duration.ofMinutes(10))
+                    recordStats(true)
+                }
 
             // Test DSL-configured cache works with core features
             cache.put("key1", "value1")

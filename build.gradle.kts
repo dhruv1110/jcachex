@@ -69,6 +69,10 @@ subprojects {
     if (!project.path.startsWith(":example") && project.path != ":benchmarks") {
         apply(plugin = "org.jlleitschuh.gradle.ktlint")
         apply(plugin = "io.gitlab.arturbosch.detekt")
+
+        configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+            disabledRules.set(setOf("standard:no-consecutive-comments"))
+        }
     }
     apply(plugin = "maven-publish")
     apply(plugin = "signing")

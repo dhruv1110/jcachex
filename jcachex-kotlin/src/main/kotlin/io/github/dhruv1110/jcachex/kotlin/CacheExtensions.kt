@@ -33,9 +33,8 @@ package io.github.dhruv1110.jcachex.kotlin
  * ## Backward Compatibility:
  * All existing extension functions are still available when importing this package.
  * The logical separation improves maintainability while preserving the public API.
- */
-
-/*
+ *
+ * ## Implementation Notes:
  * Extension functions are automatically imported when using:
  * import io.github.dhruv1110.jcachex.kotlin.*
  *
