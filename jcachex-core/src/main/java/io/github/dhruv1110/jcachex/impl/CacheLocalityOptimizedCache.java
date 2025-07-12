@@ -182,26 +182,22 @@ public final class CacheLocalityOptimizedCache<K, V> implements Cache<K, V> {
 
     @Override
     public final CacheConfig<K, V> config() {
-        return ConfigurationProvider.createBasicConfig(maximumSize, statsEnabled);
+        return CacheCommonOperations.createConfig(maximumSize, statsEnabled);
     }
 
     @Override
     public final Set<K> keys() {
-        return data.keySet();
+        return CacheCommonOperations.createKeysView(data);
     }
 
     @Override
     public final Collection<V> values() {
-        return data.values().stream()
-                .map(CacheLineAlignedEntry::getValue)
-                .collect(java.util.stream.Collectors.toList());
+        return CacheCommonOperations.createValuesView(data, CacheLineAlignedEntry::getValue);
     }
 
     @Override
     public final Set<Map.Entry<K, V>> entries() {
-        return data.entrySet().stream()
-                .map(e -> (Map.Entry<K, V>) new AbstractMap.SimpleEntry<>(e.getKey(), e.getValue().getValue()))
-                .collect(java.util.stream.Collectors.toSet());
+        return CacheCommonOperations.createEntriesView(data, CacheLineAlignedEntry::getValue);
     }
 
     @Override

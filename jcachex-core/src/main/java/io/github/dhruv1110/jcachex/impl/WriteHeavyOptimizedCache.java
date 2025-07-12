@@ -201,12 +201,12 @@ public final class WriteHeavyOptimizedCache<K, V> implements Cache<K, V> {
 
     @Override
     public final CacheStats stats() {
-        return StatisticsProvider.createBasicStats(hitCount, missCount);
+        return CacheCommonOperations.createStats(hitCount, missCount);
     }
 
     @Override
     public final CacheConfig<K, V> config() {
-        return ConfigurationProvider.createBasicConfig(maximumSize, statsEnabled);
+        return CacheCommonOperations.createConfig(maximumSize, statsEnabled);
     }
 
     @Override
