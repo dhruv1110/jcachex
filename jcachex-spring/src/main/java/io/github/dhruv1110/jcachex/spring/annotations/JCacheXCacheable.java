@@ -1,4 +1,4 @@
-package io.github.dhruv1110.jcachex.spring;
+package io.github.dhruv1110.jcachex.spring.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;

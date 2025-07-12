@@ -1,4 +1,4 @@
-package io.github.dhruv1110.jcachex.spring;
+package io.github.dhruv1110.jcachex.spring.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

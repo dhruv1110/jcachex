@@ -1,9 +1,12 @@
-package io.github.dhruv1110.jcachex.spring;
+package io.github.dhruv1110.jcachex.spring.configuration;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheStats;
 import io.github.dhruv1110.jcachex.impl.DefaultCache;
+import io.github.dhruv1110.jcachex.spring.core.JCacheXCacheManager;
+import io.github.dhruv1110.jcachex.spring.core.JCacheXCacheFactory;
+import io.github.dhruv1110.jcachex.spring.utilities.EvictionStrategyFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -159,7 +162,7 @@ public class JCacheXAutoConfiguration {
      *
      * @return configured JCacheXCacheManager instance
      */
-    @Bean({ "jcacheXCacheManager", "cacheManager" })
+    @Bean("jcacheXCacheManager")
     @Primary
     public JCacheXCacheManager jcacheXCacheManager() {
         JCacheXCacheManager manager = new JCacheXCacheManager(properties);

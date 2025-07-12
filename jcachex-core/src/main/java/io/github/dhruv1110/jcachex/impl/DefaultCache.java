@@ -1,8 +1,8 @@
 package io.github.dhruv1110.jcachex.impl;
 
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.CacheEntry;
 import io.github.dhruv1110.jcachex.CacheEventListener;
+import io.github.dhruv1110.jcachex.impl.base.ConcurrentCacheBase;
 
 import java.util.concurrent.TimeUnit;
 

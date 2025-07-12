@@ -1,4 +1,4 @@
-package io.github.dhruv1110.jcachex.spring;
+package io.github.dhruv1110.jcachex.spring.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -19,7 +19,7 @@ import java.lang.annotation.Target;
  * fine-grained control over which entries are evicted.
  *
  * <h2>Basic Usage Examples:</h2>
- * 
+ *
  * <pre>
  * {
  *     &#64;code
@@ -48,7 +48,7 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * <h2>Advanced Configuration Examples:</h2>
- * 
+ *
  * <pre>
  * {
  *     &#64;code
@@ -89,7 +89,7 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * <h2>Multi-Cache Eviction:</h2>
- * 
+ *
  * <pre>
  * {
  *     &#64;code
@@ -113,7 +113,7 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * <h2>Scheduled Cache Maintenance:</h2>
- * 
+ *
  * <pre>
  * {
  *     &#64;code
@@ -139,7 +139,7 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * <h2>SpEL Expression Examples:</h2>
- * 
+ *
  * <pre>
  * {@code
  * // Method parameters
@@ -147,7 +147,7 @@ import java.lang.annotation.Target;
  * public void updateUserData(String userId, DataType type, Object data) { ... }
  *
  * // Object properties
- * @JCacheXCacheEvict(key = "#user.id + '_profile'")
+ * &#64;JCacheXCacheEvict(key = "#user.id + '_profile'")
  * public void updateUserProfile(User user, UserProfile profile) { ... }
  *
  * // Complex conditions
@@ -160,7 +160,7 @@ import java.lang.annotation.Target;
  * </pre>
  *
  * <h2>Error Handling:</h2>
- * 
+ *
  * <pre>{@code @Service
  * public class DataService { @JCacheXCacheEvict(cacheName = "sensitiveData", beforeInvocation = true // Evict even if method fails
  *     )
@@ -169,11 +169,11 @@ import java.lang.annotation.Target;
  *         // This ensures data consistency even if update fails
  *         try {
  *             dataRepository.save(data);
- *         } catch (Exception e) {
- *             // Cache was already evicted, so no stale data remains
- *             throw e;
- *         }
- *     }
+ * } catch (Exception e) {
+ * // Cache was already evicted, so no stale data remains
+ * throw e;
+ * }
+ * }
  * }
  * }</pre>
  *
