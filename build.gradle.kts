@@ -423,6 +423,8 @@ tasks.register("generateAllDocs") {
 project(":jcachex-core") {
 
     dependencies {
+        // Logging
+        implementation("org.slf4j:slf4j-api:1.7.36")
 
         // Testing
         testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")

@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
  * JCacheX-specific configuration options.
  *
  * <h2>Basic Usage Examples:</h2>
- * 
+ *
  * <pre>
  * {
  *     &#64;code
@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit;
  * </pre>
  *
  * <h2>Advanced Configuration Examples:</h2>
- * 
+ *
  * <pre>{@code @Service
  * public class ApiService {
  *
@@ -65,21 +65,20 @@ import java.util.concurrent.TimeUnit;
  * }</pre>
  *
  * <h2>Spring Configuration:</h2>
+ *
  * <pre>{@code
  * &#64;Configuration
  * &#64;EnableCaching
- * public class CacheConfig {
- *
- *     @Bean
+ * public class CacheConfig { @Bean
  *     public CacheManager cacheManager() {
  *         return new JCacheXCacheManager();
- *     }
+ * }
  * }
  * }
  * </pre>
  *
  * <h2>Application Properties:</h2>
- * 
+ *
  * <pre>{@code
  * jcachex:
  *   default:
@@ -96,6 +95,7 @@ import java.util.concurrent.TimeUnit;
  * }</pre>
  *
  * <h2>SpEL Expression Examples:</h2>
+ *
  * <pre>{@code
  * // Method parameters
  * &#64;JCacheXCacheable(key = "#userId + '_' + #type")
@@ -106,7 +106,7 @@ import java.util.concurrent.TimeUnit;
  * public Set<Permission> getPermissions(User user) { ... }
  *
  * // Method name and parameters
- * @JCacheXCacheable(key = "#root.methodName + '_' + #p0")
+ * &#64;JCacheXCacheable(key = "#root.methodName + '_' + #p0")
  * public Result computeResult(String input) { ... }
  *
  * // Complex conditions
@@ -195,4 +195,77 @@ public @interface JCacheXCacheable {
      * @return the maximum cache size
      */
     long maximumSize() default -1;
+
+    /**
+     * The cache profile to use for optimized configuration.
+     *
+     * This allows you to specify pre-configured cache profiles that automatically
+     * select the optimal cache implementation, eviction strategy, and other
+     * settings
+     * based on the intended use case.
+     *
+     * <h2>Available Profiles:</h2>
+     * <ul>
+     * <li><strong>DEFAULT</strong>: General-purpose cache for most use cases</li>
+     * <li><strong>READ_HEAVY</strong>: Optimized for read-intensive workloads</li>
+     * <li><strong>WRITE_HEAVY</strong>: Optimized for write-intensive
+     * workloads</li>
+     * <li><strong>MEMORY_EFFICIENT</strong>: Minimizes memory usage</li>
+     * <li><strong>HIGH_PERFORMANCE</strong>: Maximum performance optimization</li>
+     * <li><strong>SESSION_CACHE</strong>: Optimized for session storage</li>
+     * <li><strong>API_CACHE</strong>: Optimized for API response caching</li>
+     * <li><strong>COMPUTE_CACHE</strong>: Optimized for expensive computations</li>
+     * <li><strong>ML_OPTIMIZED</strong>: Machine learning optimized with predictive
+     * capabilities</li>
+     * <li><strong>ZERO_COPY</strong>: Zero-copy optimized for minimal memory
+     * allocation</li>
+     * <li><strong>HARDWARE_OPTIMIZED</strong>: Hardware-optimized leveraging CPU
+     * features</li>
+     * <li><strong>DISTRIBUTED</strong>: Distributed cache for cluster
+     * environments</li>
+     * </ul>
+     *
+     * <h2>Profile Usage Examples:</h2>
+     *
+     * <pre>
+     * {
+     *     &#64;code
+     *     &#64;Service
+     *     public class UserService {
+     *
+     *         // Read-heavy workload - users are read frequently
+     *         &#64;JCacheXCacheable(value = "users", profile = "READ_HEAVY")
+     *         public User findUserById(String id) {
+     *             return userRepository.findById(id);
+     *         }
+     *
+     *         // API response caching with TTL
+     *         &#64;JCacheXCacheable(value = "api-data", profile = "API_CACHE", expireAfterWrite = 15, expireAfterWriteUnit = TimeUnit.MINUTES)
+     *         public ApiResponse getApiData(String endpoint) {
+     *             return apiClient.call(endpoint);
+     *         }
+     *
+     *         // Memory-efficient for large datasets
+     *         @JCacheXCacheable(value = "large-reports", profile = "MEMORY_EFFICIENT")
+     *         public Report generateLargeReport(String reportId) {
+     *             return reportGenerator.generate(reportId);
+     *         }
+     *     }
+     * }
+     * </pre>
+     *
+     * <h2>Profile Configuration in application.yml:</h2>
+     *
+     * <pre>{@code
+     * jcachex:
+     *   profiles:
+     *     default: DEFAULT
+     *     users: READ_HEAVY
+     *     sessions: SESSION_CACHE
+     *     api-responses: API_CACHE
+     * }</pre>
+     *
+     * @return the cache profile name, empty string means use default configuration
+     */
+    String profile() default "";
 }

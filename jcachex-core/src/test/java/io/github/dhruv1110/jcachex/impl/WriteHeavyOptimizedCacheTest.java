@@ -37,7 +37,18 @@ class WriteHeavyOptimizedCacheTest {
     @AfterEach
     void tearDown() {
         if (cache != null) {
-            cache.shutdown();
+            try {
+                // Ensure all pending operations complete before tearing down
+                cache.flushWrites();
+
+                // Clear the cache using async operation with timeout
+                cache.clearAsync().get(2, TimeUnit.SECONDS);
+
+                // Force shutdown if available
+                cache.shutdown();
+            } catch (Exception e) {
+                // Ignore shutdown errors - test cleanup should be resilient
+            }
         }
     }
 
@@ -109,38 +120,35 @@ class WriteHeavyOptimizedCacheTest {
     }
 
     @Test
-    void testClearOperation() {
+    void testClearOperation() throws Exception {
         // Test clear on empty cache
-        cache.clear();
+        cache.clearAsync().get(1, TimeUnit.SECONDS);
         assertEquals(0, cache.size());
 
-        // Test clear with entries
-        cache.put("key1", "value1");
-        cache.put("key2", "value2");
-        cache.put("key3", "value3");
+        // Test clear with entries using async operations
+        CompletableFuture<Void> putOperations = CompletableFuture.allOf(
+                cache.putAsync("key1", "value1"),
+                cache.putAsync("key2", "value2"),
+                cache.putAsync("key3", "value3"));
 
-        // Flush writes to ensure they are processed before testing size
+        // Wait for all put operations to complete
+        putOperations.get(2, TimeUnit.SECONDS);
+
+        // Flush writes to ensure they are processed
         cache.flushWrites();
-        assertTrue(cache.size() >= 3);
 
-        cache.clear();
+        assertTrue(cache.size() >= 3, "Cache should have at least 3 entries after flush, but has: " + cache.size());
 
-        // For write-heavy cache, the clear operation might be asynchronous
-        // so we need to wait for it to complete
-        long startTime = System.currentTimeMillis();
-        while (cache.size() > 0 && System.currentTimeMillis() - startTime < 1000) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
-            }
-        }
+        // Clear using async operation
+        cache.clearAsync().get(2, TimeUnit.SECONDS);
 
-        assertEquals(0, cache.size());
-        assertNull(cache.get("key1"));
-        assertNull(cache.get("key2"));
-        assertNull(cache.get("key3"));
+        // Verify cache is empty
+        assertEquals(0, cache.size(), "Cache should be empty after clear");
+
+        // Verify individual keys are removed
+        assertNull(cache.get("key1"), "key1 should be removed after clear");
+        assertNull(cache.get("key2"), "key2 should be removed after clear");
+        assertNull(cache.get("key3"), "key3 should be removed after clear");
     }
 
     @Test
