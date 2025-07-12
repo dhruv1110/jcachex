@@ -3,7 +3,7 @@ complexity:
     threshold: 3
   ComplexInterface:
     threshold: 8
-  ComplexMethod:
+  CyclomaticComplexMethod:
     threshold: 10
   LargeClass:
     threshold: 400
