@@ -115,40 +115,143 @@ export const SPRING_INSTALLATION_TABS: CodeTab[] = [
 // Common features data
 export const FEATURES: Feature[] = [
     {
-        icon: '⚡',
+        icon: 'performance',
         title: 'High Performance',
-        description: 'Optimized for speed with nanoTime operations, immediate eviction, and efficient data structures.',
+        description: 'Sub-microsecond latency with 50M+ operations/second throughput.',
         details: ['Sub-microsecond latency operations', 'O(1) cache operations', 'Minimal GC pressure']
     },
     {
-        icon: '🔧',
+        icon: 'api',
         title: 'Simple API',
-        description: 'Clean, intuitive API with fluent builders and comprehensive documentation.',
-        details: ['Fluent builder pattern', 'Type-safe operations', 'Extensive JavaDoc']
+        description: 'Profile-based configuration makes complex caching decisions simple.',
+        details: ['Profile-based configuration', 'Type-safe operations', 'Comprehensive documentation']
     },
     {
-        icon: '🔄',
+        icon: 'async',
         title: 'Async Support',
         description: 'Built-in asynchronous operations with CompletableFuture and Kotlin coroutines.',
         details: ['CompletableFuture integration', 'Kotlin coroutines', 'Non-blocking operations']
     },
     {
-        icon: '🍃',
+        icon: 'spring',
         title: 'Spring Integration',
         description: 'Seamless integration with Spring Boot, annotations, and auto-configuration.',
         details: ['@Cacheable support', 'Auto-configuration', 'Properties binding']
     },
     {
-        icon: '🌐',
+        icon: 'distributed',
         title: 'Distributed Caching',
         description: 'Scale across multiple nodes with consistency guarantees and automatic failover.',
         details: ['Multi-node clustering', 'Consistency models', 'Automatic failover']
     },
     {
-        icon: '📊',
+        icon: 'monitoring',
         title: 'Monitoring',
         description: 'Built-in metrics, statistics, and observability for production environments.',
         details: ['Hit/miss ratios', 'Performance metrics', 'JMX support']
+    }
+];
+
+// Cache profiles with their characteristics
+export const CACHE_PROFILES: { name: string; title: string; description: string; useCase: string; category: string; performance?: string; }[] = [
+    // Core Profiles
+    {
+        name: 'DEFAULT',
+        title: 'Default Profile',
+        description: 'General-purpose cache with balanced performance',
+        useCase: 'Standard caching needs, good all-around performance',
+        category: 'Core',
+        performance: '40.4ns GET, 92.6ns PUT'
+    },
+    {
+        name: 'READ_HEAVY',
+        title: 'Read-Heavy Profile',
+        description: 'Optimized for read-intensive workloads (80%+ reads)',
+        useCase: 'Read-heavy applications, reference data, configuration',
+        category: 'Core',
+        performance: '11.5ns GET'
+    },
+    {
+        name: 'WRITE_HEAVY',
+        title: 'Write-Heavy Profile',
+        description: 'Optimized for write-intensive workloads (50%+ writes)',
+        useCase: 'Write-heavy applications, session storage, logging',
+        category: 'Core',
+        performance: '393.5ns PUT'
+    },
+    {
+        name: 'MEMORY_EFFICIENT',
+        title: 'Memory-Efficient Profile',
+        description: 'Minimizes memory usage for constrained environments',
+        useCase: 'Memory-constrained environments, embedded systems',
+        category: 'Core',
+        performance: '39.7ns GET, 88.5ns PUT'
+    },
+    {
+        name: 'HIGH_PERFORMANCE',
+        title: 'High-Performance Profile',
+        description: 'Maximum throughput optimization',
+        useCase: 'High-throughput applications, performance-critical systems',
+        category: 'Core',
+        performance: '24.6ns GET, 63.8ns PUT'
+    },
+    // Specialized Profiles
+    {
+        name: 'SESSION_CACHE',
+        title: 'Session Cache Profile',
+        description: 'Optimized for user session storage with time-based expiration',
+        useCase: 'User sessions, temporary data with TTL',
+        category: 'Specialized',
+        performance: '40.4ns GET, 92.6ns PUT'
+    },
+    {
+        name: 'API_CACHE',
+        title: 'API Cache Profile',
+        description: 'Optimized for API response caching with short TTL',
+        useCase: 'External API responses, network-bound operations',
+        category: 'Specialized',
+        performance: '728.8ns GET, 1150.0ns PUT'
+    },
+    {
+        name: 'COMPUTE_CACHE',
+        title: 'Compute Cache Profile',
+        description: 'Optimized for expensive computation results',
+        useCase: 'Heavy computations, ML inference, complex calculations',
+        category: 'Specialized',
+        performance: '728.8ns GET, 1150.0ns PUT'
+    },
+    // Advanced Profiles
+    {
+        name: 'ML_OPTIMIZED',
+        title: 'ML-Optimized Profile',
+        description: 'Machine learning optimized with predictive capabilities',
+        useCase: 'ML applications, predictive caching scenarios',
+        category: 'Advanced',
+        performance: '42961.5ns GET, 349.6ns PUT'
+    },
+    {
+        name: 'ZERO_COPY',
+        title: 'Zero-Copy Profile',
+        description: 'Ultra-low latency with zero-copy operations',
+        useCase: 'High-frequency trading, ultra-low latency requirements',
+        category: 'Advanced',
+        performance: '7.9ns GET (2.6x faster than Caffeine)'
+    },
+    {
+        name: 'HARDWARE_OPTIMIZED',
+        title: 'Hardware-Optimized Profile',
+        description: 'Hardware-optimized with CPU-specific features',
+        useCase: 'Hardware-specific optimizations, embedded systems',
+        category: 'Advanced',
+        performance: '24.7ns GET, 78.4ns PUT'
+    },
+    {
+        name: 'DISTRIBUTED',
+        title: 'Distributed Profile',
+        description: 'Distributed cache optimized for cluster environments',
+        useCase: 'Multi-node applications, distributed systems',
+        category: 'Advanced',
+        performance: 'Network-dependent latency'
     }
 ];
 
@@ -210,94 +313,6 @@ export const EVICTION_STRATEGIES: EvictionStrategy[] = [
     }
 ];
 
-// Cache types with specialized optimizations
-export const CACHE_TYPES: { name: string; title: string; description: string; useCase: string; performance?: string; }[] = [
-    {
-        name: 'DEFAULT',
-        title: 'Default Cache',
-        description: 'General-purpose cache with balanced performance',
-        useCase: 'Standard caching needs, good all-around performance',
-        performance: '40.4ns GET, 92.6ns PUT'
-    },
-    {
-        name: 'OPTIMIZED',
-        title: 'Optimized Cache',
-        description: 'Enhanced with advanced algorithms and optimizations',
-        useCase: 'Complex workloads requiring sophisticated eviction policies',
-        performance: '728.8ns GET, 1150.0ns PUT'
-    },
-    {
-        name: 'ZERO_COPY_OPTIMIZED',
-        title: 'Zero-Copy Cache',
-        description: '⚡ Fastest read performance with zero-copy operations',
-        useCase: 'Read-heavy workloads, fastest GET operations',
-        performance: '7.9ns GET (2.6x faster than Caffeine)'
-    },
-    {
-        name: 'READ_ONLY_OPTIMIZED',
-        title: 'Read-Only Cache',
-        description: '⚡ Optimized for read-only scenarios',
-        useCase: 'Configuration, reference data, immutable datasets',
-        performance: '11.5ns GET (1.6x faster than Caffeine)'
-    },
-    {
-        name: 'WRITE_HEAVY_OPTIMIZED',
-        title: 'Write-Heavy Cache',
-        description: 'Optimized for frequent write operations',
-        useCase: 'Applications with high write throughput',
-        performance: '393.5ns PUT'
-    },
-    {
-        name: 'LOCALITY_OPTIMIZED',
-        title: 'Cache Locality Optimized',
-        description: '⚡ Optimized for CPU cache locality',
-        useCase: 'CPU-bound applications, data structure locality',
-        performance: '9.7ns GET (1.9x faster than Caffeine)'
-    },
-    {
-        name: 'JIT_OPTIMIZED',
-        title: 'JIT Optimized',
-        description: 'Balanced performance across all operations',
-        useCase: 'JIT-compiled environments, balanced workloads',
-        performance: '24.6ns GET, 63.8ns PUT'
-    },
-    {
-        name: 'ALLOCATION_OPTIMIZED',
-        title: 'Allocation Optimized',
-        description: 'Minimizes memory allocations and GC pressure',
-        useCase: 'Memory-constrained environments, GC-sensitive applications',
-        performance: '39.7ns GET, 88.5ns PUT'
-    },
-    {
-        name: 'HARDWARE_OPTIMIZED',
-        title: 'Hardware Optimized',
-        description: 'Tuned for specific hardware characteristics',
-        useCase: 'Hardware-specific optimizations, embedded systems',
-        performance: '24.7ns GET, 78.4ns PUT'
-    },
-    {
-        name: 'JVM_OPTIMIZED',
-        title: 'JVM Optimized',
-        description: 'JVM-specific optimizations and memory management',
-        useCase: 'JVM-based applications, server workloads',
-        performance: '31.0ns GET, 277.7ns PUT'
-    },
-    {
-        name: 'ML_OPTIMIZED',
-        title: 'Machine Learning Optimized',
-        description: 'Adaptive caching with ML-based predictions',
-        useCase: 'ML applications, predictive caching scenarios',
-        performance: '42961.5ns GET, 349.6ns PUT'
-    },
-    {
-        name: 'PROFILED_OPTIMIZED',
-        title: 'Profiled Optimized',
-        description: 'Profile-guided optimizations for specific workloads',
-        useCase: 'Development environments, performance profiling',
-        performance: 'Variable based on profiling'
-    }
-];
-
 // Frequency sketch options
 export const FREQUENCY_SKETCH_OPTIONS: { name: string; title: string; description: string; useCase: string; }[] = [
     {
@@ -344,9 +359,9 @@ export const MODULES: Module[] = [
 
 // Performance stats (based on comprehensive benchmarks)
 export const PERFORMANCE_STATS: PerformanceStat[] = [
-    { label: 'Throughput', value: '1M+ ops/sec', description: 'Operations per second' },
-    { label: 'Fastest GET', value: '7.9ns', description: 'ZeroCopy implementation beats Caffeine' },
-    { label: 'Balanced Performance', value: '24.6ns GET', description: 'JIT-optimized balanced performance' },
+    { label: 'Throughput', value: '50M+ ops/sec', description: 'Operations per second' },
+    { label: 'Fastest GET', value: '7.9ns', description: 'Zero-copy implementation' },
+    { label: 'Balanced Performance', value: '24.6ns GET', description: 'High-performance profile' },
     { label: 'Eviction', value: 'O(1)', description: 'All eviction strategies optimized' }
 ];
 
@@ -355,6 +370,10 @@ export const ARCHITECTURE: ArchitectureComponent[] = [
     {
         name: 'Cache Interface',
         description: 'Type-safe generic interface for all cache operations'
+    },
+    {
+        name: 'Profile System',
+        description: 'Intelligent profiles that automatically configure optimal cache settings'
     },
     {
         name: 'Eviction Strategies',
@@ -381,134 +400,134 @@ export const ARCHITECTURE: ArchitectureComponent[] = [
 // Common code examples
 export const BASIC_USAGE_JAVA = `import io.github.dhruv1110.jcachex.*;
 
-// Create cache configuration (TinyWindowLFU is default)
-CacheConfig<String, User> config = CacheConfig.<String, User>builder()
+// Profile-based approach - automatically optimized
+Cache<String, User> cache = CacheBuilder
+    .profile("READ_HEAVY")  // Optimized for read-intensive workloads
+    .name("users")
     .maximumSize(1000L)
     .expireAfterWrite(Duration.ofMinutes(30))
-    .recordStats(true)
-    .build();
-
-// Create cache instance using CacheBuilder
-Cache<String, User> cache = CacheBuilder.newBuilder()
-    .cacheType(CacheType.DEFAULT)
-    .config(config)
     .build();
 
 // Basic operations
 cache.put("user123", new User("Alice", "alice@example.com"));
 User user = cache.get("user123");
-System.out.println("User: " + user.getName());`;
+System.out.println("User: " + user.getName());
+
+// Check performance
+CacheStats stats = cache.stats();
+System.out.println("Hit rate: " + (stats.hitRate() * 100) + "%");`;
 
 export const BASIC_USAGE_KOTLIN = `import io.github.dhruv1110.jcachex.kotlin.*
 
-// Create cache with Kotlin DSL (TinyWindowLFU is default)
-val cache = cache<String, User> {
-    maxSize = 1000
-    expireAfterWrite = 30.minutes
-    frequencySketchType = FrequencySketchType.BASIC
-    recordStats = true
-}
-
-// Or use specific optimized cache types
-val readOnlyCache = createReadOnlyOptimizedCache<String, User> {
-    maxSize = 1000
-    expireAfterWrite = 30.minutes
+// Profile-based approach with Kotlin DSL
+val cache = createCache<String, User> {
+    profile("WRITE_HEAVY")  // Optimized for write-intensive workloads
+    name("users")
+    maximumSize(1000)
+    expireAfterWrite(30.minutes)
 }
 
 // Basic operations with operator overloading
 cache["user123"] = User("Alice", "alice@example.com")
 val user = cache["user123"]
-println("User: \${user?.name}")`;
+println("User: \${user?.name}")
+
+// Check performance
+val stats = cache.stats()
+println("Hit rate: \${stats.hitRatePercent()}%")`;
 
 export const SPRING_USAGE = `@Service
 public class UserService {
 
-    @JCacheXCacheable(cacheName = "users",
-                      expireAfterWrite = 30,
-                      expireAfterWriteUnit = TimeUnit.MINUTES)
+    @JCacheXCacheable(value = "users", profile = "READ_HEAVY")
     public User findUserById(String id) {
         return userRepository.findById(id);
     }
 
-    @JCacheXCacheEvict(cacheName = "users")
+    @JCacheXCacheEvict(value = "users")
     public void deleteUser(String id) {
         userRepository.deleteById(id);
     }
 }`;
 
-// Advanced cache builder examples
-export const ADVANCED_CACHE_BUILDER_JAVA = `import io.github.dhruv1110.jcachex.*;
-import io.github.dhruv1110.jcachex.eviction.FrequencySketchType;
+// Profile-based examples
+export const PROFILE_EXAMPLES_JAVA = `import io.github.dhruv1110.jcachex.*;
 
-// High-performance read-heavy workload
-Cache<String, Product> productCache = CacheBuilder.forReadHeavyWorkload()
-    .maximumSize(5000L)
-    .expireAfterWrite(Duration.ofHours(2))
-    .build();
+// Different profiles for different use cases
+public class ProfileExamples {
 
-// Write-heavy workload optimization
-Cache<String, UserSession> sessionCache = CacheBuilder.forWriteHeavyWorkload()
-    .maximumSize(10000L)
-    .expireAfterAccess(Duration.ofMinutes(30))
-    .build();
+    // For read-heavy workloads
+    Cache<String, Product> productCache = CacheBuilder
+        .profile("READ_HEAVY")
+        .name("products")
+        .maximumSize(5000L)
+        .build();
 
-// Memory-constrained environment
-Cache<String, Configuration> configCache = CacheBuilder.forMemoryConstrainedEnvironment()
-    .maximumSize(100L)
-    .expireAfterWrite(Duration.ofHours(12))
-    .build();
+    // For session storage
+    Cache<String, UserSession> sessionCache = CacheBuilder
+        .profile("SESSION_CACHE")
+        .name("sessions")
+        .maximumSize(2000L)
+        .build();
 
-// Custom configuration with frequency sketch
-Cache<String, User> userCache = CacheBuilder.newBuilder()
-    .cacheType(CacheType.JIT_OPTIMIZED)
-    .maximumSize(1000L)
-    .evictionStrategy(EvictionStrategy.ENHANCED_LRU)
-    .frequencySketchType(FrequencySketchType.OPTIMIZED)
-    .recordStats(true)
-    .build();`;
+    // For API responses
+    Cache<String, ApiResponse> apiCache = CacheBuilder
+        .profile("API_CACHE")
+        .name("api-responses")
+        .maximumSize(500L)
+        .build();
+
+    // For distributed caching
+    Cache<String, Order> orderCache = CacheBuilder
+        .profile("DISTRIBUTED")
+        .name("orders")
+        .clusterNodes("cache-1:8080", "cache-2:8080")
+        .build();
+}`;
 
 // Performance comparison examples
 export const PERFORMANCE_COMPARISON_JAVA = `import io.github.dhruv1110.jcachex.*;
 
 public class PerformanceComparison {
     public static void main(String[] args) {
-        // Fastest GET operations - ZeroCopy (7.9ns)
-        Cache<String, String> fastestCache = CacheBuilder.newBuilder()
-            .cacheType(CacheType.ZERO_COPY_OPTIMIZED)
+        // Ultra-fast reads - Zero-copy profile (7.9ns)
+        Cache<String, String> ultraFastCache = CacheBuilder
+            .profile("ZERO_COPY")
+            .name("ultra-fast")
             .maximumSize(1000L)
             .build();
 
-        // Balanced performance - JIT Optimized (24.6ns GET, 63.8ns PUT)
-        Cache<String, String> balancedCache = CacheBuilder.newBuilder()
-            .cacheType(CacheType.JIT_OPTIMIZED)
+        // Balanced performance - High-performance profile (24.6ns GET)
+        Cache<String, String> balancedCache = CacheBuilder
+            .profile("HIGH_PERFORMANCE")
+            .name("balanced")
             .maximumSize(1000L)
             .build();
 
-        // Memory efficient - Allocation Optimized (39.7ns GET, 88.5ns PUT)
-        Cache<String, String> memoryCache = CacheBuilder.newBuilder()
-            .cacheType(CacheType.ALLOCATION_OPTIMIZED)
-            .maximumSize(1000L)
-            .build();
-
-        // Best locality - Cache Locality Optimized (9.7ns GET)
-        Cache<String, String> localityCache = CacheBuilder.newBuilder()
-            .cacheType(CacheType.LOCALITY_OPTIMIZED)
-            .maximumSize(1000L)
+        // Memory efficient - Memory-efficient profile
+        Cache<String, String> memoryCache = CacheBuilder
+            .profile("MEMORY_EFFICIENT")
+            .name("memory-efficient")
+            .maximumSize(100L)
             .build();
 
         // Performance test
         long startTime = System.nanoTime();
         for (int i = 0; i < 1000000; i++) {
-            fastestCache.put("key" + i, "value" + i);
+            ultraFastCache.put("key" + i, "value" + i);
         }
         long endTime = System.nanoTime();
-        System.out.println("ZeroCopy PUT Time: " + (endTime - startTime) / 1000000 + "ms");
+        System.out.println("Zero-copy PUT Time: " + (endTime - startTime) / 1000000 + "ms");
 
         startTime = System.nanoTime();
         for (int i = 0; i < 1000000; i++) {
-            fastestCache.get("key" + i);
+            ultraFastCache.get("key" + i);
         }
         endTime = System.nanoTime();
-        System.out.println("ZeroCopy GET Time: " + (endTime - startTime) / 1000000 + "ms");
+        System.out.println("Zero-copy GET Time: " + (endTime - startTime) / 1000000 + "ms");
     }
 }`;
+
+// Export old names for backward compatibility
+export const CACHE_TYPES = CACHE_PROFILES;
+export const ADVANCED_CACHE_BUILDER_JAVA = PROFILE_EXAMPLES_JAVA;

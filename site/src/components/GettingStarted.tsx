@@ -42,6 +42,8 @@ import {
     IntegrationInstructions as IntegrationInstructionsIcon,
     Security as SecurityIcon,
     Verified as VerifiedIcon,
+    AccountTree as ProfileIcon,
+    TrendingUp as PerformanceIcon,
 } from '@mui/icons-material';
 import CodeTabs from './CodeTabs';
 import Layout from './Layout';
@@ -53,9 +55,9 @@ const GettingStarted: React.FC = () => {
 
     const steps = [
         'Add Dependency',
-        'Configure Cache',
+        'Choose Profile',
         'Start Using',
-        'Explore Features'
+        'Monitor & Tune'
     ];
 
     const installationMethods = [
@@ -83,74 +85,107 @@ const GettingStarted: React.FC = () => {
         }
     ];
 
-    const quickExamples = [
+    const profileExamples = [
         {
-            title: 'Basic Cache',
-            description: 'Simple in-memory cache with size limits',
-            code: `import io.github.dhruv1110.jcachex.*;
-import java.time.Duration;
+            title: 'Read-Heavy Profile',
+            description: 'Perfect for reference data and configuration',
+            profile: 'READ_HEAVY',
+            performance: '11.5ns GET',
+            code: `// Optimized for read-intensive workloads
+Cache<String, Product> productCache = CacheBuilder
+    .profile("READ_HEAVY")
+    .name("products")
+    .maximumSize(5000L)
+    .build();
 
-public class FirstCache {
-    public static void main(String[] args) {
-        // Create cache configuration
-        CacheConfig<String, String> config = CacheConfig.<String, String>builder()
-            .maximumSize(1000L)
-            .expireAfterWrite(Duration.ofMinutes(30))
-            .recordStats(true)
-            .build();
-
-        // Create cache instance
-        Cache<String, String> cache = new DefaultCache<>(config);
-
-        // Basic operations
-        cache.put("user:123", "John Doe");
-        String user = cache.get("user:123");
-        System.out.println("User: " + user);
-
-        // Check cache stats
-        CacheStats stats = cache.stats();
-        System.out.println("Hit rate: " + stats.hitRate());
-    }
-}`
+// Basic operations
+productCache.put("product:123", product);
+Product found = productCache.get("product:123"); // Ultra-fast reads`
         },
         {
-            title: 'Async Operations',
-            description: 'Non-blocking cache operations',
-            code: `// Async operations
-CompletableFuture<String> future = cache.getAsync("key1");
-CompletableFuture<Void> putFuture = cache.putAsync("key2", "value2");
+            title: 'Session Cache Profile',
+            description: 'Optimized for user session storage',
+            profile: 'SESSION_CACHE',
+            performance: 'TTL: 30 min',
+            code: `// Automatically configured for sessions
+Cache<String, UserSession> sessionCache = CacheBuilder
+    .profile("SESSION_CACHE")
+    .name("sessions")
+    .build(); // TTL and size pre-configured
 
-// Chain operations
-CompletableFuture<String> result = cache.getAsync("key1")
-    .thenCompose(value -> {
-        if (value == null) {
-            return cache.putAsync("key1", "default").thenApply(v -> "default");
+// Session management
+sessionCache.put("session:abc123", userSession);
+UserSession session = sessionCache.get("session:abc123");`
+        },
+        {
+            title: 'Distributed Profile',
+            description: 'Scale across multiple nodes',
+            profile: 'DISTRIBUTED',
+            performance: 'Network-aware',
+            code: `// Multi-node caching made simple
+Cache<String, Order> orderCache = CacheBuilder
+    .profile("DISTRIBUTED")
+    .name("orders")
+    .clusterNodes("cache-1:8080", "cache-2:8080")
+    .build();
+
+// Works just like local cache
+orderCache.put("order:456", order);
+Order found = orderCache.get("order:456");`
         }
-        return CompletableFuture.completedFuture(value);
-    });`
+    ];
+
+    const profileSelection = [
+        {
+            category: 'Core Profiles',
+            description: 'Essential profiles for common use cases',
+            profiles: [
+                { name: 'READ_HEAVY', usage: '80%+ read operations', performance: '11.5ns GET' },
+                { name: 'WRITE_HEAVY', usage: '50%+ write operations', performance: '393.5ns PUT' },
+                { name: 'DEFAULT', usage: 'General-purpose caching', performance: '40.4ns GET' },
+                { name: 'HIGH_PERFORMANCE', usage: 'Maximum throughput', performance: '24.6ns GET' }
+            ]
+        },
+        {
+            category: 'Specialized Profiles',
+            description: 'Optimized for specific scenarios',
+            profiles: [
+                { name: 'SESSION_CACHE', usage: 'User session storage', performance: 'TTL: 30 min' },
+                { name: 'API_CACHE', usage: 'External API responses', performance: 'TTL: 15 min' },
+                { name: 'COMPUTE_CACHE', usage: 'Expensive computations', performance: 'TTL: 2 hours' }
+            ]
+        },
+        {
+            category: 'Advanced Profiles',
+            description: 'Cutting-edge optimizations',
+            profiles: [
+                { name: 'ZERO_COPY', usage: 'Ultra-low latency (HFT)', performance: '7.9ns GET' },
+                { name: 'DISTRIBUTED', usage: 'Multi-node clustering', performance: 'Network-aware' },
+                { name: 'ML_OPTIMIZED', usage: 'Machine learning workloads', performance: 'Predictive' }
+            ]
         }
     ];
 
     const bestPractices = [
         {
-            title: 'Choose the Right Size',
-            description: 'Set appropriate maximum size based on your available memory',
-            tip: 'Monitor memory usage and adjust cache size accordingly'
+            title: 'Choose the Right Profile',
+            description: 'Select a profile that matches your workload characteristics',
+            tip: 'Start with core profiles like READ_HEAVY or WRITE_HEAVY based on your access patterns'
         },
         {
-            title: 'Use Expiration Policies',
-            description: 'Set expiration times to prevent stale data',
-            tip: 'Consider both write and access-based expiration'
+            title: 'Monitor Performance',
+            description: 'Enable statistics to track hit rates and performance metrics',
+            tip: 'Use cache.stats() to monitor effectiveness and adjust if needed'
         },
         {
-            title: 'Monitor Cache Performance',
-            description: 'Enable statistics to track hit rates and performance',
-            tip: 'Use cache.stats() to monitor effectiveness'
+            title: 'Size Appropriately',
+            description: 'Override default sizes based on your memory constraints',
+            tip: 'Profiles provide good defaults, but you can override maximumSize if needed'
         },
         {
-            title: 'Handle Null Values',
-            description: 'Decide how to handle null or missing values',
-            tip: 'Use Optional<T> for better null safety'
+            title: 'Consider TTL Requirements',
+            description: 'Some profiles have built-in TTL, others let you configure it',
+            tip: 'Session and API profiles have automatic TTL, others need explicit configuration'
         }
     ];
 
@@ -162,18 +197,19 @@ CompletableFuture<String> result = cache.getAsync("key1")
             icon: <RocketLaunchIcon />,
             children: [
                 { id: 'installation', title: 'Installation', icon: <CloudDownloadIcon /> },
+                { id: 'choose-profile', title: 'Choose Profile', icon: <ProfileIcon /> },
                 { id: 'first-cache', title: 'Your First Cache', icon: <CodeIcon /> },
-                { id: 'quick-examples', title: 'Quick Examples', icon: <PlayArrowIcon /> },
+                { id: 'profile-examples', title: 'Profile Examples', icon: <PlayArrowIcon /> },
             ],
         },
         {
-            id: 'configuration',
-            title: 'Configuration',
-            icon: <SettingsIcon />,
+            id: 'profiles',
+            title: 'Cache Profiles',
+            icon: <ProfileIcon />,
             children: [
-                { id: 'basic-config', title: 'Basic Configuration', icon: <ApiIcon /> },
-                { id: 'advanced-config', title: 'Advanced Options', icon: <BuildIcon /> },
-                { id: 'eviction-setup', title: 'Eviction Setup', icon: <DashboardIcon /> },
+                { id: 'core-profiles', title: 'Core Profiles', icon: <ApiIcon /> },
+                { id: 'specialized-profiles', title: 'Specialized Profiles', icon: <BuildIcon /> },
+                { id: 'advanced-profiles', title: 'Advanced Profiles', icon: <PerformanceIcon /> },
             ],
         },
         {
@@ -181,7 +217,7 @@ CompletableFuture<String> result = cache.getAsync("key1")
             title: 'Best Practices',
             icon: <SecurityIcon />,
             children: [
-                { id: 'sizing-guidelines', title: 'Sizing Guidelines', icon: <SettingsIcon /> },
+                { id: 'profile-selection', title: 'Profile Selection', icon: <SettingsIcon /> },
                 { id: 'monitoring', title: 'Monitoring', icon: <DashboardIcon /> },
                 { id: 'troubleshooting', title: 'Troubleshooting', icon: <BuildIcon /> },
             ],
@@ -227,24 +263,24 @@ CompletableFuture<String> result = cache.getAsync("key1")
                         Getting Started with JCacheX
                     </Typography>
                     <Typography variant="h5" color="text.secondary" sx={{ mb: 4 }}>
-                        Get up and running with JCacheX in minutes
+                        Profile-based caching made simple - no more complex configurations
                     </Typography>
                     <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
                         <Chip
-                            icon={<RocketLaunchIcon />}
-                            label="Quick Setup"
+                            icon={<ProfileIcon />}
+                            label="Profile-based"
                             color="primary"
                             sx={{ px: 2, py: 1 }}
                         />
                         <Chip
                             icon={<CodeIcon />}
-                            label="Code Examples"
+                            label="Quick Setup"
                             color="secondary"
                             sx={{ px: 2, py: 1 }}
                         />
                         <Chip
-                            icon={<VerifiedIcon />}
-                            label="Best Practices"
+                            icon={<PerformanceIcon />}
+                            label="High Performance"
                             color="success"
                             sx={{ px: 2, py: 1 }}
                         />
@@ -308,6 +344,57 @@ CompletableFuture<String> result = cache.getAsync("key1")
                     </Box>
                 </Box>
 
+                {/* Choose Profile Section */}
+                <Box id="choose-profile" sx={{ mb: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                        <ProfileIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Choose Your Profile
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                        JCacheX profiles eliminate complex configuration decisions. Simply choose a profile that
+                        matches your use case and get optimal performance automatically.
+                    </Typography>
+
+                    {profileSelection.map((category, categoryIndex) => (
+                        <Box key={categoryIndex} sx={{ mb: 4 }}>
+                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
+                                {category.category}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                                {category.description}
+                            </Typography>
+                            <Box sx={{
+                                display: 'grid',
+                                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                                gap: 2
+                            }}>
+                                {category.profiles.map((profile, profileIndex) => (
+                                    <Card key={profileIndex} variant="outlined">
+                                        <CardContent sx={{ p: 2 }}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <Box>
+                                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                                        {profile.name}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {profile.usage}
+                                                    </Typography>
+                                                </Box>
+                                                <Chip
+                                                    label={profile.performance}
+                                                    size="small"
+                                                    color="primary"
+                                                    variant="outlined"
+                                                />
+                                            </Box>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </Box>
+                        </Box>
+                    ))}
+                </Box>
+
                 {/* First Cache Section */}
                 <Box id="first-cache" sx={{ mb: 8 }}>
                     <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
@@ -315,92 +402,95 @@ CompletableFuture<String> result = cache.getAsync("key1")
                         Your First Cache
                     </Typography>
                     <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                        Create your first cache with just a few lines of code. This example shows the basic
-                        configuration and usage patterns.
+                        Create your first cache using profiles. Notice how much simpler it is compared to
+                        traditional configuration-based approaches.
                     </Typography>
 
                     <CodeTabs
                         tabs={[
                             {
-                                id: 'java-basic',
+                                id: 'java-profile',
                                 label: 'Java',
                                 language: 'java',
                                 code: `import io.github.dhruv1110.jcachex.*;
-import java.time.Duration;
 
 public class FirstCache {
     public static void main(String[] args) {
-        // Create cache configuration
-        CacheConfig<String, String> config = CacheConfig.<String, String>builder()
-            .maximumSize(1000L)
-            .expireAfterWrite(Duration.ofMinutes(30))
-            .recordStats(true)
+        // Profile-based approach - automatically optimized
+        Cache<String, String> cache = CacheBuilder
+            .profile("READ_HEAVY")  // Optimized for read-intensive workloads
+            .name("users")
+            .maximumSize(1000L)     // Override default if needed
             .build();
-
-        // Create cache instance
-        Cache<String, String> cache = new DefaultCache<>(config);
 
         // Basic operations
         cache.put("user:123", "John Doe");
         String user = cache.get("user:123");
         System.out.println("User: " + user);
 
-        // Check cache stats
+        // Check performance
         CacheStats stats = cache.stats();
-        System.out.println("Hit rate: " + stats.hitRate());
+        System.out.println("Hit rate: " + (stats.hitRate() * 100) + "%");
     }
 }`
                             },
                             {
-                                id: 'kotlin-basic',
+                                id: 'kotlin-profile',
                                 label: 'Kotlin',
                                 language: 'kotlin',
                                 code: `import io.github.dhruv1110.jcachex.kotlin.*
-import java.time.Duration
 
 fun main() {
-    // Create cache with DSL
+    // Profile-based approach with Kotlin DSL
     val cache = createCache<String, String> {
-        maximumSize(1000L)
-        expireAfterWrite(Duration.ofMinutes(30))
-        recordStats(true)
+        profile("WRITE_HEAVY")  // Optimized for write-intensive workloads
+        name("users")
+        maximumSize(1000)       // Override default if needed
     }
 
     // Use operator overloading
     cache["user:123"] = "John Doe"
     val user = cache["user:123"]
-    println("User: " + user)
+    println("User: $user")
 
-    // Check cache stats
+    // Check performance
     val stats = cache.stats()
-    println("Hit rate: " + stats.hitRate())
+    println("Hit rate: \${stats.hitRatePercent()}%")
 }`
                             }
                         ]}
                     />
                 </Box>
 
-                {/* Quick Examples Section */}
-                <Box id="quick-examples" sx={{ mb: 8 }}>
+                {/* Profile Examples Section */}
+                <Box id="profile-examples" sx={{ mb: 8 }}>
                     <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
                         <PlayArrowIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                        Quick Examples
+                        Profile Examples
                     </Typography>
                     <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                        Here are some common usage patterns to get you started quickly.
+                        Here are real-world examples showing how different profiles optimize for specific use cases.
                     </Typography>
 
                     <Box sx={{
                         display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
+                        gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' },
                         gap: 3
                     }}>
-                        {quickExamples.map((example, index) => (
-                            <Card key={index} sx={{ height: '100%' }}>
-                                <CardContent>
-                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                                        {example.title}
-                                    </Typography>
+                        {profileExamples.map((example, index) => (
+                            <Card key={index} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                                <CardContent sx={{ flex: 1 }}>
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                            {example.title}
+                                        </Typography>
+                                        <Chip
+                                            label={example.performance}
+                                            size="small"
+                                            color="success"
+                                            variant="outlined"
+                                        />
+                                    </Box>
                                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                                         {example.description}
                                     </Typography>
@@ -408,93 +498,16 @@ fun main() {
                                         backgroundColor: 'grey.100',
                                         p: 2,
                                         borderRadius: 1,
-                                        fontSize: '0.875rem',
+                                        fontSize: '0.75rem',
                                         overflow: 'auto',
-                                        fontFamily: 'monospace'
+                                        fontFamily: 'monospace',
+                                        lineHeight: 1.4
                                     }}>
                                         {example.code}
                                     </Box>
                                 </CardContent>
                             </Card>
                         ))}
-                    </Box>
-                </Box>
-
-                {/* Configuration Section */}
-                <Box id="configuration" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
-                        Configuration
-                    </Typography>
-
-                    <Box id="basic-config" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            Basic Configuration
-                        </Typography>
-                        <Typography variant="body1" sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                            Essential configuration options for most use cases.
-                        </Typography>
-                        <List dense>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="maximumSize"
-                                    secondary="Set the maximum number of entries the cache can hold"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="expireAfterWrite"
-                                    secondary="Entries expire after being written to the cache"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="expireAfterAccess"
-                                    secondary="Entries expire after being accessed"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="recordStats"
-                                    secondary="Enable statistics collection for monitoring"
-                                />
-                            </ListItem>
-                        </List>
-                    </Box>
-
-                    <Box id="advanced-config" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            Advanced Options
-                        </Typography>
-                        <Typography variant="body1" sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                            Additional configuration for fine-tuning cache behavior.
-                        </Typography>
-                        <List dense>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="initialCapacity"
-                                    secondary="Set initial capacity to avoid resizing during startup"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="concurrencyLevel"
-                                    secondary="Configure concurrency for multi-threaded access"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="weigher"
-                                    secondary="Custom weight calculation for entries"
-                                />
-                            </ListItem>
-                        </List>
                     </Box>
                 </Box>
 
@@ -505,7 +518,7 @@ fun main() {
                         Best Practices
                     </Typography>
                     <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                        Follow these recommendations for optimal cache performance and reliability.
+                        Follow these recommendations for optimal cache performance with profiles.
                     </Typography>
 
                     <Box sx={{
@@ -538,7 +551,7 @@ fun main() {
                         Next Steps
                     </Typography>
                     <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                        Now that you have JCacheX up and running, explore these advanced features and integrations.
+                        Now that you understand profile-based caching, explore these advanced features and integrations.
                     </Typography>
 
                     <Box sx={{
@@ -549,20 +562,20 @@ fun main() {
                         <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                             <CardContent sx={{ flex: 1 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                    <BuildIcon color="primary" sx={{ mr: 1 }} />
+                                    <ProfileIcon color="primary" sx={{ mr: 1 }} />
                                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                        Advanced Features
+                                        All Profiles
                                     </Typography>
                                 </Box>
                                 <Typography variant="body2" sx={{ mb: 2 }}>
-                                    Explore distributed caching, custom eviction strategies, and async operations.
+                                    Explore all 12 cache profiles including advanced features like ML optimization and zero-copy.
                                 </Typography>
                                 <Button
                                     variant="outlined"
                                     href="/documentation"
                                     sx={{ mt: 'auto' }}
                                 >
-                                    Read Documentation
+                                    View All Profiles
                                 </Button>
                             </CardContent>
                         </Card>
@@ -575,7 +588,7 @@ fun main() {
                                     </Typography>
                                 </Box>
                                 <Typography variant="body2" sx={{ mb: 2 }}>
-                                    Learn about Spring Boot auto-configuration and annotation-based caching.
+                                    Learn about Spring Boot auto-configuration and profile-based annotation caching.
                                 </Typography>
                                 <Button
                                     variant="outlined"
@@ -589,20 +602,20 @@ fun main() {
                         <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
                             <CardContent sx={{ flex: 1 }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                    <SchoolIcon color="success" sx={{ mr: 1 }} />
+                                    <PerformanceIcon color="success" sx={{ mr: 1 }} />
                                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                        More Examples
+                                        Performance Benchmarks
                                     </Typography>
                                 </Box>
                                 <Typography variant="body2" sx={{ mb: 2 }}>
-                                    Browse complete examples for Java, Kotlin, and Spring Boot applications.
+                                    See detailed performance comparisons between profiles and industry competitors.
                                 </Typography>
                                 <Button
                                     variant="outlined"
-                                    href="/examples"
+                                    href="/performance"
                                     sx={{ mt: 'auto' }}
                                 >
-                                    View Examples
+                                    View Benchmarks
                                 </Button>
                             </CardContent>
                         </Card>

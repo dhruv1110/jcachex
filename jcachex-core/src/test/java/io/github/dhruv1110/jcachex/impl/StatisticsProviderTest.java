@@ -1,6 +1,7 @@
 package io.github.dhruv1110.jcachex.impl;
 
 import io.github.dhruv1110.jcachex.CacheStats;
+import io.github.dhruv1110.jcachex.internal.util.StatisticsProvider;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicLong;

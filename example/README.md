@@ -13,13 +13,13 @@ This directory contains comprehensive examples demonstrating the advanced featur
 ### 🎯 Default Changes
 - **TinyWindowLFU** is now the default eviction strategy (replacing LRU)
 - **Frequency sketches** provide improved eviction accuracy
-- **CacheBuilder** replaces direct instantiation for better ergonomics
+- **JCacheXBuilder** replaces direct instantiation for better ergonomics
 
 ## Examples
 
 ### Java Example (`java/`)
 Comprehensive Java example showcasing:
-- **Basic usage** with new CacheBuilder API
+- **Basic usage** with new JCacheXBuilder API
 - **Specialized cache types** for different workloads
 - **Enhanced eviction strategies** (Enhanced LRU, Enhanced LFU, TinyWindowLFU)
 - **Frequency sketch options** (NONE, BASIC, OPTIMIZED)
@@ -29,13 +29,13 @@ Comprehensive Java example showcasing:
 **Key Demonstrations:**
 ```java
 // Read-heavy workload (fastest GET performance)
-Cache<String, String> readCache = CacheBuilder.forReadHeavyWorkload()
+Cache<String, String> readCache = JCacheXBuilder.forReadHeavyWorkload()
     .maximumSize(1000L)
     .expireAfterWrite(Duration.ofHours(2))
     .build();
 
 // Enhanced LFU with optimized frequency sketch
-Cache<String, String> enhancedLFU = CacheBuilder.newBuilder()
+Cache<String, String> enhancedLFU = JCacheXBuilder.newBuilder()
     .cacheType(CacheType.DEFAULT)
     .evictionStrategy(EvictionStrategy.ENHANCED_LFU)
     .frequencySketchType(FrequencySketchType.OPTIMIZED)
@@ -106,7 +106,7 @@ Production-ready SpringBoot integration demonstrating:
 // Read-heavy cache for product data
 @Bean
 fun productCache(): Cache<String, Product> {
-    return CacheBuilder.forReadHeavyWorkload()
+    return JCacheXBuilder.forReadHeavyWorkload()
         .maximumSize(5000L)
         .expireAfterWrite(Duration.ofHours(2))
         .recordStats(true)
@@ -116,7 +116,7 @@ fun productCache(): Cache<String, Product> {
 // Enhanced LFU with optimized frequency sketch
 @Bean
 fun analyticsCache(): Cache<String, AnalyticsData> {
-    return CacheBuilder.newBuilder()
+    return JCacheXBuilder.newBuilder()
         .cacheType(CacheType.JIT_OPTIMIZED)
         .evictionStrategy(EvictionStrategy.ENHANCED_LFU)
         .frequencySketchType(FrequencySketchType.OPTIMIZED)
@@ -154,11 +154,11 @@ cd example/springboot
 ### Convenience Factory Methods
 
 ```java
-// CacheBuilder convenience methods
-Cache<K, V> readCache = CacheBuilder.forReadHeavyWorkload();
-Cache<K, V> writeCache = CacheBuilder.forWriteHeavyWorkload();
-Cache<K, V> memoryCache = CacheBuilder.forMemoryConstrainedEnvironment();
-Cache<K, V> performanceCache = CacheBuilder.forHighPerformance();
+// JCacheXBuilder convenience methods
+Cache<K, V> readCache = JCacheXBuilder.forReadHeavyWorkload();
+Cache<K, V> writeCache = JCacheXBuilder.forWriteHeavyWorkload();
+Cache<K, V> memoryCache = JCacheXBuilder.forMemoryConstrainedEnvironment();
+Cache<K, V> performanceCache = JCacheXBuilder.forHighPerformance();
 ```
 
 ## Eviction Strategies
@@ -198,53 +198,31 @@ All eviction strategies have been optimized to O(1) complexity:
 - **LRU**: Doubly-linked list implementation
 - **LFU**: Frequency bucket-based structure
 - **FIFO/FILO**: Queue-based operations
-- **TinyWindowLFU**: Hybrid approach with O(1) performance
 
-## Running All Examples
+4. **JCacheXBuilder** provides a fluent API for cache configuration
 
-```bash
-# Java example
-cd example/java && ./gradlew run
+### Getting Started
 
-# Kotlin example
-cd example/kotlin && ./gradlew run
+1. **Include JCacheX in your project**
+2. **Import the appropriate module** (`jcachex-core`, `jcachex-kotlin`, or `jcachex-spring`)
+3. **Use the unified builder pattern** for cache creation
+4. **Choose the optimal cache type** for your workload
 
-# SpringBoot example
-cd example/springboot && ./gradlew bootRun
-```
-
-## Key Takeaways
-
-1. **TinyWindowLFU** is now the default eviction strategy for optimal performance
-2. **Specialized cache types** provide significant performance improvements for specific workloads
-3. **Frequency sketches** improve eviction accuracy with configurable overhead
-4. **CacheBuilder** provides a fluent API for cache configuration
-5. **O(1) eviction strategies** ensure consistent performance at scale
-6. **Kotlin DSL** provides idiomatic cache configuration
-7. **SpringBoot integration** supports all new features seamlessly
-
-## Migration Guide
-
-### From Previous Version
+### Example Usage
 
 ```java
-// Old approach
-CacheConfig<String, String> config = CacheConfig.<String, String>builder()
-    .maximumSize(1000L)
-    .evictionStrategy(new LRUEvictionStrategy<>())
-    .build();
-Cache<String, String> cache = new DefaultCache<>(config);
-
-// New approach (TinyWindowLFU is default)
-Cache<String, String> cache = CacheBuilder.newBuilder()
-    .cacheType(CacheType.DEFAULT)
-    .maximumSize(1000L)
+// Basic cache
+Cache<String, String> cache = JCacheXBuilder.newBuilder()
+    .maximumSize(1000)
+    .expireAfterWrite(Duration.ofMinutes(10))
     .build();
 
-// Or use specialized cache for better performance
-Cache<String, String> readCache = CacheBuilder.forReadHeavyWorkload()
-    .maximumSize(1000L)
+// Read-heavy workload
+Cache<String, String> readCache = JCacheXBuilder.forReadHeavyWorkload()
+    .maximumSize(5000)
+    .expireAfterWrite(Duration.ofHours(2))
+    .recordStats(true)
     .build();
 ```
 
-The new examples showcase all these features in practical, real-world scenarios with comprehensive performance testing and monitoring.
+This unified approach provides better performance, easier configuration, and enhanced features compared to traditional caching solutions.

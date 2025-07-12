@@ -1,7 +1,7 @@
 package io.github.dhruv1110.jcachex.impl.base;
 
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.impl.ConfigurationProvider;
+import io.github.dhruv1110.jcachex.internal.util.ConfigurationProvider;
 
 import java.util.Collection;
 import java.util.Map;

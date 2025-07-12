@@ -3,6 +3,7 @@ package io.github.dhruv1110.jcachex.example.java;
 import io.github.dhruv1110.jcachex.*;
 import io.github.dhruv1110.jcachex.FrequencySketchType;
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
+import io.github.dhruv1110.jcachex.JCacheXBuilder;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -32,9 +33,8 @@ public class Main {
     private static void demonstrateBasicUsage() {
         System.out.println("=== Basic Usage with Default TinyWindowLFU ===");
 
-        // Create cache using new CacheBuilder (TinyWindowLFU is now default)
-        Cache<String, String> cache = CacheBuilder.<String, String>newBuilder()
-                .cacheType(CacheBuilder.CacheType.DEFAULT)
+        // Create cache using new JCacheXBuilder (TinyWindowLFU is now default)
+        Cache<String, String> cache = JCacheXBuilder.<String, String>create()
                 .maximumSize(100L)
                 .expireAfterWrite(Duration.ofMinutes(5))
                 .recordStats(true)
@@ -60,7 +60,7 @@ public class Main {
         System.out.println("=== Specialized Cache Types ===");
 
         // Read-heavy workload cache (fastest GET performance)
-        Cache<String, String> readCache = CacheBuilder.<String, String>forReadHeavyWorkload()
+        Cache<String, String> readCache = JCacheXBuilder.<String, String>forReadHeavyWorkload()
                 .maximumSize(1000L)
                 .expireAfterWrite(Duration.ofHours(2))
                 .build();
@@ -68,7 +68,7 @@ public class Main {
         System.out.println("Read-optimized cache created (expected ~11.5ns GET)");
 
         // Write-heavy workload cache
-        Cache<String, String> writeCache = CacheBuilder.<String, String>forWriteHeavyWorkload()
+        Cache<String, String> writeCache = JCacheXBuilder.<String, String>forWriteHeavyWorkload()
                 .maximumSize(5000L)
                 .expireAfterAccess(Duration.ofMinutes(30))
                 .build();
@@ -76,7 +76,7 @@ public class Main {
         System.out.println("Write-optimized cache created (expected ~393.5ns PUT)");
 
         // Memory-constrained environment
-        Cache<String, String> memoryCache = CacheBuilder.<String, String>forMemoryConstrainedEnvironment()
+        Cache<String, String> memoryCache = JCacheXBuilder.<String, String>forMemoryConstrainedEnvironment()
                 .maximumSize(100L)
                 .expireAfterWrite(Duration.ofHours(12))
                 .build();
@@ -84,7 +84,7 @@ public class Main {
         System.out.println("Memory-optimized cache created (minimal GC pressure)");
 
         // High-performance cache
-        Cache<String, String> performanceCache = CacheBuilder.<String, String>forHighPerformance()
+        Cache<String, String> performanceCache = JCacheXBuilder.<String, String>forHighPerformance()
                 .maximumSize(1000L)
                 .expireAfterWrite(Duration.ofMinutes(15))
                 .build();
@@ -101,28 +101,20 @@ public class Main {
         System.out.println("=== Enhanced Eviction Strategies ===");
 
         // Enhanced LRU with frequency sketch
-        Cache<String, String> enhancedLRU = CacheBuilder.<String, String>newBuilder()
-                .cacheType(CacheBuilder.CacheType.DEFAULT)
+        Cache<String, String> enhancedLRU = JCacheXBuilder.<String, String>create()
                 .maximumSize(50L)
-                .evictionStrategy(EvictionStrategy.ENHANCED_LRU())
-                .frequencySketchType(FrequencySketchType.BASIC)
                 .recordStats(true)
                 .build();
 
         // Enhanced LFU with frequency buckets
-        Cache<String, String> enhancedLFU = CacheBuilder.<String, String>newBuilder()
-                .cacheType(CacheBuilder.CacheType.DEFAULT)
+        Cache<String, String> enhancedLFU = JCacheXBuilder.<String, String>create()
                 .maximumSize(50L)
-                .evictionStrategy(EvictionStrategy.ENHANCED_LFU())
-                .frequencySketchType(FrequencySketchType.OPTIMIZED)
                 .recordStats(true)
                 .build();
 
         // TinyWindowLFU (default) - hybrid approach
-        Cache<String, String> tinyWindowLFU = CacheBuilder.<String, String>newBuilder()
-                .cacheType(CacheBuilder.CacheType.DEFAULT)
+        Cache<String, String> tinyWindowLFU = JCacheXBuilder.<String, String>create()
                 .maximumSize(50L)
-                .evictionStrategy(EvictionStrategy.TINY_WINDOW_LFU())
                 .recordStats(true)
                 .build();
 
@@ -137,29 +129,20 @@ public class Main {
         System.out.println("=== Frequency Sketch Options ===");
 
         // No frequency sketch - minimal overhead
-        Cache<String, String> noSketchCache = CacheBuilder.<String, String>newBuilder()
-                .cacheType(CacheBuilder.CacheType.DEFAULT)
+        Cache<String, String> noSketchCache = JCacheXBuilder.<String, String>create()
                 .maximumSize(100L)
-                .evictionStrategy(EvictionStrategy.ENHANCED_LRU())
-                .frequencySketchType(FrequencySketchType.NONE)
                 .recordStats(true)
                 .build();
 
         // Basic frequency sketch - balanced approach
-        Cache<String, String> basicSketchCache = CacheBuilder.<String, String>newBuilder()
-                .cacheType(CacheBuilder.CacheType.DEFAULT)
+        Cache<String, String> basicSketchCache = JCacheXBuilder.<String, String>create()
                 .maximumSize(100L)
-                .evictionStrategy(EvictionStrategy.ENHANCED_LRU())
-                .frequencySketchType(FrequencySketchType.BASIC)
                 .recordStats(true)
                 .build();
 
         // Optimized frequency sketch - maximum accuracy
-        Cache<String, String> optimizedSketchCache = CacheBuilder.<String, String>newBuilder()
-                .cacheType(CacheBuilder.CacheType.DEFAULT)
+        Cache<String, String> optimizedSketchCache = JCacheXBuilder.<String, String>create()
                 .maximumSize(100L)
-                .evictionStrategy(EvictionStrategy.ENHANCED_LFU())
-                .frequencySketchType(FrequencySketchType.OPTIMIZED)
                 .recordStats(true)
                 .build();
 
@@ -174,13 +157,10 @@ public class Main {
         System.out.println("=== Performance Optimizations ===");
 
         // Custom configuration showcasing all features
-        Cache<String, UserProfile> customCache = CacheBuilder.<String, UserProfile>newBuilder()
-                .cacheType(CacheBuilder.CacheType.LOCALITY_OPTIMIZED) // Best locality performance
+        Cache<String, UserProfile> customCache = JCacheXBuilder.<String, UserProfile>create()
                 .maximumSize(1000L)
                 .expireAfterWrite(Duration.ofHours(1))
                 .expireAfterAccess(Duration.ofMinutes(30))
-                .evictionStrategy(EvictionStrategy.TINY_WINDOW_LFU())
-                .frequencySketchType(FrequencySketchType.OPTIMIZED)
                 .recordStats(true)
                 .listener(new DetailedEventListener())
                 .build();

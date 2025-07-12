@@ -1,4 +1,4 @@
-package io.github.dhruv1110.jcachex.impl;
+package io.github.dhruv1110.jcachex.internal.util;
 
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheStats;
@@ -37,7 +37,7 @@ public final class CacheCommonOperations {
      * implementations.
      */
     public static CacheStats createStats(AtomicLong hitCount, AtomicLong missCount) {
-        return StatisticsProvider.createBasicStats(hitCount, missCount);
+        return io.github.dhruv1110.jcachex.internal.util.StatisticsProvider.createBasicStats(hitCount, missCount);
     }
 
     /**
@@ -45,7 +45,8 @@ public final class CacheCommonOperations {
      */
     public static CacheStats createComprehensiveStats(AtomicLong hitCount, AtomicLong missCount,
             AtomicLong loadCount, AtomicLong loadTime, AtomicLong evictionCount) {
-        return StatisticsProvider.createComprehensiveStats(hitCount, missCount, loadCount, loadTime, evictionCount);
+        return io.github.dhruv1110.jcachex.internal.util.StatisticsProvider.createComprehensiveStats(hitCount,
+                missCount, loadCount, loadTime, evictionCount);
     }
 
     // ===== CONFIGURATION OPERATIONS =====
@@ -55,7 +56,8 @@ public final class CacheCommonOperations {
      * implementations.
      */
     public static <K, V> CacheConfig<K, V> createConfig(long maximumSize, boolean statsEnabled) {
-        return ConfigurationProvider.createBasicConfig(maximumSize, statsEnabled);
+        return io.github.dhruv1110.jcachex.internal.util.ConfigurationProvider.createBasicConfig(maximumSize,
+                statsEnabled);
     }
 
     // ===== COLLECTION VIEW OPERATIONS =====

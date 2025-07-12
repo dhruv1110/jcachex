@@ -3,6 +3,7 @@ package io.github.dhruv1110.jcachex.impl;
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheStats;
+import io.github.dhruv1110.jcachex.internal.util.CacheCommonOperations;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
