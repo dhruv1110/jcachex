@@ -38,7 +38,19 @@ public class ThroughputBenchmark extends BaseBenchmark {
             String key = getSequentialKey(i);
             String value = getSequentialValue(i);
 
-            jcacheXCache.put(key, value);
+            // Populate all JCacheX cache profiles
+            jcacheXDefault.put(key, value);
+            jcacheXReadHeavy.put(key, value);
+            jcacheXWriteHeavy.put(key, value);
+            jcacheXMemoryEfficient.put(key, value);
+            jcacheXHighPerformance.put(key, value);
+            jcacheXSessionCache.put(key, value);
+            jcacheXApiCache.put(key, value);
+            jcacheXComputeCache.put(key, value);
+            jcacheXMlOptimized.put(key, value);
+            jcacheXZeroCopy.put(key, value);
+            jcacheXHardwareOptimized.put(key, value);
+            jcacheXDistributed.put(key, value);
             caffeineCache.put(key, value);
             cache2kCache.put(key, value);
             ehcacheCache.put(key, value);
@@ -55,15 +67,15 @@ public class ThroughputBenchmark extends BaseBenchmark {
 
     @Benchmark
     @Threads(1)
-    public String jcacheXGetThroughput(ThreadState state) {
-        return jcacheXCache.get(getRandomKey(state.randomIndex()));
+    public String jcacheXDefaultGetThroughput(ThreadState state) {
+        return jcacheXDefault.get(getRandomKey(state.randomIndex()));
     }
 
     @Benchmark
     @Threads(1)
-    public void jcacheXPutThroughput(ThreadState state, Blackhole bh) {
+    public void jcacheXDefaultPutThroughput(ThreadState state, Blackhole bh) {
         int idx = state.nextIndex();
-        jcacheXCache.put(getRandomKey(idx), getRandomValue(idx));
+        jcacheXDefault.put(getRandomKey(idx), getRandomValue(idx));
         bh.consume(idx);
     }
 
@@ -129,15 +141,15 @@ public class ThroughputBenchmark extends BaseBenchmark {
 
     @Benchmark
     @Threads(4)
-    public String jcacheXGetThroughput4T(ThreadState state) {
-        return jcacheXCache.get(getRandomKey(state.randomIndex()));
+    public String jcacheXDefaultGetThroughput4T(ThreadState state) {
+        return jcacheXDefault.get(getRandomKey(state.randomIndex()));
     }
 
     @Benchmark
     @Threads(4)
-    public void jcacheXPutThroughput4T(ThreadState state, Blackhole bh) {
+    public void jcacheXDefaultPutThroughput4T(ThreadState state, Blackhole bh) {
         int idx = state.nextIndex();
-        jcacheXCache.put(getRandomKey(idx), getRandomValue(idx));
+        jcacheXDefault.put(getRandomKey(idx), getRandomValue(idx));
         bh.consume(idx);
     }
 
@@ -208,10 +220,10 @@ public class ThroughputBenchmark extends BaseBenchmark {
         int operation = state.random.nextInt(100);
 
         if (operation < 80) { // 80% reads
-            String value = jcacheXCache.get(getRandomKey(idx));
+            String value = jcacheXDefault.get(getRandomKey(idx));
             bh.consume(value);
         } else { // 20% writes
-            jcacheXCache.put(getRandomKey(idx), getRandomValue(idx));
+            jcacheXDefault.put(getRandomKey(idx), getRandomValue(idx));
         }
     }
 
@@ -282,10 +294,10 @@ public class ThroughputBenchmark extends BaseBenchmark {
         int operation = state.random.nextInt(100);
 
         if (operation < 80) {
-            String value = jcacheXCache.get(getRandomKey(idx));
+            String value = jcacheXDefault.get(getRandomKey(idx));
             bh.consume(value);
         } else {
-            jcacheXCache.put(getRandomKey(idx), getRandomValue(idx));
+            jcacheXDefault.put(getRandomKey(idx), getRandomValue(idx));
         }
     }
 

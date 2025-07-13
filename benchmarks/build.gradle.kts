@@ -19,6 +19,7 @@ dependencies {
     jmh("com.github.ben-manes.caffeine:caffeine:3.1.8")
     jmh("org.ehcache:ehcache:3.10.8")
     jmh("org.cache2k:cache2k-core:2.6.1.Final")
+    jmh("com.google.guava:guava:32.1.3-jre")
 
     // JCache API and implementations (avoid multiple providers)
     jmh("javax.cache:cache-api:1.1.1")

@@ -1,9 +1,8 @@
 #!/bin/bash
 
 # JCacheX Performance Benchmarks Runner
-# This script runs comprehensive benchmarks comparing JCacheX against other caching libraries
-# Updated to test all available cache implementations
-# Supports both quick testing (--quick) and full benchmark modes
+# This script runs benchmarks comparing JCacheX profiles against EhCache, Caffeine, and Guava Cache
+# Generates clean tabular output with GET latency, PUT latency, and throughput metrics
 
 set -e
 
@@ -15,13 +14,13 @@ show_usage() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
-    echo "  --quick         Run quick validation (5-10 minutes) instead of full benchmarks"
+    echo "  --quick         Run quick validation with reduced iterations"
     echo "  --cleanup       Clean up temporary files and exit"
     echo "  --help          Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0              # Run full comprehensive benchmarks"
-    echo "  $0 --quick      # Run quick validation tests"
+    echo "  $0              # Run full benchmarks"
+    echo "  $0 --quick      # Run quick validation"
     echo "  $0 --cleanup    # Clean up temporary files only"
 }
 
@@ -50,16 +49,11 @@ done
 # Function to clean up temporary files
 cleanup_temp_files() {
     echo "Cleaning up temporary files..."
-
-    # Remove memory-mapped files created by cache implementations
     find . -name "jcachex-mmap-*" -type f -delete 2>/dev/null || true
     find .. -name "jcachex-mmap-*" -type f -delete 2>/dev/null || true
-
-    # Remove any benchmark temp files
     rm -f quick_test_results.txt 2>/dev/null || true
     rm -f *.hprof 2>/dev/null || true
     rm -f hs_err_pid*.log 2>/dev/null || true
-
     echo "✓ Temporary files cleaned up"
 }
 
@@ -69,16 +63,332 @@ if [ "$CLEANUP_ONLY" = true ]; then
     exit 0
 fi
 
+# Collect hardware information
+collect_hardware_info() {
+    echo "=== Hardware Information ==="
+
+    # Operating System
+    OS_NAME=$(uname -s)
+    OS_VERSION=$(uname -r)
+    ARCH=$(uname -m)
+
+    # CPU Information
+    if [[ "$OS_NAME" == "Darwin" ]]; then
+        CPU_MODEL=$(sysctl -n machdep.cpu.brand_string 2>/dev/null || echo "Unknown")
+        CPU_CORES=$(sysctl -n hw.ncpu 2>/dev/null || echo "Unknown")
+        CPU_THREADS=$(sysctl -n hw.logicalcpu 2>/dev/null || echo "Unknown")
+        MEMORY_GB=$(echo "scale=2; $(sysctl -n hw.memsize 2>/dev/null || echo "0") / 1024 / 1024 / 1024" | bc 2>/dev/null || echo "Unknown")
+    elif [[ "$OS_NAME" == "Linux" ]]; then
+        CPU_MODEL=$(grep "model name" /proc/cpuinfo | head -1 | cut -d':' -f2 | sed 's/^ *//' 2>/dev/null || echo "Unknown")
+        CPU_CORES=$(nproc 2>/dev/null || echo "Unknown")
+        CPU_THREADS=$(grep "processor" /proc/cpuinfo | wc -l 2>/dev/null || echo "Unknown")
+        MEMORY_GB=$(echo "scale=2; $(grep MemTotal /proc/meminfo | awk '{print $2}' 2>/dev/null || echo "0") / 1024 / 1024" | bc 2>/dev/null || echo "Unknown")
+    else
+        CPU_MODEL="Unknown"
+        CPU_CORES="Unknown"
+        CPU_THREADS="Unknown"
+        MEMORY_GB="Unknown"
+    fi
+
+    # Java Information
+    JAVA_VERSION=$(java -version 2>&1 | head -n 1 | cut -d'"' -f2 2>/dev/null || echo "Unknown")
+    JAVA_VENDOR=$(java -version 2>&1 | tail -n 1 | cut -d' ' -f1-2 2>/dev/null || echo "Unknown")
+
+    echo "OS: $OS_NAME $OS_VERSION ($ARCH)"
+    echo "CPU: $CPU_MODEL"
+    echo "CPU Cores: $CPU_CORES (Physical) / $CPU_THREADS (Logical)"
+    echo "Memory: ${MEMORY_GB}GB"
+    echo "Java: $JAVA_VERSION ($JAVA_VENDOR)"
+    echo "JVM Args: -Xms2g -Xmx4g -XX:+UseG1GC"
+    echo
+}
+
+# Function to run a benchmark and capture results
+run_benchmark() {
+    local benchmark_name=$1
+    local benchmark_class=$2
+    local description=$3
+
+    echo "Running $benchmark_name..."
+    echo "Description: $description"
+
+    # Set JMH parameters based on mode
+    if [ "$QUICK_MODE" = true ]; then
+        WARMUP_ITERATIONS=1
+        MEASUREMENT_ITERATIONS=2
+        FORKS=1
+        BENCHMARK_TIME=1
+    else
+        WARMUP_ITERATIONS=3
+        MEASUREMENT_ITERATIONS=5
+        FORKS=2
+        BENCHMARK_TIME=2
+    fi
+
+    # Run the benchmark
+    java -jar build/libs/benchmarks-*-jmh.jar ".*$benchmark_class.*" \
+        -wi $WARMUP_ITERATIONS -i $MEASUREMENT_ITERATIONS -f $FORKS \
+        -w ${BENCHMARK_TIME}s -r ${BENCHMARK_TIME}s \
+        -tu ns -rf json -rff "$RESULTS_DIR/${benchmark_name}_results.json" \
+        -jvmArgs "-Xms2g -Xmx4g -XX:+UseG1GC" \
+        2>&1 | tee "$RESULTS_DIR/${benchmark_name}_results.txt"
+
+    if [ $? -eq 0 ]; then
+        echo "✓ $benchmark_name completed successfully"
+    else
+        echo "✗ $benchmark_name failed"
+    fi
+    echo
+}
+
+# Function to parse JMH JSON results and extract metrics
+parse_results() {
+    local results_dir=$1
+
+    echo "Parsing benchmark results..."
+
+    # Create Python script to parse JSON results
+    cat > "$results_dir/parse_results.py" << 'EOF'
+import json
+import sys
+import os
+from collections import defaultdict
+
+def parse_jmh_results(results_dir):
+    """Parse JMH JSON results and extract key metrics"""
+
+    # Initialize results structure
+    results = defaultdict(lambda: defaultdict(dict))
+
+    # Process each benchmark result file
+    for filename in os.listdir(results_dir):
+        if filename.endswith('_results.json'):
+            benchmark_type = filename.replace('_results.json', '')
+
+            try:
+                with open(os.path.join(results_dir, filename), 'r') as f:
+                    data = json.load(f)
+
+                for result in data:
+                    benchmark_name = result['benchmark']
+
+                    # Safely extract and convert score and error to float
+                    try:
+                        score = float(result['primaryMetric']['score'])
+                    except (ValueError, TypeError, KeyError):
+                        score = 0.0
+
+                    try:
+                        error = float(result['primaryMetric']['scoreError'])
+                    except (ValueError, TypeError, KeyError):
+                        error = 0.0
+
+                    unit = result['primaryMetric']['scoreUnit']
+
+                    # Extract cache implementation and operation
+                    parts = benchmark_name.split('.')[-1]  # Get method name
+
+                    # Determine cache implementation
+                    cache_impl = "Unknown"
+                    if 'jcacheXDefault' in parts:
+                        cache_impl = "JCacheX-Default"
+                    elif 'jcacheXReadHeavy' in parts:
+                        cache_impl = "JCacheX-ReadHeavy"
+                    elif 'jcacheXWriteHeavy' in parts:
+                        cache_impl = "JCacheX-WriteHeavy"
+                    elif 'jcacheXMemoryEfficient' in parts:
+                        cache_impl = "JCacheX-MemoryEfficient"
+                    elif 'jcacheXHighPerformance' in parts:
+                        cache_impl = "JCacheX-HighPerformance"
+                    elif 'jcacheXSessionCache' in parts:
+                        cache_impl = "JCacheX-SessionCache"
+                    elif 'jcacheXApiCache' in parts:
+                        cache_impl = "JCacheX-ApiCache"
+                    elif 'jcacheXComputeCache' in parts:
+                        cache_impl = "JCacheX-ComputeCache"
+                    elif 'jcacheXMlOptimized' in parts:
+                        cache_impl = "JCacheX-MlOptimized"
+                    elif 'jcacheXZeroCopy' in parts:
+                        cache_impl = "JCacheX-ZeroCopy"
+                    elif 'jcacheXHardwareOptimized' in parts:
+                        cache_impl = "JCacheX-HardwareOptimized"
+                    elif 'jcacheXDistributed' in parts:
+                        cache_impl = "JCacheX-Distributed"
+                    elif 'caffeine' in parts:
+                        cache_impl = "Caffeine"
+                    elif 'ehcache' in parts:
+                        cache_impl = "EhCache"
+                    elif 'cache2k' in parts:
+                        cache_impl = "Cache2k"
+                    elif 'concurrentMap' in parts:
+                        cache_impl = "ConcurrentHashMap"
+
+                    # Determine operation type
+                    operation = "Unknown"
+                    if 'Get' in parts or 'get' in parts:
+                        if 'Throughput' in parts:
+                            operation = "GET_THROUGHPUT"
+                        else:
+                            operation = "GET_LATENCY"
+                    elif 'Put' in parts or 'put' in parts:
+                        if 'Throughput' in parts:
+                            operation = "PUT_THROUGHPUT"
+                        else:
+                            operation = "PUT_LATENCY"
+                    elif 'Mixed' in parts or 'mixed' in parts:
+                        operation = "MIXED_THROUGHPUT"
+
+                    # Store result
+                    results[cache_impl][operation] = {
+                        'score': score,
+                        'error': error,
+                        'unit': unit,
+                        'benchmark_type': benchmark_type
+                    }
+
+            except Exception as e:
+                print(f"Error parsing {filename}: {e}", file=sys.stderr)
+
+    return results
+
+def generate_table(results, test_config):
+    """Generate formatted table output"""
+
+        # Define cache implementations in order - All 12 JCacheX Profiles + Industry Leaders
+    cache_implementations = [
+        # JCacheX Core Profiles (5)
+        "JCacheX-Default",
+        "JCacheX-ReadHeavy",
+        "JCacheX-WriteHeavy",
+        "JCacheX-MemoryEfficient",
+        "JCacheX-HighPerformance",
+        # JCacheX Specialized Profiles (3)
+        "JCacheX-SessionCache",
+        "JCacheX-ApiCache",
+        "JCacheX-ComputeCache",
+        # JCacheX Advanced Profiles (4)
+        "JCacheX-MlOptimized",
+        "JCacheX-ZeroCopy",
+        "JCacheX-HardwareOptimized",
+        "JCacheX-Distributed",
+        # Industry-leading implementations
+        "Caffeine",
+        "EhCache",
+        "Cache2k",
+        "ConcurrentHashMap"
+    ]
+
+    # Generate hardware info header
+    print("=" * 80)
+    print("JCacheX Performance Benchmark Results")
+    print("=" * 80)
+    print()
+
+    for key, value in test_config.items():
+        print(f"{key}: {value}")
+    print()
+
+    # Generate main performance table
+    print("Performance Comparison Table")
+    print("-" * 80)
+    print(f"{'Cache Implementation':<25} {'GET Latency (ns)':<18} {'PUT Latency (ns)':<18} {'Throughput (ops/s)':<18}")
+    print("-" * 80)
+
+    for cache_impl in cache_implementations:
+        if cache_impl in results:
+            cache_results = results[cache_impl]
+
+            # Get metrics with fallback
+            get_latency = cache_results.get('GET_LATENCY', {}).get('score', 'N/A')
+            put_latency = cache_results.get('PUT_LATENCY', {}).get('score', 'N/A')
+            throughput = cache_results.get('GET_THROUGHPUT', {}).get('score', 'N/A')
+
+            # Format numbers
+            get_str = f"{get_latency:.2f}" if isinstance(get_latency, (int, float)) else str(get_latency)
+            put_str = f"{put_latency:.2f}" if isinstance(put_latency, (int, float)) else str(put_latency)
+            throughput_str = f"{throughput:.0f}" if isinstance(throughput, (int, float)) else str(throughput)
+
+            print(f"{cache_impl:<25} {get_str:<18} {put_str:<18} {throughput_str:<18}")
+        else:
+            print(f"{cache_impl:<25} {'N/A':<18} {'N/A':<18} {'N/A':<18}")
+
+    print("-" * 80)
+    print()
+
+    # Generate detailed metrics table
+    print("Detailed Metrics by Benchmark Type")
+    print("-" * 80)
+
+    for cache_impl in cache_implementations:
+        if cache_impl in results:
+            print(f"\n{cache_impl}:")
+            cache_results = results[cache_impl]
+
+            for operation, data in cache_results.items():
+                score = data['score']
+                error = data['error']
+                unit = data['unit']
+                benchmark_type = data['benchmark_type']
+
+                # Safely format score and error
+                try:
+                    score_str = f"{float(score):>10.2f}"
+                except (ValueError, TypeError):
+                    score_str = f"{str(score):>10}"
+
+                try:
+                    error_str = f"{float(error):>8.2f}"
+                except (ValueError, TypeError):
+                    error_str = f"{str(error):>8}"
+
+                print(f"  {operation:<20} {score_str} ± {error_str} {unit} [{benchmark_type}]")
+
+    print()
+
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: python parse_results.py <results_directory>")
+        sys.exit(1)
+
+    results_dir = sys.argv[1]
+
+    # Parse results
+    results = parse_jmh_results(results_dir)
+
+    # Read test configuration
+    test_config = {}
+    config_file = os.path.join(results_dir, 'test_config.txt')
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as f:
+            for line in f:
+                if ':' in line:
+                    key, value = line.strip().split(':', 1)
+                    test_config[key.strip()] = value.strip()
+
+    # Generate table
+    generate_table(results, test_config)
+
+if __name__ == '__main__':
+    main()
+EOF
+
+    # Run the parser
+    python3 "$results_dir/parse_results.py" "$results_dir"
+}
+
+# Main execution
 echo "=================================================="
 if [ "$QUICK_MODE" = true ]; then
-    echo "JCacheX Quick Performance Validation"
+    echo "JCacheX Quick Performance Benchmark"
+    echo "Sample Size: Reduced iterations (1 warmup, 2 measurement, 1 fork)"
 else
-    echo "JCacheX Comprehensive Performance Validation Suite"
+    echo "JCacheX Comprehensive Performance Benchmark"
+    echo "Sample Size: Full iterations (3 warmup, 5 measurement, 2 forks)"
 fi
 echo "=================================================="
 echo
 
-# Check if Java is available
+# Check Java availability
 if ! command -v java &> /dev/null; then
     echo "Error: Java is not installed or not in PATH"
     exit 1
@@ -91,15 +401,10 @@ if [ "$JAVA_VERSION" -lt 11 ]; then
     exit 1
 fi
 
-echo "Java version: $(java -version 2>&1 | head -n 1)"
-echo "System: $(uname -s) $(uname -m)"
-echo "CPU cores: $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo "unknown")"
-echo
+# Collect and display hardware information
+collect_hardware_info
 
-# Get the script directory
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-
-# Clean up any existing temporary files before starting
+# Clean up any existing temporary files
 cleanup_temp_files
 
 # Build the benchmark JAR
@@ -119,607 +424,138 @@ else
 fi
 mkdir -p "$RESULTS_DIR"
 
+# Save test configuration
+cat > "$RESULTS_DIR/test_config.txt" << EOF
+Date: $(date)
+Test Mode: $(if [ "$QUICK_MODE" = true ]; then echo "Quick Validation"; else echo "Comprehensive Benchmark"; fi)
+Sample Size: $(if [ "$QUICK_MODE" = true ]; then echo "1 warmup, 2 measurement, 1 fork"; else echo "3 warmup, 5 measurement, 2 forks"; fi)
+OS: $OS_NAME $OS_VERSION ($ARCH)
+CPU: $CPU_MODEL
+CPU Cores: $CPU_CORES (Physical) / $CPU_THREADS (Logical)
+- **Memory:** ${MEMORY_GB}GB
+- **Java:** $JAVA_VERSION ($JAVA_VENDOR)
+JVM Args: -Xms2g -Xmx4g -XX:+UseG1GC
+EOF
+
 echo "Results will be saved to: $RESULTS_DIR"
 echo
 
-# Function to run comprehensive benchmark
-run_comprehensive_benchmark() {
-    local benchmark_name=$1
-    local benchmark_class=$2
-    local description=$3
-    local warmup_iterations=$4
-    local measurement_iterations=$5
-    local forks=$6
-
-    echo "Running $benchmark_name..."
-    echo "Description: $description"
-    echo "Class: $benchmark_class"
-
-    # Run comprehensive benchmark with all cache implementations
-    java -jar build/libs/benchmarks-*-jmh.jar ".*$benchmark_class.*" \
-        -wi $warmup_iterations -i $measurement_iterations -f $forks -tu ns \
-        -jvmArgs "-Xms2g -Xmx4g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseStringDeduplication" \
-        2>&1 | tee "$RESULTS_DIR/${benchmark_name}_results.txt"
-
-    echo "✓ $benchmark_name completed"
-    echo
-}
-
-# Function to run existing benchmarks (if available)
-run_existing_benchmark() {
-    local benchmark_name=$1
-    local benchmark_class=$2
-    local description=$3
-
-    echo "Attempting to run $benchmark_name..."
-    echo "Description: $description"
-
-    # Try to run the benchmark, continue on failure
-    if java -jar build/libs/benchmarks-*-jmh.jar ".*$benchmark_class.*" \
-        -wi 2 -i 3 -f 1 -tu ns \
-        -jvmArgs "-Xms2g -Xmx4g -XX:+UseG1GC" \
-        2>&1 | tee "$RESULTS_DIR/${benchmark_name}_results.txt"; then
-        echo "✓ $benchmark_name completed"
-    else
-        echo "✗ $benchmark_name failed - skipping"
-    fi
-    echo
-}
-
-# Start benchmark execution
-if [ "$QUICK_MODE" = true ]; then
-    echo "Starting quick validation (5-10 minutes)..."
-    echo "This tests all cache implementations with minimal iterations..."
-else
-    echo "Starting comprehensive benchmark execution..."
-    echo "This may take 30-45 minutes for all cache implementations..."
-fi
+# Run the three key benchmarks
+echo "Running benchmarks..."
 echo
 
-# === PERFORMANCE VALIDATION ===
-if [ "$QUICK_MODE" = true ]; then
-    echo "=== QUICK PERFORMANCE VALIDATION ==="
-    echo "Running quick benchmark with all available cache implementations..."
-    echo
+# 1. Basic Operations Benchmark
+run_benchmark "basic_operations" "BasicOperationsBenchmark" \
+    "Single-threaded performance for fundamental cache operations (GET, PUT, REMOVE)"
 
-    # Quick mode: 1 warmup, 2 measurement, 1 fork
-    run_comprehensive_benchmark "comprehensive_performance" "SimplifiedPerformanceBenchmark" \
-        "Quick performance validation of all JCacheX cache implementations vs Caffeine baseline" 1 2 1
-else
-    echo "=== COMPREHENSIVE PERFORMANCE VALIDATION ==="
-    echo "Running comprehensive benchmark with all available cache implementations..."
-    echo
+# 2. Concurrent Operations Benchmark
+run_benchmark "concurrent_operations" "ConcurrentBenchmark" \
+    "Multi-threaded performance under concurrent load scenarios"
 
-    # Full mode: 3 warmup, 5 measurement, 2 forks
-    run_comprehensive_benchmark "comprehensive_performance" "SimplifiedPerformanceBenchmark" \
-        "Comprehensive performance validation of all JCacheX cache implementations vs Caffeine baseline" 3 5 2
-fi
+# 3. Throughput Benchmark
+run_benchmark "throughput" "ThroughputBenchmark" \
+    "Maximum sustained throughput measurements for different thread counts"
 
-# === EXISTING BENCHMARKS (IF AVAILABLE) ===
-if [ "$QUICK_MODE" = false ]; then
-    echo "=== EXISTING BENCHMARKS (IF AVAILABLE) ==="
-    echo "Attempting to run existing benchmarks..."
-    echo
+# Parse results and generate table
+echo "Generating performance summary table..."
+parse_results "$RESULTS_DIR"
 
-    # Try to run existing benchmarks
-    run_existing_benchmark "basic_operations" "BasicOperationsBenchmark" \
-        "Basic cache operations (get, put, remove) with single-threaded execution"
-
-    run_existing_benchmark "concurrent_operations" "ConcurrentBenchmark" \
-        "Multi-threaded concurrent operations with different workload patterns"
-
-    run_existing_benchmark "throughput" "ThroughputBenchmark" \
-        "Maximum throughput measurements for sustained load scenarios"
-
-    # === PRODUCTION READINESS BENCHMARKS ===
-    echo "=== PRODUCTION READINESS BENCHMARKS (IF AVAILABLE) ==="
-    echo "Attempting to run production readiness benchmarks..."
-    echo
-
-    run_existing_benchmark "production_readiness" "ProductionReadinessBenchmark" \
-        "Production readiness validation with stress testing and memory leak detection"
-fi
-
-echo "All available benchmarks completed!"
-echo
-
-# Generate comprehensive summary report
-echo "Generating comprehensive summary report..."
-
+# Generate summary report
 cat > "$RESULTS_DIR/benchmark_summary.md" << EOF
-# JCacheX Performance Validation Results
+# JCacheX Performance Benchmark Summary
 
 ## Test Configuration
 - **Date:** $(date)
-- **Mode:** $(if [ "$QUICK_MODE" = true ]; then echo "Quick Validation"; else echo "Comprehensive Benchmarking"; fi)
-- **Java Version:** $(java -version 2>&1 | head -n 1)
-- **System:** $(uname -s) $(uname -m)
-- **CPU Cores:** $(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo "unknown")
+- **Test Mode:** $(if [ "$QUICK_MODE" = true ]; then echo "Quick Validation"; else echo "Comprehensive Benchmark"; fi)
+- **Sample Size:** $(if [ "$QUICK_MODE" = true ]; then echo "1 warmup, 2 measurement, 1 fork"; else echo "3 warmup, 5 measurement, 2 forks"; fi)
 
-## Executive Summary
+## Hardware Information
+- **OS:** $OS_NAME $OS_VERSION ($ARCH)
+- **CPU:** $CPU_MODEL
+- **CPU Cores:** $CPU_CORES (Physical) / $CPU_THREADS (Logical)
+- **Memory:** ${MEMORY_GB}GB
+- **Java:** $JAVA_VERSION ($JAVA_VENDOR)
 
-if [ "$QUICK_MODE" = true ]; then
-    echo "This quick validation tests all available JCacheX cache implementations with minimal iterations for fast feedback."
-else
-    echo "This performance validation suite tests all available JCacheX cache implementations against the Caffeine baseline and other industry-leading caches."
-fi
+## Benchmarks Executed
+1. **Basic Operations:** Single-threaded GET, PUT, REMOVE operations
+2. **Concurrent Operations:** Multi-threaded performance under load
+3. **Throughput:** Maximum sustained throughput measurements
 
-### Cache Implementations Tested
+## Cache Implementations Tested
 
-#### JCacheX Core Implementations
-- **DefaultCache**: Standard JCacheX implementation with solid baseline performance
-- **OptimizedCache**: Performance-optimized implementation with Window TinyLFU eviction
+### JCacheX Cache Profiles (12 total)
+**Core Profiles (5):**
+- **JCacheX-Default:** General-purpose balanced cache
+- **JCacheX-ReadHeavy:** Optimized for read-intensive workloads (80%+ reads)
+- **JCacheX-WriteHeavy:** Optimized for write-intensive workloads (50%+ writes)
+- **JCacheX-MemoryEfficient:** Minimized memory usage for constrained environments
+- **JCacheX-HighPerformance:** Maximum throughput optimization
 
-#### JCacheX Advanced Implementations
-- **JITOptimizedCache**: JIT-friendly hot path optimization with method inlining
-- **AllocationOptimizedCache**: Minimized object allocation with thread-local pools
-- **CacheLocalityOptimizedCache**: Memory access pattern optimization for cache locality
-- **ZeroCopyOptimizedCache**: Zero-copy operations with direct memory access
-- **ProfiledOptimizedCache**: Profiled and assembly-level performance optimizations
+**Specialized Profiles (3):**
+- **JCacheX-SessionCache:** Optimized for user session storage with time-based expiration
+- **JCacheX-ApiCache:** Optimized for API response caching with short TTL
+- **JCacheX-ComputeCache:** Optimized for expensive computation results
 
-#### JCacheX Specialized Implementations
-- **ReadOnlyOptimizedCache**: Optimized for read-heavy workloads
-- **WriteHeavyOptimizedCache**: Optimized for write-heavy workloads
-- **JVMOptimizedCache**: JVM-specific optimizations with GC-aware strategies
-- **HardwareOptimizedCache**: Hardware-specific optimizations with SIMD operations
-- **MLOptimizedCache**: Machine learning-based cache optimization
+**Advanced Profiles (4):**
+- **JCacheX-MlOptimized:** Machine learning optimized with predictive capabilities
+- **JCacheX-ZeroCopy:** Zero-copy optimized for minimal memory allocation
+- **JCacheX-HardwareOptimized:** Hardware-optimized leveraging CPU-specific features
+- **JCacheX-Distributed:** Distributed cache optimized for cluster environments
 
-#### Baseline Comparisons
-- **Caffeine**: Primary baseline - industry-leading cache implementation
+### Industry-Leading Implementations
+- **Caffeine:** Industry-standard high-performance cache
+- **EhCache:** Enterprise caching solution
+- **Cache2k:** High-performance Java cache
+- **ConcurrentHashMap:** JDK baseline comparison
 
-### Performance Validation Results
-- **Primary Test:** SimplifiedPerformanceBenchmark $(if [ "$QUICK_MODE" = true ]; then echo "(quick mode)"; else echo "(comprehensive)"; fi)
-- **Results:** See detailed analysis in \`comprehensive_performance_results.txt\`
+## Results
+See detailed performance table in the console output above.
 
-### Performance Targets
-- **GET Operations:** Target ~15-20 nanoseconds (comparable to Caffeine's ~17ns)
-- **PUT Operations:** Target ~35-60 nanoseconds (comparable to Caffeine's ~58ns)
-- **Mixed Workload:** Target comparable throughput to Caffeine (~31ns)
+## Files Generated
+- \`basic_operations_results.txt\` - Basic operations benchmark output
+- \`concurrent_operations_results.txt\` - Concurrent operations benchmark output
+- \`throughput_results.txt\` - Throughput benchmark output
+- \`*.json\` - Machine-readable JMH results
+- \`parse_results.py\` - Results parsing script
+- \`test_config.txt\` - Test configuration details
 
-## Benchmark Categories
-
-### 1. Performance Validation
-- **File:** \`comprehensive_performance_results.txt\`
-- **Description:** $(if [ "$QUICK_MODE" = true ]; then echo "Quick validation of all JCacheX implementations"; else echo "Complete performance validation of all JCacheX implementations"; fi)
-- **Cache Implementations Tested:** All 12 JCacheX implementations + Caffeine baseline
-- **Operations:** GET (hot), GET (cold), PUT, Mixed workload (80% read, 20% write)
-- **Iterations:** $(if [ "$QUICK_MODE" = true ]; then echo "1 warmup, 2 measurement, 1 fork (quick)"; else echo "3 warmup, 5 measurement, 2 forks (comprehensive)"; fi)
-
-if [ "$QUICK_MODE" = false ]; then
-    echo "
-### 2. Basic Operations (If Available)
-- **File:** \`basic_operations_results.txt\`
-- **Description:** Single-threaded performance for fundamental cache operations
-- **Metrics:** Average time per operation (nanoseconds)
-
-### 3. Concurrent Operations (If Available)
-- **File:** \`concurrent_operations_results.txt\`
-- **Description:** Multi-threaded performance under various load patterns
-- **Metrics:** Operations per second under concurrent load
-
-### 4. Throughput (If Available)
-- **File:** \`throughput_results.txt\`
-- **Description:** Maximum sustained throughput measurements
-- **Metrics:** Operations per second for different thread counts
-
-### 5. Production Readiness (If Available)
-- **File:** \`production_readiness_results.txt\`
-- **Description:** Production readiness validation with stress testing
-- **Metrics:** Memory usage, GC pressure, concurrent correctness
-"
-fi
-
-## Performance Analysis
-
-### Implementation Status
-- **Core Implementations:** ✓ DefaultCache, OptimizedCache fully functional
-- **Advanced Implementations:** ✓ Most implementations functional with fallback to DefaultCache
-- **Specialized Implementations:** ✓ Specialized for specific workload patterns
-- **Baseline Comparisons:** ✓ Caffeine comparison available
-
-### Key Findings
-Based on $(if [ "$QUICK_MODE" = true ]; then echo "quick validation"; else echo "comprehensive benchmark"; fi) results:
-- JCacheX provides competitive performance with Caffeine baseline
-- Different implementations excel in different scenarios
-- Advanced optimizations show performance improvements in targeted use cases
-- Fallback mechanisms ensure robustness even with implementation issues
-
-### Performance Recommendations
-- **General Use:** DefaultCache for solid baseline performance
-- **High Performance:** OptimizedCache for better performance characteristics
-- **Read-Heavy:** ReadOnlyOptimizedCache for read-optimized workloads
-- **Write-Heavy:** WriteHeavyOptimizedCache for write-optimized workloads
-- **Memory-Sensitive:** AllocationOptimizedCache for reduced GC pressure
-- **CPU-Intensive:** JITOptimizedCache for JIT-friendly performance
-
-## Detailed Analysis
-
-### Performance Metrics
-See individual result files for complete benchmark data and statistical analysis:
-- \`comprehensive_performance_results.txt\` - $(if [ "$QUICK_MODE" = true ]; then echo "Quick performance validation"; else echo "Complete performance validation"; fi)
-if [ "$QUICK_MODE" = false ]; then
-    echo "- Additional benchmark results (if available)"
-fi
-
-### Competitive Positioning
-JCacheX provides:
-- **Competitive Performance:** Performance comparable to Caffeine
-- **Implementation Variety:** Multiple specialized implementations
-- **Robustness:** Fallback mechanisms ensure reliability
-- **Optimization Flexibility:** Choose implementation based on workload
-
-## Next Steps
-
-if [ "$QUICK_MODE" = true ]; then
-    echo "
-### From Quick Validation
-1. **Run Full Benchmarks:** Use \`./run-benchmarks.sh\` for comprehensive analysis
-2. **Focus on Top Performers:** Identify best implementations from quick results
-3. **Targeted Testing:** Run specific cache implementations for detailed analysis"
-else
-    echo "
-### From Comprehensive Analysis
-1. **Performance Tuning:** Optimize implementations based on benchmark results
-2. **Specialization:** Enhance specialized implementations for specific use cases
-3. **Production Validation:** Extended stress testing and memory leak detection
-4. **Continuous Benchmarking:** Regular performance regression testing"
-fi
-
-## Conclusion
-
-JCacheX demonstrates strong performance across all cache implementations. The $(if [ "$QUICK_MODE" = true ]; then echo "quick validation establishes baseline performance characteristics"; else echo "comprehensive validation establishes a solid foundation for performance measurement and optimization"; fi). The variety of implementations allows users to choose the best cache for their specific use case while maintaining competitive performance with industry-leading solutions.
-
-The performance validation framework is $(if [ "$QUICK_MODE" = true ]; then echo "working correctly and ready for comprehensive benchmarking"; else echo "comprehensive and ready for continuous performance monitoring and optimization"; fi).
-
+## Usage
+To rerun benchmarks:
+- Full benchmark: \`./run-benchmarks.sh\`
+- Quick validation: \`./run-benchmarks.sh --quick\`
+- Cleanup: \`./run-benchmarks.sh --cleanup\`
 EOF
 
 echo "✓ Summary report generated: $RESULTS_DIR/benchmark_summary.md"
-echo
 
-# Generate comprehensive performance analysis document
-generate_performance_analysis() {
-    echo "Generating $(if [ "$QUICK_MODE" = true ]; then echo "quick"; else echo "comprehensive"; fi) performance analysis template..."
-
-    cat > "$RESULTS_DIR/JCacheX_Performance_Analysis_Public.md" << 'ANALYSIS_EOF'
-# JCacheX Performance Benchmark Analysis
-
-**Benchmark Date:** $(date "+%B %d, %Y")
-**Test Mode:** $(if [ "$QUICK_MODE" = true ]; then echo "Quick Validation"; else echo "Comprehensive Benchmarking"; fi)
-**Java Version:** $(java -version 2>&1 | head -n 1)
-**Test Platform:** $(uname -s) $(uname -m) ($(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo "unknown") cores)
-**Methodology:** JMH (Java Microbenchmark Harness)
-
----
-
-## Performance Comparison (Lower is Better)
-
-### Single Operation Latency (nanoseconds)
-| Operation | JCacheX Default | JCacheX Optimized | JCacheX JIT | JCacheX Allocation | JCacheX Locality | Caffeine | Cache2k | EHCache |
-|-----------|----------------|------------------|-------------|-------------------|------------------|----------|---------|---------|
-| **GET (Hot)** | {{DEFAULT_GET_HOT}} | {{OPTIMIZED_GET_HOT}} | {{JIT_GET_HOT}} | {{ALLOCATION_GET_HOT}} | {{LOCALITY_GET_HOT}} | {{CAFFEINE_GET_HOT}} | 76.0 | 201.0 |
-| **GET (Cold)** | {{DEFAULT_GET_COLD}} | {{OPTIMIZED_GET_COLD}} | {{JIT_GET_COLD}} | {{ALLOCATION_GET_COLD}} | {{LOCALITY_GET_COLD}} | {{CAFFEINE_GET_COLD}} | 82.0 | 215.0 |
-| **PUT** | {{DEFAULT_PUT}} | {{OPTIMIZED_PUT}} | {{JIT_PUT}} | {{ALLOCATION_PUT}} | {{LOCALITY_PUT}} | {{CAFFEINE_PUT}} | 123.0 | 147.0 |
-| **Mixed Workload** | {{DEFAULT_MIXED}} | {{OPTIMIZED_MIXED}} | {{JIT_MIXED}} | {{ALLOCATION_MIXED}} | {{LOCALITY_MIXED}} | {{CAFFEINE_MIXED}} | 273.0 | 515.0 |
-
-### Advanced Implementations Performance
-| Operation | JCacheX ZeroCopy | JCacheX ReadOnly | JCacheX WriteHeavy | JCacheX JVM | JCacheX Hardware | JCacheX ML |
-|-----------|------------------|------------------|-------------------|-------------|------------------|------------|
-| **GET (Hot)** | {{ZEROCOPY_GET_HOT}} | {{READONLY_GET_HOT}} | {{WRITEHEAVY_GET_HOT}} | {{JVM_GET_HOT}} | {{HARDWARE_GET_HOT}} | {{ML_GET_HOT}} |
-| **GET (Cold)** | {{ZEROCOPY_GET_COLD}} | {{READONLY_GET_COLD}} | {{WRITEHEAVY_GET_COLD}} | {{JVM_GET_COLD}} | {{HARDWARE_GET_COLD}} | {{ML_GET_COLD}} |
-| **PUT** | {{ZEROCOPY_PUT}} | {{READONLY_PUT}} | {{WRITEHEAVY_PUT}} | {{JVM_PUT}} | {{HARDWARE_PUT}} | {{ML_PUT}} |
-| **Mixed Workload** | {{ZEROCOPY_MIXED}} | {{READONLY_MIXED}} | {{WRITEHEAVY_MIXED}} | {{JVM_MIXED}} | {{HARDWARE_MIXED}} | {{ML_MIXED}} |
-
-### Performance Gap Analysis
-| Cache Implementation | vs Caffeine GET | vs Caffeine PUT | vs Caffeine Mixed | Recommended Use Case |
-|---------------------|----------------|-----------------|------------------|---------------------|
-| **JCacheX Default** | {{DEFAULT_GET_GAP}} | {{DEFAULT_PUT_GAP}} | {{DEFAULT_MIXED_GAP}} | General purpose |
-| **JCacheX Optimized** | {{OPTIMIZED_GET_GAP}} | {{OPTIMIZED_PUT_GAP}} | {{OPTIMIZED_MIXED_GAP}} | High performance |
-| **JCacheX JIT** | {{JIT_GET_GAP}} | {{JIT_PUT_GAP}} | {{JIT_MIXED_GAP}} | JIT-friendly workloads |
-| **JCacheX Allocation** | {{ALLOCATION_GET_GAP}} | {{ALLOCATION_PUT_GAP}} | {{ALLOCATION_MIXED_GAP}} | Memory-sensitive |
-| **JCacheX Locality** | {{LOCALITY_GET_GAP}} | {{LOCALITY_PUT_GAP}} | {{LOCALITY_MIXED_GAP}} | Cache locality critical |
-| **JCacheX ZeroCopy** | {{ZEROCOPY_GET_GAP}} | {{ZEROCOPY_PUT_GAP}} | {{ZEROCOPY_MIXED_GAP}} | Zero-copy operations |
-| **JCacheX ReadOnly** | {{READONLY_GET_GAP}} | {{READONLY_PUT_GAP}} | {{READONLY_MIXED_GAP}} | Read-heavy workloads |
-| **JCacheX WriteHeavy** | {{WRITEHEAVY_GET_GAP}} | {{WRITEHEAVY_PUT_GAP}} | {{WRITEHEAVY_MIXED_GAP}} | Write-heavy workloads |
-| **JCacheX JVM** | {{JVM_GET_GAP}} | {{JVM_PUT_GAP}} | {{JVM_MIXED_GAP}} | JVM-optimized |
-| **JCacheX Hardware** | {{HARDWARE_GET_GAP}} | {{HARDWARE_PUT_GAP}} | {{HARDWARE_MIXED_GAP}} | Hardware-specific |
-| **JCacheX ML** | {{ML_GET_GAP}} | {{ML_PUT_GAP}} | {{ML_MIXED_GAP}} | ML-based optimization |
-
-### Throughput Comparison (Operations per microsecond - Higher is Better)
-| Cache Implementation | GET Ops/μs | PUT Ops/μs | Mixed Ops/μs |
-|---------------------|------------|------------|--------------|
-| **JCacheX Default** | {{DEFAULT_GET_THROUGHPUT}} | {{DEFAULT_PUT_THROUGHPUT}} | {{DEFAULT_MIXED_THROUGHPUT}} |
-| **JCacheX Optimized** | {{OPTIMIZED_GET_THROUGHPUT}} | {{OPTIMIZED_PUT_THROUGHPUT}} | {{OPTIMIZED_MIXED_THROUGHPUT}} |
-| **JCacheX JIT** | {{JIT_GET_THROUGHPUT}} | {{JIT_PUT_THROUGHPUT}} | {{JIT_MIXED_THROUGHPUT}} |
-| **JCacheX Allocation** | {{ALLOCATION_GET_THROUGHPUT}} | {{ALLOCATION_PUT_THROUGHPUT}} | {{ALLOCATION_MIXED_THROUGHPUT}} |
-| **JCacheX Locality** | {{LOCALITY_GET_THROUGHPUT}} | {{LOCALITY_PUT_THROUGHPUT}} | {{LOCALITY_MIXED_THROUGHPUT}} |
-| **Caffeine** | {{CAFFEINE_GET_THROUGHPUT}} | {{CAFFEINE_PUT_THROUGHPUT}} | {{CAFFEINE_MIXED_THROUGHPUT}} |
-| **Cache2k** | 13.2 | 8.1 | 3.7 |
-| **EHCache** | 5.0 | 6.8 | 1.9 |
-
----
-
-## JCacheX Implementation Recommendations
-
-### Performance Tiers
-| Tier | Implementation | Best For | Performance Level |
-|------|---------------|----------|------------------|
-| **Tier 1** | OptimizedCache | High-performance applications | {{OPTIMIZED_PERFORMANCE_TIER}} |
-| **Tier 1** | JITOptimizedCache | JIT-friendly workloads | {{JIT_PERFORMANCE_TIER}} |
-| **Tier 2** | DefaultCache | General-purpose applications | {{DEFAULT_PERFORMANCE_TIER}} |
-| **Tier 2** | AllocationOptimizedCache | Memory-sensitive applications | {{ALLOCATION_PERFORMANCE_TIER}} |
-| **Tier 3** | Specialized Caches | Specific workload patterns | {{SPECIALIZED_PERFORMANCE_TIER}} |
-
-### Workload-Specific Recommendations
-| Workload Type | Primary Choice | Secondary Choice | Performance Gap |
-|---------------|---------------|------------------|-----------------|
-| **Read-Heavy (>80% reads)** | {{READ_HEAVY_PRIMARY}} | {{READ_HEAVY_SECONDARY}} | {{READ_HEAVY_GAP}} |
-| **Write-Heavy (>40% writes)** | {{WRITE_HEAVY_PRIMARY}} | {{WRITE_HEAVY_SECONDARY}} | {{WRITE_HEAVY_GAP}} |
-| **Mixed Workload** | {{MIXED_WORKLOAD_PRIMARY}} | {{MIXED_WORKLOAD_SECONDARY}} | {{MIXED_WORKLOAD_GAP}} |
-| **Memory-Sensitive** | {{MEMORY_SENSITIVE_PRIMARY}} | {{MEMORY_SENSITIVE_SECONDARY}} | {{MEMORY_SENSITIVE_GAP}} |
-| **High-Frequency Trading** | {{HFT_PRIMARY}} | {{HFT_SECONDARY}} | {{HFT_GAP}} |
-
----
-
-## Benchmark Results Summary
-
-### Performance Targets vs Actual
-| Metric | Target | Caffeine | Best JCacheX | JCacheX Implementation | Target Met? |
-|--------|--------|----------|-------------|----------------------|-------------|
-| **GET Operations** | ≤20 ns | {{CAFFEINE_GET_HOT}} | {{BEST_JCACHEX_GET}} | {{BEST_JCACHEX_GET_IMPL}} | {{GET_TARGET_MET}} |
-| **PUT Operations** | ≤60 ns | {{CAFFEINE_PUT}} | {{BEST_JCACHEX_PUT}} | {{BEST_JCACHEX_PUT_IMPL}} | {{PUT_TARGET_MET}} |
-| **Mixed Workload** | ≤40 ns | {{CAFFEINE_MIXED}} | {{BEST_JCACHEX_MIXED}} | {{BEST_JCACHEX_MIXED_IMPL}} | {{MIXED_TARGET_MET}} |
-
-### Competitive Positioning
-| Use Case | Market Leader | JCacheX Best | Performance Gap | Competitive Status |
-|----------|---------------|-------------|-----------------|-------------------|
-| **Ultra-High Performance** | {{ULTRA_PERF_LEADER}} | {{ULTRA_PERF_JCACHEX}} | {{ULTRA_PERF_GAP}} | {{ULTRA_PERF_STATUS}} |
-| **General Purpose** | {{GENERAL_LEADER}} | {{GENERAL_JCACHEX}} | {{GENERAL_GAP}} | {{GENERAL_STATUS}} |
-| **Enterprise** | {{ENTERPRISE_LEADER}} | {{ENTERPRISE_JCACHEX}} | {{ENTERPRISE_GAP}} | {{ENTERPRISE_STATUS}} |
-| **Memory Efficiency** | {{MEMORY_LEADER}} | {{MEMORY_JCACHEX}} | {{MEMORY_GAP}} | {{MEMORY_STATUS}} |
-
----
-
-## Implementation Analysis
-
-### Top Performing Implementations
-1. **{{TOP_PERFORMER_1}}**: {{TOP_PERFORMER_1_DESCRIPTION}}
-2. **{{TOP_PERFORMER_2}}**: {{TOP_PERFORMER_2_DESCRIPTION}}
-3. **{{TOP_PERFORMER_3}}**: {{TOP_PERFORMER_3_DESCRIPTION}}
-
-### Implementation Characteristics
-| Implementation | Strength | Weakness | Best Use Case |
-|---------------|----------|----------|---------------|
-| **DefaultCache** | {{DEFAULT_STRENGTH}} | {{DEFAULT_WEAKNESS}} | {{DEFAULT_USE_CASE}} |
-| **OptimizedCache** | {{OPTIMIZED_STRENGTH}} | {{OPTIMIZED_WEAKNESS}} | {{OPTIMIZED_USE_CASE}} |
-| **JITOptimizedCache** | {{JIT_STRENGTH}} | {{JIT_WEAKNESS}} | {{JIT_USE_CASE}} |
-| **AllocationOptimizedCache** | {{ALLOCATION_STRENGTH}} | {{ALLOCATION_WEAKNESS}} | {{ALLOCATION_USE_CASE}} |
-| **LocalityOptimizedCache** | {{LOCALITY_STRENGTH}} | {{LOCALITY_WEAKNESS}} | {{LOCALITY_USE_CASE}} |
-
----
-
-## Detailed Benchmark Data
-
-**Test Configuration:**
-- **Mode:** $(if [ "$QUICK_MODE" = true ]; then echo "Quick Validation"; else echo "Comprehensive Benchmarking"; fi)
-- Cache Size: 10,000 entries
-- Key Count: 1,000 unique keys
-- Hot Keys: 100 (10% of total)
-- Cold Keys: 900 (90% of total)
-- Workload: 80% reads, 20% writes
-- JMH: $(if [ "$QUICK_MODE" = true ]; then echo "1 warmup, 2 measurement, 1 fork"; else echo "3 warmup, 5 measurement, 2 forks"; fi)
-
-**Implementation Details:**
-- All implementations tested with identical configuration
-- Fallback to DefaultCache for failed implementations
-- Error handling ensures robustness
-- Performance measured in nanoseconds per operation
-- Automatic cleanup of temporary files
-
-**Result Files:**
-- `comprehensive_performance_results.txt` - $(if [ "$QUICK_MODE" = true ]; then echo "Quick performance validation"; else echo "Complete performance validation"; fi)
-if [ "$QUICK_MODE" = false ]; then
-    echo "- \`basic_operations_results.txt\` - Single-threaded operations
-- \`concurrent_operations_results.txt\` - Multi-threaded performance
-- \`throughput_results.txt\` - Sustained load testing
-- \`production_readiness_results.txt\` - Production validation"
-fi
-
-**Analysis Scripts:**
-- `enhanced_analysis_generator.py` - Comprehensive performance analysis
-- `extract_results.py` - CSV data extraction
-
----
-
-*Generated automatically from $(if [ "$QUICK_MODE" = true ]; then echo "quick validation"; else echo "comprehensive benchmark"; fi) results on $(date)*
-
-ANALYSIS_EOF
-
-    # Replace variables in the analysis
-    sed -i.bak \
-        -e "s/\$(date \"+%B %d, %Y\")/$(date "+%B %d, %Y")/" \
-        -e "s/\$(java -version 2>&1 | head -n 1)/$(java -version 2>&1 | head -n 1)/" \
-        -e "s/\$(uname -s) \$(uname -m)/$(uname -s) $(uname -m)/" \
-        -e "s/\$(nproc 2>\/dev\/null || sysctl -n hw.ncpu 2>\/dev\/null || echo \"unknown\")/$(nproc 2>/dev/null || sysctl -n hw.ncpu 2>/dev/null || echo "unknown")/" \
-        -e "s/\$(date)/$(date)/" \
-        "$RESULTS_DIR/JCacheX_Performance_Analysis_Public.md"
-
-    if [ "$QUICK_MODE" = true ]; then
-        sed -i.bak2 \
-            -e "s/\$(if \[ \"\$QUICK_MODE\" = true \]; then echo \"Quick Validation\"; else echo \"Comprehensive Benchmarking\"; fi)/Quick Validation/g" \
-            -e "s/\$(if \[ \"\$QUICK_MODE\" = true \]; then echo \"quick validation\"; else echo \"comprehensive benchmark\"; fi)/quick validation/g" \
-            -e "s/\$(if \[ \"\$QUICK_MODE\" = true \]; then echo \"Quick performance validation\"; else echo \"Complete performance validation\"; fi)/Quick performance validation/g" \
-            -e "s/\$(if \[ \"\$QUICK_MODE\" = true \]; then echo \"1 warmup, 2 measurement, 1 fork\"; else echo \"3 warmup, 5 measurement, 2 forks\"; fi)/1 warmup, 2 measurement, 1 fork/g" \
-            "$RESULTS_DIR/JCacheX_Performance_Analysis_Public.md"
-    else
-        sed -i.bak2 \
-            -e "s/\$(if \[ \"\$QUICK_MODE\" = true \]; then echo \"Quick Validation\"; else echo \"Comprehensive Benchmarking\"; fi)/Comprehensive Benchmarking/g" \
-            -e "s/\$(if \[ \"\$QUICK_MODE\" = true \]; then echo \"quick validation\"; else echo \"comprehensive benchmark\"; fi)/comprehensive benchmark/g" \
-            -e "s/\$(if \[ \"\$QUICK_MODE\" = true \]; then echo \"Quick performance validation\"; else echo \"Complete performance validation\"; fi)/Complete performance validation/g" \
-            -e "s/\$(if \[ \"\$QUICK_MODE\" = true \]; then echo \"1 warmup, 2 measurement, 1 fork\"; else echo \"3 warmup, 5 measurement, 2 forks\"; fi)/3 warmup, 5 measurement, 2 forks/g" \
-            "$RESULTS_DIR/JCacheX_Performance_Analysis_Public.md"
-    fi
-
-    rm "$RESULTS_DIR/JCacheX_Performance_Analysis_Public.md.bak" 2>/dev/null || true
-    rm "$RESULTS_DIR/JCacheX_Performance_Analysis_Public.md.bak2" 2>/dev/null || true
-
-    echo "✓ Performance analysis template generated: $RESULTS_DIR/JCacheX_Performance_Analysis_Public.md"
-}
-
-# Call the performance analysis generation function
-generate_performance_analysis
-
-# Run the enhanced analysis generator to populate performance data
-if [ -f "$SCRIPT_DIR/enhanced_analysis_generator.py" ]; then
-    echo "Running enhanced performance analysis generator..."
-    python3 "$SCRIPT_DIR/enhanced_analysis_generator.py" \
-        --results-dir "$RESULTS_DIR" \
-        --template "$RESULTS_DIR/JCacheX_Performance_Analysis_Public.md" \
-        --output "$RESULTS_DIR/JCacheX_Performance_Analysis_Public.md"
-
-    # Verify that all placeholders have been resolved
-    remaining_placeholders=$(grep -o "{{[^}]*}}" "$RESULTS_DIR/JCacheX_Performance_Analysis_Public.md" 2>/dev/null | wc -l || echo "0")
-    if [ "$remaining_placeholders" -gt 0 ]; then
-        echo "⚠️  Warning: $remaining_placeholders placeholders still unresolved"
-    else
-        echo "✅ All placeholders successfully populated with performance data"
-    fi
-    echo "✓ Enhanced performance analysis completed"
-else
-    echo "⚠ Enhanced analysis generator not found at $SCRIPT_DIR/enhanced_analysis_generator.py"
-    echo "  Performance analysis template generated with placeholders"
-fi
-
-# Generate extraction script for easy analysis
-cat > "$RESULTS_DIR/extract_results.py" << 'EOF'
-#!/usr/bin/env python3
-"""
-Extract key performance metrics from JCacheX benchmark results
-"""
-import os
-import re
-import csv
-from pathlib import Path
-
-def extract_jmh_results(file_path):
-    """Extract benchmark results from JMH output"""
-    results = []
-
-    with open(file_path, 'r') as f:
-        content = f.read()
-
-    # Extract benchmark results (JMH format)
-    pattern = r'(\w+\.\w+)\s+avgt\s+\d+\s+([\d.]+)\s+±\s+([\d.]+)\s+(\w+)/op'
-    matches = re.findall(pattern, content)
-
-    for match in matches:
-        benchmark_name, score, error, unit = match
-        results.append({
-            'benchmark': benchmark_name,
-            'score': float(score),
-            'error': float(error),
-            'unit': unit
-        })
-
-    return results
-
-def main():
-    results_dir = Path('.')
-
-    # Find all result files
-    result_files = list(results_dir.glob('*_results.txt'))
-
-    all_results = []
-
-    for file_path in result_files:
-        print(f"Processing {file_path}...")
-
-        try:
-            results = extract_jmh_results(file_path)
-
-            for result in results:
-                result['file'] = file_path.stem
-                all_results.append(result)
-
-        except Exception as e:
-            print(f"Error processing {file_path}: {e}")
-
-    # Write CSV summary
-    if all_results:
-        csv_file = 'benchmark_results.csv'
-        with open(csv_file, 'w', newline='') as csvfile:
-            fieldnames = ['file', 'benchmark', 'score', 'error', 'unit']
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-            writer.writeheader()
-            for result in all_results:
-                writer.writerow(result)
-
-        print(f"✓ Results extracted to {csv_file}")
-        print(f"Total benchmarks processed: {len(all_results)}")
-    else:
-        print("No results found to extract")
-
-if __name__ == '__main__':
-    main()
-EOF
-
-chmod +x "$RESULTS_DIR/extract_results.py"
-
-echo "✓ Results extraction script generated: $RESULTS_DIR/extract_results.py"
-echo
-
-# Clean up temporary files created during benchmarking
+# Clean up temporary files
 cleanup_temp_files
 
-# Print final summary
+echo
 echo "=================================================="
-if [ "$QUICK_MODE" = true ]; then
-    echo "JCacheX Quick Performance Validation Complete!"
-else
-    echo "JCacheX Comprehensive Performance Validation Complete!"
-fi
+echo "JCacheX Performance Benchmark Complete!"
 echo "=================================================="
 echo
 echo "Results directory: $RESULTS_DIR"
+echo "Key files:"
+echo "- benchmark_summary.md: Complete benchmark summary"
+echo "- test_config.txt: Test configuration details"
+echo "- parse_results.py: Results parsing script"
+echo "- *_results.txt: Detailed benchmark outputs"
+echo "- *_results.json: Machine-readable results"
 echo
-echo "Key files generated:"
-echo "- benchmark_summary.md: $(if [ "$QUICK_MODE" = true ]; then echo "Quick performance analysis and status"; else echo "Comprehensive performance analysis and status"; fi)"
-echo "- JCacheX_Performance_Analysis_Public.md: Detailed performance comparison"
-echo "- extract_results.py: Script to extract performance metrics to CSV"
-echo "- comprehensive_performance_results.txt: $(if [ "$QUICK_MODE" = true ]; then echo "Quick performance validation"; else echo "Complete performance validation"; fi)"
-if [ "$QUICK_MODE" = false ]; then
-    echo "- *_results.txt: Individual benchmark results (if available)"
-fi
-echo
-echo "To analyze results:"
-echo "cd $RESULTS_DIR"
-echo "python3 extract_results.py"
-echo
-echo "Cache implementations tested:"
-echo "✓ DefaultCache (baseline)"
-echo "✓ OptimizedCache (performance-optimized)"
-echo "✓ JITOptimizedCache (JIT-friendly)"
-echo "✓ AllocationOptimizedCache (allocation-optimized)"
-echo "✓ CacheLocalityOptimizedCache (locality-optimized)"
-echo "✓ ZeroCopyOptimizedCache (zero-copy)"
-echo "✓ ReadOnlyOptimizedCache (read-optimized)"
-echo "✓ WriteHeavyOptimizedCache (write-optimized)"
-echo "✓ JVMOptimizedCache (JVM-optimized)"
-echo "✓ HardwareOptimizedCache (hardware-optimized)"
-echo "✓ MLOptimizedCache (ML-optimized)"
-echo "✓ Caffeine (baseline comparison)"
-echo
+
 if [ "$QUICK_MODE" = true ]; then
     echo "Status: Quick performance validation complete!"
     echo "To run full comprehensive benchmarks: ./run-benchmarks.sh"
 else
-    echo "Status: Comprehensive performance validation complete!"
+    echo "Status: Comprehensive performance benchmark complete!"
     echo "For quick validation: ./run-benchmarks.sh --quick"
 fi
-echo "All available JCacheX cache implementations tested and validated."
+
 echo
-echo "Usage:"
-echo "  ./run-benchmarks.sh           # Full comprehensive benchmarks (30-45 min)"
-echo "  ./run-benchmarks.sh --quick   # Quick validation (5-10 min)"
-echo "  ./run-benchmarks.sh --cleanup # Clean up temporary files only"
-echo "  ./run-benchmarks.sh --help    # Show usage information"
+echo "The performance table above shows:"
+echo "- All 12 JCacheX cache profiles + 4 industry implementations as rows"
+echo "- GET latency, PUT latency, and throughput as columns"
+echo "- Hardware details and sample size information"
+echo "- Complete comparison: Core, Specialized, and Advanced JCacheX profiles vs Caffeine, EhCache, Cache2k, and ConcurrentHashMap"

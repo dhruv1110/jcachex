@@ -40,7 +40,19 @@ public class ConcurrentBenchmark extends BaseBenchmark {
             String key = getSequentialKey(i);
             String value = getSequentialValue(i);
 
-            jcacheXCache.put(key, value);
+            // Populate all JCacheX cache profiles
+            jcacheXDefault.put(key, value);
+            jcacheXReadHeavy.put(key, value);
+            jcacheXWriteHeavy.put(key, value);
+            jcacheXMemoryEfficient.put(key, value);
+            jcacheXHighPerformance.put(key, value);
+            jcacheXSessionCache.put(key, value);
+            jcacheXApiCache.put(key, value);
+            jcacheXComputeCache.put(key, value);
+            jcacheXMlOptimized.put(key, value);
+            jcacheXZeroCopy.put(key, value);
+            jcacheXHardwareOptimized.put(key, value);
+            jcacheXDistributed.put(key, value);
             caffeineCache.put(key, value);
             cache2kCache.put(key, value);
             ehcacheCache.put(key, value);
@@ -59,7 +71,7 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     @Group("readHeavy")
     @GroupThreads(9) // 9 reader threads
     public String jcacheXReadHeavy(ThreadState state) {
-        return jcacheXCache.get(getRandomKey(state.getIndex()));
+        return jcacheXDefault.get(getRandomKey(state.getIndex()));
     }
 
     @Benchmark
@@ -67,7 +79,7 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     @GroupThreads(1) // 1 writer thread
     public void jcacheXWriteHeavy(ThreadState state, Blackhole bh) {
         int idx = state.getIndex();
-        jcacheXCache.put(getRandomKey(idx), getRandomValue(idx));
+        jcacheXDefault.put(getRandomKey(idx), getRandomValue(idx));
         bh.consume(idx);
     }
 
@@ -143,7 +155,7 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     @Group("writeHeavy")
     @GroupThreads(3) // 3 reader threads
     public String jcacheXReadLight(ThreadState state) {
-        return jcacheXCache.get(getRandomKey(state.getIndex()));
+        return jcacheXDefault.get(getRandomKey(state.getIndex()));
     }
 
     @Benchmark
@@ -151,7 +163,7 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     @GroupThreads(7) // 7 writer threads
     public void jcacheXWriteLight(ThreadState state, Blackhole bh) {
         int idx = state.getIndex();
-        jcacheXCache.put(getRandomKey(idx), getRandomValue(idx));
+        jcacheXDefault.put(getRandomKey(idx), getRandomValue(idx));
         bh.consume(idx);
     }
 
@@ -229,7 +241,7 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     public String jcacheXHighContention(ThreadState state) {
         // 80% chance to access the hot key, 20% random key
         String key = state.random.nextInt(100) < 80 ? HOT_KEY : getRandomKey(state.getIndex());
-        return jcacheXCache.get(key);
+        return jcacheXDefault.get(key);
     }
 
     @Benchmark

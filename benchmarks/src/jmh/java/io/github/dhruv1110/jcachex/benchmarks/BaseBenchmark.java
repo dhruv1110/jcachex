@@ -38,8 +38,26 @@ public abstract class BaseBenchmark {
     protected String[] keys;
     protected String[] values;
 
-    // Cache implementations
-    protected Cache<String, String> jcacheXCache;
+    // JCacheX Cache Profiles - All 12 profiles
+    // Core Profiles (5)
+    protected Cache<String, String> jcacheXDefault;
+    protected Cache<String, String> jcacheXReadHeavy;
+    protected Cache<String, String> jcacheXWriteHeavy;
+    protected Cache<String, String> jcacheXMemoryEfficient;
+    protected Cache<String, String> jcacheXHighPerformance;
+
+    // Specialized Profiles (3)
+    protected Cache<String, String> jcacheXSessionCache;
+    protected Cache<String, String> jcacheXApiCache;
+    protected Cache<String, String> jcacheXComputeCache;
+
+    // Advanced Profiles (4)
+    protected Cache<String, String> jcacheXMlOptimized;
+    protected Cache<String, String> jcacheXZeroCopy;
+    protected Cache<String, String> jcacheXHardwareOptimized;
+    protected Cache<String, String> jcacheXDistributed;
+
+    // Industry-leading cache implementations
     protected com.github.benmanes.caffeine.cache.Cache<String, String> caffeineCache;
     protected org.cache2k.Cache<String, String> cache2kCache;
     protected org.ehcache.Cache<String, String> ehcacheCache;
@@ -50,7 +68,7 @@ public abstract class BaseBenchmark {
     private javax.cache.CacheManager jcacheManager;
 
     // Flags to control which caches to setup (for optimization)
-    protected boolean setupJCacheX = true;
+    protected boolean setupJCacheXProfiles = true;
     protected boolean setupCaffeine = true;
     protected boolean setupCache2k = true;
     protected boolean setupEhcache = true;
@@ -69,8 +87,8 @@ public abstract class BaseBenchmark {
         }
 
         // Setup cache implementations based on flags
-        if (setupJCacheX) {
-            setupJCacheX();
+        if (setupJCacheXProfiles) {
+            setupJCacheXProfiles();
         }
         if (setupCaffeine) {
             setupCaffeine();
@@ -89,17 +107,98 @@ public abstract class BaseBenchmark {
         }
     }
 
-    private void setupJCacheX() {
+    private void setupJCacheXProfiles() {
         try {
-            CacheConfig<String, String> config = CacheConfig.<String, String>builder()
+            // Core Profiles (5)
+            jcacheXDefault = io.github.dhruv1110.jcachex.JCacheXBuilder
+                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.DEFAULT)
                     .maximumSize((long) CACHE_SIZE)
                     .expireAfterWrite(Duration.ofMinutes(30))
-                    .recordStats(false) // Disable stats for benchmarking
+                    .recordStats(false)
                     .build();
-            jcacheXCache = new DefaultCache<>(config);
+
+            jcacheXReadHeavy = io.github.dhruv1110.jcachex.JCacheXBuilder
+                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.READ_HEAVY)
+                    .maximumSize((long) CACHE_SIZE)
+                    .expireAfterWrite(Duration.ofMinutes(30))
+                    .recordStats(false)
+                    .build();
+
+            jcacheXWriteHeavy = io.github.dhruv1110.jcachex.JCacheXBuilder
+                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.WRITE_HEAVY)
+                    .maximumSize((long) CACHE_SIZE)
+                    .expireAfterWrite(Duration.ofMinutes(30))
+                    .recordStats(false)
+                    .build();
+
+            jcacheXMemoryEfficient = io.github.dhruv1110.jcachex.JCacheXBuilder
+                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.MEMORY_EFFICIENT)
+                    .maximumSize((long) CACHE_SIZE)
+                    .expireAfterWrite(Duration.ofMinutes(30))
+                    .recordStats(false)
+                    .build();
+
+            jcacheXHighPerformance = io.github.dhruv1110.jcachex.JCacheXBuilder
+                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.HIGH_PERFORMANCE)
+                    .maximumSize((long) CACHE_SIZE)
+                    .expireAfterWrite(Duration.ofMinutes(30))
+                    .recordStats(false)
+                    .build();
+
+            // Specialized Profiles (3)
+            jcacheXSessionCache = io.github.dhruv1110.jcachex.JCacheXBuilder
+                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.SESSION_CACHE)
+                    .maximumSize((long) CACHE_SIZE)
+                    .expireAfterWrite(Duration.ofMinutes(30))
+                    .recordStats(false)
+                    .build();
+
+            jcacheXApiCache = io.github.dhruv1110.jcachex.JCacheXBuilder
+                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.API_CACHE)
+                    .maximumSize((long) CACHE_SIZE)
+                    .expireAfterWrite(Duration.ofMinutes(30))
+                    .recordStats(false)
+                    .build();
+
+            jcacheXComputeCache = io.github.dhruv1110.jcachex.JCacheXBuilder
+                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.COMPUTE_CACHE)
+                    .maximumSize((long) CACHE_SIZE)
+                    .expireAfterWrite(Duration.ofMinutes(30))
+                    .recordStats(false)
+                    .build();
+
+            // Advanced Profiles (4)
+            jcacheXMlOptimized = io.github.dhruv1110.jcachex.JCacheXBuilder
+                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.ML_OPTIMIZED)
+                    .maximumSize((long) CACHE_SIZE)
+                    .expireAfterWrite(Duration.ofMinutes(30))
+                    .recordStats(false)
+                    .build();
+
+            jcacheXZeroCopy = io.github.dhruv1110.jcachex.JCacheXBuilder
+                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.ZERO_COPY)
+                    .maximumSize((long) CACHE_SIZE)
+                    .expireAfterWrite(Duration.ofMinutes(30))
+                    .recordStats(false)
+                    .build();
+
+            jcacheXHardwareOptimized = io.github.dhruv1110.jcachex.JCacheXBuilder
+                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.HARDWARE_OPTIMIZED)
+                    .maximumSize((long) CACHE_SIZE)
+                    .expireAfterWrite(Duration.ofMinutes(30))
+                    .recordStats(false)
+                    .build();
+
+            jcacheXDistributed = io.github.dhruv1110.jcachex.JCacheXBuilder
+                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.DISTRIBUTED)
+                    .maximumSize((long) CACHE_SIZE)
+                    .expireAfterWrite(Duration.ofMinutes(30))
+                    .recordStats(false)
+                    .build();
+
         } catch (Exception e) {
-            System.err.println("JCacheX setup failed: " + e.getMessage());
-            setupJCacheX = false;
+            System.err.println("JCacheX profiles setup failed: " + e.getMessage());
+            setupJCacheXProfiles = false;
         }
     }
 
@@ -194,9 +293,31 @@ public abstract class BaseBenchmark {
     public void tearDown() {
         // Cleanup resources
         try {
-            if (jcacheXCache != null) {
-                jcacheXCache.clear();
-            }
+            // Clean up JCacheX profiles
+            if (jcacheXDefault != null)
+                jcacheXDefault.clear();
+            if (jcacheXReadHeavy != null)
+                jcacheXReadHeavy.clear();
+            if (jcacheXWriteHeavy != null)
+                jcacheXWriteHeavy.clear();
+            if (jcacheXMemoryEfficient != null)
+                jcacheXMemoryEfficient.clear();
+            if (jcacheXHighPerformance != null)
+                jcacheXHighPerformance.clear();
+            if (jcacheXSessionCache != null)
+                jcacheXSessionCache.clear();
+            if (jcacheXApiCache != null)
+                jcacheXApiCache.clear();
+            if (jcacheXComputeCache != null)
+                jcacheXComputeCache.clear();
+            if (jcacheXMlOptimized != null)
+                jcacheXMlOptimized.clear();
+            if (jcacheXZeroCopy != null)
+                jcacheXZeroCopy.clear();
+            if (jcacheXHardwareOptimized != null)
+                jcacheXHardwareOptimized.clear();
+            if (jcacheXDistributed != null)
+                jcacheXDistributed.clear();
             if (caffeineCache != null) {
                 caffeineCache.invalidateAll();
             }
