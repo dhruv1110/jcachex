@@ -25,17 +25,15 @@
 
 ```java
 // Start with a profile that matches your use case
-Cache<String, User> cache = CacheBuilder
-    .profile("READ_HEAVY")
+Cache<String, User> cache = JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
     .name("users")
     .maximumSize(1000L)
     .build();
 
 // Scale to distributed with the same API
-Cache<String, User> cache = CacheBuilder
-    .profile("DISTRIBUTED")
+Cache<String, User> cache = JCacheXBuilder.forDistributedCaching()
     .name("users")
-    .clusterNodes("cache-1:8080", "cache-2:8080")
+    .maximumSize(1000L)
     .build();
 ```
 
@@ -82,31 +80,71 @@ ConcurrentMap  | 3.1M ops/sec  | 15M ops/sec  | 1.8MB per 10K items
 </dependency>
 ```
 
-### 2. Choose Your Profile
+### 2. Choose Your Cache Pattern
+
+## 🎯 Easy-to-Use Examples
+
+### **1. Profile-Based Creation (Type Safe)**
 ```java
-// Java - Profile-based approach
-Cache<String, User> cache = CacheBuilder
-    .profile("READ_HEAVY")  // Optimized for read-intensive workloads
+// Using ProfileName enum for compile-time safety
+Cache<String, User> userCache = JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
     .name("users")
     .maximumSize(1000L)
-    .expireAfterWrite(Duration.ofMinutes(30))
     .build();
-
-cache.put("user123", new User("Alice"));
-User user = cache.get("user123"); // Lightning fast
 ```
 
+### **2. Convenience Methods (One-liner Creation)**
+```java
+// Read-heavy workloads (80%+ reads)
+Cache<String, User> users = JCacheXBuilder.forReadHeavyWorkload()
+    .name("users").maximumSize(1000L).build();
+
+// Write-heavy workloads (50%+ writes)
+Cache<String, Session> sessions = JCacheXBuilder.forWriteHeavyWorkload()
+    .name("sessions").maximumSize(2000L).build();
+
+// Memory-constrained environments
+Cache<String, Data> memCache = JCacheXBuilder.forMemoryConstrainedEnvironment()
+    .name("memory-cache").maximumSize(100L).build();
+
+// All 12 profiles supported with convenience methods
+```
+
+### **3. Smart Defaults (Automatic Selection)**
+```java
+// Let JCacheX choose optimal profile based on workload characteristics
+Cache<String, Data> smartCache = JCacheXBuilder.withSmartDefaults()
+    .workloadCharacteristics(WorkloadCharacteristics.builder()
+        .readToWriteRatio(8.0) // Read-heavy
+        .accessPattern(WorkloadCharacteristics.AccessPattern.TEMPORAL_LOCALITY)
+        .build())
+    .build();
+```
+
+### **4. Kotlin DSL Integration**
 ```kotlin
-// Kotlin - DSL Style
-val cache = createCache<String, User> {
-    profile("WRITE_HEAVY")  // Optimized for write-intensive workloads
+// Convenience methods with DSL
+val readHeavyCache = createReadHeavyCache {
     name("products")
-    maximumSize(5000)
-    expireAfterWrite(30.minutes)
+    maximumSize(5000L)
 }
 
-cache["user123"] = User("Alice")
-val user = cache["user123"] // Idiomatic Kotlin
+val sessionCache = createSessionCache {
+    name("sessions")
+    maximumSize(2000L)
+}
+
+// All 12 profiles supported
+```
+
+### **5. Spring Boot Integration**
+```yaml
+# Configuration-based
+jcachex:
+  caches:
+    users:
+      profile: READ_HEAVY
+      maximumSize: 5000
 ```
 
 ### 3. See It Work
@@ -198,31 +236,31 @@ JCacheX uses intelligent profiles to automatically configure optimal cache setti
 </td>
 <td>
 
-**Spring Integration**
-- Zero configuration
-- @Cacheable support
-- Properties binding
-- Actuator integration
+**Profile-Based**
+- 12 built-in profiles
+- Automatic optimization
+- Use-case specific tuning
+- Custom profile creation
 
 </td>
 </tr>
 <tr>
 <td>
 
-**Distributed Caching**
-- Seamless scaling
-- Multiple consistency models
-- Auto failover
-- Network partition tolerance
+**Production Ready**
+- Comprehensive metrics
+- Circuit breaker support
+- Cache warming strategies
+- Event-driven architecture
 
 </td>
 <td>
 
-**Observability**
-- Built-in metrics
-- Prometheus integration
-- JMX support
-- Health indicators
+**Developer Friendly**
+- Fluent API design
+- Kotlin DSL support
+- Spring Boot integration
+- Comprehensive documentation
 
 </td>
 </tr>
@@ -230,146 +268,273 @@ JCacheX uses intelligent profiles to automatically configure optimal cache setti
 
 ---
 
-## Real-World Examples
+## Comprehensive Usage Examples
 
-### Spring Boot Service
+### Basic Usage
 ```java
-@Service
-public class UserService {
-    @JCacheXCacheable(value = "users", profile = "READ_HEAVY")
-    public User getUser(String id) {
-        return database.findUser(id); // Only called on cache miss
-    }
+// Simple cache with smart defaults
+Cache<String, String> cache = JCacheXBuilder.create()
+    .name("simple")
+    .maximumSize(100L)
+    .build();
+
+cache.put("key1", "value1");
+String value = cache.get("key1");
+```
+
+### Advanced Configuration
+```java
+// Custom configuration with async loading
+Cache<String, User> userCache = JCacheXBuilder.forReadHeavyWorkload()
+    .name("users")
+    .maximumSize(1000L)
+    .expireAfterWrite(Duration.ofMinutes(30))
+    .expireAfterAccess(Duration.ofMinutes(10))
+    .loader(userId -> loadUserFromDatabase(userId))
+    .recordStats(true)
+    .build();
+```
+
+### Multi-Language Support
+
+#### Java
+```java
+// Profile-based approach
+Cache<String, Product> productCache = JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
+    .name("products")
+    .maximumSize(5000L)
+    .build();
+
+// Convenience method
+Cache<String, UserSession> sessionCache = JCacheXBuilder.forSessionStorage()
+    .name("sessions")
+    .maximumSize(2000L)
+    .build();
+
+// Smart defaults
+Cache<String, Order> orderCache = JCacheXBuilder.withSmartDefaults()
+    .workloadCharacteristics(WorkloadCharacteristics.builder()
+        .readToWriteRatio(6.0)
+        .build())
+    .build();
+```
+
+#### Kotlin
+```kotlin
+// DSL style with convenience methods
+val readHeavyCache = createReadHeavyCache<String, Product> {
+    name("products")
+    maximumSize(5000L)
+}
+
+val sessionCache = createSessionCache<String, UserSession> {
+    name("sessions")
+    maximumSize(2000L)
+}
+
+// Profile-based with DSL
+val profileCache = createCacheWithProfile<String, Data>(ProfileName.HIGH_PERFORMANCE) {
+    name("high-perf")
+    maximumSize(10000L)
 }
 ```
 
-### Async Operations
-```java
-// Non-blocking cache operations
-CompletableFuture<User> userFuture = cache.getAsync("user123");
-userFuture.thenCompose(user -> {
-    return enrichUserData(user); // Chain operations
-});
+#### Spring Boot
+```yaml
+# application.yml
+jcachex:
+  caches:
+    users:
+      profile: READ_HEAVY
+      maximumSize: 5000
+    sessions:
+      profile: SESSION_CACHE
+      maximumSize: 2000
+    products:
+      profile: HIGH_PERFORMANCE
+      maximumSize: 10000
 ```
 
-### Distributed Scaling
+### Performance Optimized Examples
+
+#### Ultra-Low Latency
 ```java
-// Multi-node setup with automatic failover
-Cache<String, Order> orders = CacheBuilder
-    .profile("DISTRIBUTED")
-    .name("orders")
-    .clusterNodes("cache-1:8080", "cache-2:8080", "cache-3:8080")
-    .replicationFactor(2)
-    .consistencyLevel(EVENTUAL)
+// Zero-copy optimized for HFT
+Cache<String, MarketData> marketData = JCacheXBuilder.forUltraLowLatency()
+    .name("market-data")
+    .maximumSize(100000L)
     .build();
 ```
 
-### Profile-based Configuration
+#### Memory Constrained
 ```java
-// Automatically optimized for your use case
-Cache<String, Product> products = CacheBuilder
-    .profile("API_CACHE")        // Optimized for API responses
-    .name("products")
-    .maximumSize(2000L)          // Override default if needed
+// Optimized for limited memory
+Cache<String, Config> configCache = JCacheXBuilder.forMemoryConstrainedEnvironment()
+    .name("config")
+    .maximumSize(50L)
     .build();
+```
 
-// Or let the profile choose everything
-Cache<String, Session> sessions = CacheBuilder
-    .profile("SESSION_CACHE")    // Pre-configured for session storage
-    .name("sessions")
+#### Machine Learning
+```java
+// ML workload optimization
+Cache<String, ModelResult> mlCache = JCacheXBuilder.forMachineLearning()
+    .name("ml-predictions")
+    .maximumSize(1000L)
     .build();
+```
+
+---
+
+## All 12 Convenience Methods
+
+JCacheX provides one-liner cache creation for all common use cases:
+
+```java
+// Core profiles
+JCacheXBuilder.create()                          // Default profile
+JCacheXBuilder.forReadHeavyWorkload()           // 80%+ reads
+JCacheXBuilder.forWriteHeavyWorkload()          // 50%+ writes
+JCacheXBuilder.forMemoryConstrainedEnvironment() // Limited memory
+JCacheXBuilder.forHighPerformance()             // Maximum throughput
+
+// Specialized profiles
+JCacheXBuilder.forSessionStorage()              // User sessions
+JCacheXBuilder.forApiResponseCaching()          // External APIs
+JCacheXBuilder.forComputationCaching()          // Expensive computations
+
+// Advanced profiles
+JCacheXBuilder.forMachineLearning()             // ML workloads
+JCacheXBuilder.forUltraLowLatency()            // HFT/Gaming
+JCacheXBuilder.forHardwareOptimization()        // CPU-intensive
+JCacheXBuilder.forDistributedCaching()          // Multi-node
+```
+
+---
+
+## Module Structure
+
+```
+jcachex/
+├── jcachex-core/        # Core caching functionality
+├── jcachex-kotlin/      # Kotlin extensions and DSL
+├── jcachex-spring/      # Spring Boot integration
+└── examples/            # Comprehensive examples
+    ├── java/           # Java examples
+    ├── kotlin/         # Kotlin examples
+    └── springboot/     # Spring Boot examples
+```
+
+---
+
+## Getting Started
+
+### Installation
+
+#### Maven
+```xml
+<dependency>
+    <groupId>io.github.dhruv1110</groupId>
+    <artifactId>jcachex-core</artifactId>
+    <version>0.1.18</version>
+</dependency>
+```
+
+#### Gradle
+```gradle
+implementation 'io.github.dhruv1110:jcachex-core:0.1.18'
+```
+
+### Hello World Example
+
+```java
+import io.github.dhruv1110.jcachex.JCacheXBuilder;
+
+public class HelloJCacheX {
+    public static void main(String[] args) {
+        // Create cache with one line
+        var cache = JCacheXBuilder.forReadHeavyWorkload()
+            .name("hello").maximumSize(1000L).build();
+
+        // Use it
+        cache.put("hello", "world");
+        System.out.println(cache.get("hello")); // "world"
+
+        // Check performance
+        System.out.println("Hit rate: " + cache.stats().hitRate() * 100 + "%");
+    }
+}
 ```
 
 ---
 
 ## Advanced Features
 
-### Multiple Cache Instances
+### Distributed Caching
 ```java
-// Different profiles for different use cases
-Cache<String, User> userCache = CacheBuilder.profile("READ_HEAVY").name("users").build();
-Cache<String, Session> sessionCache = CacheBuilder.profile("SESSION_CACHE").name("sessions").build();
-Cache<String, ApiResponse> apiCache = CacheBuilder.profile("API_CACHE").name("api").build();
+// Distributed cache with automatic failover
+Cache<String, User> distributedCache = JCacheXBuilder.forDistributedCaching()
+    .name("users")
+    .maximumSize(5000L)
+    .build();
 ```
 
-### Custom Eviction Strategies
+### Async Operations
 ```java
-// Combine multiple strategies
-EvictionStrategy<String, User> strategy =
-    new CompositeEvictionStrategy<>(
-        new LRUEvictionStrategy<>(),
-        new IdleTimeEvictionStrategy<>(Duration.ofHours(1))
-    );
+// Async loading with CompletableFuture
+Cache<String, Data> asyncCache = JCacheXBuilder.forHighPerformance()
+    .asyncLoader(key -> CompletableFuture.supplyAsync(() -> loadData(key)))
+    .build();
 ```
 
-### Intelligent Cache Warming
+### Event Listeners
 ```java
-// Predictive warming based on access patterns
-CacheWarmingStrategy<String, Product> warming =
-    new PredictiveWarmingStrategy<>(patterns -> {
-        return predictNextAccess(patterns);
-    });
+// Monitor cache events
+Cache<String, User> monitoredCache = JCacheXBuilder.forReadHeavyWorkload()
+    .listener(new CacheEventListener<String, User>() {
+        @Override
+        public void onEvict(String key, User value, EvictionReason reason) {
+            System.out.println("Evicted: " + key + " due to " + reason);
+        }
+    })
+    .build();
 ```
 
 ---
 
-## Modules & Framework Support
+## Documentation
 
-| Module | Description | Use Case |
-|--------|-------------|----------|
-| `jcachex-core` | Core caching functionality | All applications |
-| `jcachex-spring` | Spring Boot integration | Spring applications |
-| `jcachex-kotlin` | Kotlin DSL & coroutines | Kotlin projects |
-
-**Framework Support:**
-- Spring Boot (Auto-configuration)
-- Micronaut (Native support)
-- Quarkus (GraalVM compatible)
-- Plain Java/Kotlin
+- **[API Reference](https://javadoc.io/doc/io.github.dhruv1110/jcachex-core)** - Complete API documentation
+- **[User Guide](https://dhruv1110.github.io/jcachex/)** - Comprehensive user guide
+- **[Examples](example/)** - Real-world examples
+- **[Performance](benchmarks/)** - Detailed benchmarks
 
 ---
 
-## Community & Support
+## Contributing
 
-**Join developers using JCacheX**
-
-[![GitHub stars](https://img.shields.io/github/stars/dhruv1110/jcachex?style=social)](https://github.com/dhruv1110/jcachex)
-[![GitHub forks](https://img.shields.io/github/forks/dhruv1110/jcachex?style=social)](https://github.com/dhruv1110/jcachex)
-
-**Ways to contribute:**
-- [Star this repo](https://github.com/dhruv1110/jcachex)
-- [Report issues](https://github.com/dhruv1110/jcachex/issues)
-- [Request features](https://github.com/dhruv1110/jcachex/discussions)
-- [Contribute code](CONTRIBUTING.md)
-
----
-
-## Resources
-
-| Resource | Description |
-|----------|-------------|
-| [Documentation](https://dhruv1110.github.io/jcachex/) | Complete guides and tutorials |
-| [API Reference](https://javadoc.io/doc/io.github.dhruv1110/jcachex-core) | Detailed JavaDoc documentation |
-| [Examples](example/) | Working code samples |
-| [Spring Guide](https://dhruv1110.github.io/jcachex/spring) | Spring Boot integration |
-| [Architecture](docs/ARCHITECTURE.md) | Design and internals |
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ---
 
 ## License
 
-JCacheX is licensed under the [MIT License](LICENSE) - use it freely in your projects!
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Support
+
+- **GitHub Issues**: [Report bugs or request features](https://github.com/dhruv1110/jcachex/issues)
+- **Documentation**: [Complete documentation](https://dhruv1110.github.io/jcachex/)
+- **Examples**: [Working examples](example/)
 
 ---
 
 <div align="center">
 
-**Ready to supercharge your application's performance?**
+**[⭐ Star this repo](https://github.com/dhruv1110/jcachex)** if you find JCacheX useful!
 
-[Get Started](#quick-start) • [Star this repo](https://github.com/dhruv1110/jcachex) • [Read the docs](https://dhruv1110.github.io/jcachex/)
-
----
-
-*Built with care for the Java community*
+Made with ❤️ by [Dhruv](https://github.com/dhruv1110)
 
 </div>

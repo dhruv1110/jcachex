@@ -1,47 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
     Box,
-    Container,
     Typography,
+    Container,
+    Button,
     Card,
     CardContent,
-    Button,
+    Chip,
     List,
     ListItem,
     ListItemIcon,
     ListItemText,
+    Alert,
+    AlertTitle,
     Stepper,
     Step,
     StepLabel,
-    Alert,
-    Chip,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
+    StepContent,
     useTheme,
     useMediaQuery,
+    Paper,
+    Grid,
 } from '@mui/material';
 import {
-    GetApp as GetAppIcon,
-    Build as BuildIcon,
-    PlayArrow as PlayArrowIcon,
-    Check as CheckIcon,
-    Code as CodeIcon,
-    Settings as SettingsIcon,
-    Dashboard as DashboardIcon,
-    Launch as LaunchIcon,
-    BookmarkBorder as BookmarkIcon,
-    School as SchoolIcon,
-    Speed as SpeedIcon,
-    Coffee as JavaIcon,
-    Extension as ExtensionIcon,
-    Api as ApiIcon,
-    ExpandMore as ExpandMoreIcon,
     CloudDownload as CloudDownloadIcon,
+    Build as BuildIcon,
+    Code as CodeIcon,
     RocketLaunch as RocketLaunchIcon,
-    IntegrationInstructions as IntegrationInstructionsIcon,
+    PlayArrow as PlayArrowIcon,
+    Extension as ExtensionIcon,
+    Speed as SpeedIcon,
+    Dashboard as DashboardIcon,
+    Settings as SettingsIcon,
     Security as SecurityIcon,
-    Verified as VerifiedIcon,
+    Launch as LaunchIcon,
+    School as SchoolIcon,
+    Api as ApiIcon,
     AccountTree as ProfileIcon,
     TrendingUp as PerformanceIcon,
 } from '@mui/icons-material';
@@ -52,6 +46,9 @@ import { Breadcrumbs } from './SEO';
 const GettingStarted: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const [activeTab, setActiveTab] = useState('installation');
+    const [selectedProfile, setSelectedProfile] = useState('READ_HEAVY');
+    const [codeExample, setCodeExample] = useState('');
 
     const steps = [
         'Add Dependency',
@@ -60,78 +57,98 @@ const GettingStarted: React.FC = () => {
         'Monitor & Tune'
     ];
 
-    const installationMethods = [
-        {
-            title: 'Maven',
-            icon: <BuildIcon />,
-            description: 'Add to your pom.xml',
-            code: `<dependency>
-    <groupId>io.github.dhruv1110</groupId>
-    <artifactId>jcachex-core</artifactId>
-    <version>1.0.0</version>
-</dependency>`
-        },
-        {
-            title: 'Gradle',
-            icon: <BuildIcon />,
-            description: 'Add to your build.gradle',
-            code: `implementation 'io.github.dhruv1110:jcachex-core:1.0.0'`
-        },
-        {
-            title: 'Gradle (Kotlin DSL)',
-            icon: <ExtensionIcon />,
-            description: 'Add to your build.gradle.kts',
-            code: `implementation("io.github.dhruv1110:jcachex-core:1.0.0")`
-        }
+    const installationTabs = [
+        { id: 'maven', label: 'Maven', icon: <BuildIcon /> },
+        { id: 'gradle', label: 'Gradle', icon: <BuildIcon /> },
+        { id: 'sbt', label: 'SBT', icon: <ExtensionIcon /> },
+        { id: 'kotlin', label: 'Kotlin DSL', icon: <ExtensionIcon /> },
     ];
 
     const profileExamples = [
         {
-            title: 'Read-Heavy Profile',
-            description: 'Perfect for reference data and configuration',
+            title: 'Profile-Based Creation (Type Safe)',
+            description: 'Using ProfileName enum for compile-time safety',
             profile: 'READ_HEAVY',
             performance: '11.5ns GET',
-            code: `// Optimized for read-intensive workloads
-Cache<String, Product> productCache = CacheBuilder
-    .profile("READ_HEAVY")
-    .name("products")
-    .maximumSize(5000L)
+            code: `// Using ProfileName enum for type safety
+Cache<String, User> userCache = JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
+    .name("users")
+    .maximumSize(1000L)
     .build();
 
 // Basic operations
-productCache.put("product:123", product);
-Product found = productCache.get("product:123"); // Ultra-fast reads`
+userCache.put("user:123", user);
+User found = userCache.get("user:123"); // Ultra-fast reads`
         },
         {
-            title: 'Session Cache Profile',
-            description: 'Optimized for user session storage',
+            title: 'Convenience Methods (One-liner)',
+            description: 'One-line cache creation for common use cases',
             profile: 'SESSION_CACHE',
             performance: 'TTL: 30 min',
-            code: `// Automatically configured for sessions
-Cache<String, UserSession> sessionCache = CacheBuilder
-    .profile("SESSION_CACHE")
-    .name("sessions")
-    .build(); // TTL and size pre-configured
+            code: `// Read-heavy workloads (80%+ reads)
+Cache<String, User> users = JCacheXBuilder.forReadHeavyWorkload()
+    .name("users").maximumSize(1000L).build();
 
-// Session management
-sessionCache.put("session:abc123", userSession);
-UserSession session = sessionCache.get("session:abc123");`
+// Write-heavy workloads (50%+ writes)
+Cache<String, Session> sessions = JCacheXBuilder.forWriteHeavyWorkload()
+    .name("sessions").maximumSize(2000L).build();
+
+// Memory-constrained environments
+Cache<String, Data> memCache = JCacheXBuilder.forMemoryConstrainedEnvironment()
+    .name("memory-cache").maximumSize(100L).build();`
         },
         {
-            title: 'Distributed Profile',
-            description: 'Scale across multiple nodes',
-            profile: 'DISTRIBUTED',
-            performance: 'Network-aware',
-            code: `// Multi-node caching made simple
-Cache<String, Order> orderCache = CacheBuilder
-    .profile("DISTRIBUTED")
-    .name("orders")
-    .clusterNodes("cache-1:8080", "cache-2:8080")
-    .build();
+            title: 'Smart Defaults (Automatic)',
+            description: 'Let JCacheX choose optimal profile automatically',
+            profile: 'SMART_DEFAULTS',
+            performance: 'Adaptive',
+            code: `// Let JCacheX choose optimal profile based on workload characteristics
+Cache<String, Data> smartCache = JCacheXBuilder.withSmartDefaults()
+    .workloadCharacteristics(WorkloadCharacteristics.builder()
+        .readToWriteRatio(8.0) // Read-heavy
+        .accessPattern(WorkloadCharacteristics.AccessPattern.TEMPORAL_LOCALITY)
+        .build())
+    .build();`
+        },
+        {
+            title: 'Kotlin DSL Integration',
+            description: 'Idiomatic Kotlin with DSL syntax',
+            profile: 'KOTLIN_DSL',
+            performance: 'Idiomatic',
+            code: `// Convenience methods with DSL
+val readHeavyCache = createReadHeavyCache<String, Product> {
+    name("products")
+    maximumSize(5000L)
+}
 
-// Works just like local cache
-orderCache.put("order:456", order);
-Order found = orderCache.get("order:456");`
+val sessionCache = createSessionCache<String, UserSession> {
+    name("sessions")
+    maximumSize(2000L)
+}
+
+// Profile-based with DSL
+val profileCache = createCacheWithProfile<String, Data>(ProfileName.HIGH_PERFORMANCE) {
+    name("high-perf")
+    maximumSize(10000L)
+}`
+        },
+        {
+            title: 'Spring Boot Integration',
+            description: 'Configuration-based cache setup',
+            profile: 'SPRING_BOOT',
+            performance: 'Configuration-driven',
+            code: `# application.yml
+jcachex:
+  caches:
+    users:
+      profile: READ_HEAVY
+      maximumSize: 5000
+    sessions:
+      profile: SESSION_CACHE
+      maximumSize: 2000
+    products:
+      profile: HIGH_PERFORMANCE
+      maximumSize: 10000`
         }
     ];
 
@@ -171,6 +188,11 @@ Order found = orderCache.get("order:456");`
             title: 'Choose the Right Profile',
             description: 'Select a profile that matches your workload characteristics',
             tip: 'Start with core profiles like READ_HEAVY or WRITE_HEAVY based on your access patterns'
+        },
+        {
+            title: 'Use Convenience Methods',
+            description: 'Take advantage of one-liner cache creation methods',
+            tip: 'JCacheXBuilder.forReadHeavyWorkload() is easier than manual configuration'
         },
         {
             title: 'Monitor Performance',
@@ -288,194 +310,120 @@ Order found = orderCache.get("order:456");`
                 </Box>
 
                 {/* Progress Stepper */}
-                <Box sx={{ mb: 6 }}>
-                    <Stepper activeStep={0} alternativeLabel={!isMobile}>
-                        {steps.map((label) => (
-                            <Step key={label}>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 6 }}>
+                    <Stepper
+                        activeStep={0}
+                        orientation={isMobile ? 'vertical' : 'horizontal'}
+                        sx={{ width: '100%', maxWidth: 600 }}
+                    >
+                        {steps.map((label, index) => (
+                            <Step key={index}>
                                 <StepLabel>{label}</StepLabel>
                             </Step>
                         ))}
                     </Stepper>
                 </Box>
 
-                {/* Installation Section */}
-                <Box id="installation" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
-                        <CloudDownloadIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                        Installation
-                    </Typography>
-                    <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                        Choose your preferred build tool and add JCacheX to your project.
-                        All artifacts are available on Maven Central.
+                {/* Quick Start Section */}
+                <Box id="quick-start" sx={{ mb: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                        🚀 Quick Start
                     </Typography>
 
-                    <Box sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
-                        gap: 3
-                    }}>
-                        {installationMethods.map((method, index) => (
-                            <Card key={index} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                                <CardContent sx={{ flex: 1 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                        <Box sx={{ color: 'primary.main', mr: 1 }}>
-                                            {method.icon}
-                                        </Box>
-                                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                            {method.title}
-                                        </Typography>
-                                    </Box>
-                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                        {method.description}
-                                    </Typography>
-                                    <Box component="pre" sx={{
-                                        backgroundColor: 'grey.100',
-                                        p: 2,
-                                        borderRadius: 1,
-                                        fontSize: '0.875rem',
-                                        overflow: 'auto',
-                                        fontFamily: 'monospace'
-                                    }}>
-                                        {method.code}
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </Box>
-                </Box>
-
-                {/* Choose Profile Section */}
-                <Box id="choose-profile" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
-                        <ProfileIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                        Choose Your Profile
-                    </Typography>
-                    <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                        JCacheX profiles eliminate complex configuration decisions. Simply choose a profile that
-                        matches your use case and get optimal performance automatically.
-                    </Typography>
-
-                    {profileSelection.map((category, categoryIndex) => (
-                        <Box key={categoryIndex} sx={{ mb: 4 }}>
-                            <Typography variant="h5" sx={{ fontWeight: 600, mb: 2 }}>
-                                {category.category}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                                {category.description}
-                            </Typography>
-                            <Box sx={{
-                                display: 'grid',
-                                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' },
-                                gap: 2
-                            }}>
-                                {category.profiles.map((profile, profileIndex) => (
-                                    <Card key={profileIndex} variant="outlined">
-                                        <CardContent sx={{ p: 2 }}>
-                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <Box>
-                                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                                        {profile.name}
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        {profile.usage}
-                                                    </Typography>
-                                                </Box>
-                                                <Chip
-                                                    label={profile.performance}
-                                                    size="small"
-                                                    color="primary"
-                                                    variant="outlined"
-                                                />
-                                            </Box>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                            </Box>
+                    <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4, mb: 6 }}>
+                        <Box sx={{ flex: 1 }}>
+                            <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
+                                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                                    1. Add Dependency
+                                </Typography>
+                                <CodeTabs
+                                    tabs={[
+                                        {
+                                            id: 'maven',
+                                            label: 'Maven',
+                                            language: 'xml',
+                                            code: `<dependency>
+    <groupId>io.github.dhruv1110</groupId>
+    <artifactId>jcachex-core</artifactId>
+    <version>0.1.18</version>
+</dependency>`
+                                        },
+                                        {
+                                            id: 'gradle',
+                                            label: 'Gradle',
+                                            language: 'groovy',
+                                            code: `implementation 'io.github.dhruv1110:jcachex-core:0.1.18'`
+                                        },
+                                        {
+                                            id: 'sbt',
+                                            label: 'SBT',
+                                            language: 'scala',
+                                            code: `libraryDependencies += "io.github.dhruv1110" % "jcachex-core" % "0.1.18"`
+                                        },
+                                        {
+                                            id: 'kotlin',
+                                            label: 'Kotlin DSL',
+                                            language: 'kotlin',
+                                            code: `// Kotlin DSL
+implementation("io.github.dhruv1110:jcachex-kotlin:0.1.18")`
+                                        }
+                                    ]}
+                                />
+                            </Paper>
                         </Box>
-                    ))}
-                </Box>
+                        <Box sx={{ flex: 1 }}>
+                            <Paper elevation={2} sx={{ p: 3, height: '100%' }}>
+                                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                                    2. Create Your First Cache
+                                </Typography>
+                                <CodeTabs
+                                    tabs={[
+                                        {
+                                            id: 'java',
+                                            label: 'Java',
+                                            language: 'java',
+                                            code: `// One-liner cache creation
+Cache<String, User> cache = JCacheXBuilder.forReadHeavyWorkload()
+    .name("users").maximumSize(1000L).build();
 
-                {/* First Cache Section */}
-                <Box id="first-cache" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
-                        <CodeIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                        Your First Cache
-                    </Typography>
-                    <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                        Create your first cache using profiles. Notice how much simpler it is compared to
-                        traditional configuration-based approaches.
-                    </Typography>
+// Use it
+cache.put("user:123", new User("Alice"));
+User user = cache.get("user:123"); // Lightning fast`
+                                        },
+                                        {
+                                            id: 'kotlin',
+                                            label: 'Kotlin',
+                                            language: 'kotlin',
+                                            code: `// Kotlin DSL
+val cache = createReadHeavyCache<String, User> {
+    name("users")
+    maximumSize(1000L)
+}
 
-                    <CodeTabs
-                        tabs={[
-                            {
-                                id: 'java-profile',
-                                label: 'Java',
-                                language: 'java',
-                                code: `import io.github.dhruv1110.jcachex.*;
-
-public class FirstCache {
-    public static void main(String[] args) {
-        // Profile-based approach - automatically optimized
-        Cache<String, String> cache = CacheBuilder
-            .profile("READ_HEAVY")  // Optimized for read-intensive workloads
-            .name("users")
-            .maximumSize(1000L)     // Override default if needed
-            .build();
-
-        // Basic operations
-        cache.put("user:123", "John Doe");
-        String user = cache.get("user:123");
-        System.out.println("User: " + user);
-
-        // Check performance
-        CacheStats stats = cache.stats();
-        System.out.println("Hit rate: " + (stats.hitRate() * 100) + "%");
-    }
-}`
-                            },
-                            {
-                                id: 'kotlin-profile',
-                                label: 'Kotlin',
-                                language: 'kotlin',
-                                code: `import io.github.dhruv1110.jcachex.kotlin.*
-
-fun main() {
-    // Profile-based approach with Kotlin DSL
-    val cache = createCache<String, String> {
-        profile("WRITE_HEAVY")  // Optimized for write-intensive workloads
-        name("users")
-        maximumSize(1000)       // Override default if needed
-    }
-
-    // Use operator overloading
-    cache["user:123"] = "John Doe"
-    val user = cache["user:123"]
-    println("User: $user")
-
-    // Check performance
-    val stats = cache.stats()
-    println("Hit rate: \${stats.hitRatePercent()}%")
-}`
-                            }
-                        ]}
-                    />
+// Use it
+cache["user:123"] = User("Alice")
+val user = cache["user:123"] // Idiomatic Kotlin`
+                                        }
+                                    ]}
+                                />
+                            </Paper>
+                        </Box>
+                    </Box>
                 </Box>
 
                 {/* Profile Examples Section */}
                 <Box id="profile-examples" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
-                        <PlayArrowIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                        Profile Examples
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                        🎯 Easy-to-Use Examples
                     </Typography>
                     <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                        Here are real-world examples showing how different profiles optimize for specific use cases.
+                        JCacheX provides multiple easy patterns for creating caches. Choose the one that fits your style:
                     </Typography>
 
                     <Box sx={{
                         display: 'grid',
-                        gridTemplateColumns: { xs: '1fr', lg: 'repeat(3, 1fr)' },
-                        gap: 3
+                        gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' },
+                        gap: 4
                     }}>
                         {profileExamples.map((example, index) => (
                             <Card key={index} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -486,9 +434,9 @@ fun main() {
                                         </Typography>
                                         <Chip
                                             label={example.performance}
-                                            size="small"
                                             color="success"
-                                            variant="outlined"
+                                            size="small"
+                                            sx={{ fontSize: '0.75rem' }}
                                         />
                                     </Box>
                                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -498,7 +446,7 @@ fun main() {
                                         backgroundColor: 'grey.100',
                                         p: 2,
                                         borderRadius: 1,
-                                        fontSize: '0.75rem',
+                                        fontSize: '0.85rem',
                                         overflow: 'auto',
                                         fontFamily: 'monospace',
                                         lineHeight: 1.4
@@ -511,14 +459,76 @@ fun main() {
                     </Box>
                 </Box>
 
+                {/* Continue with rest of the component structure... */}
+                {/* Profile Selection Section */}
+                <Box id="choose-profile" sx={{ mb: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                        <ProfileIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Choose Your Profile
+                    </Typography>
+                    <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                        JCacheX profiles automatically configure optimal settings for your specific use case.
+                        Select based on your workload characteristics:
+                    </Typography>
+
+                    {profileSelection.map((category, categoryIndex) => (
+                        <Box key={categoryIndex} sx={{ mb: 4 }}>
+                            <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+                                {category.category}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                                {category.description}
+                            </Typography>
+
+                            <Box sx={{
+                                display: 'grid',
+                                gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
+                                gap: 2
+                            }}>
+                                {category.profiles.map((profile, profileIndex) => (
+                                    <Card
+                                        key={profileIndex}
+                                        sx={{
+                                            cursor: 'pointer',
+                                            transition: 'transform 0.2s, box-shadow 0.2s',
+                                            '&:hover': {
+                                                transform: 'translateY(-2px)',
+                                                boxShadow: 3
+                                            }
+                                        }}
+                                        onClick={() => setSelectedProfile(profile.name)}
+                                    >
+                                        <CardContent>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+                                                    {profile.name}
+                                                </Typography>
+                                                <Chip
+                                                    label={profile.performance}
+                                                    color="primary"
+                                                    size="small"
+                                                    sx={{ fontSize: '0.7rem' }}
+                                                />
+                                            </Box>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {profile.usage}
+                                            </Typography>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </Box>
+                        </Box>
+                    ))}
+                </Box>
+
                 {/* Best Practices Section */}
                 <Box id="best-practices" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
                         <SecurityIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                         Best Practices
                     </Typography>
                     <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                        Follow these recommendations for optimal cache performance with profiles.
+                        Follow these guidelines to get the most out of JCacheX:
                     </Typography>
 
                     <Box sx={{
@@ -529,14 +539,16 @@ fun main() {
                         {bestPractices.map((practice, index) => (
                             <Card key={index} sx={{ height: '100%' }}>
                                 <CardContent>
-                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                                         {practice.title}
                                     </Typography>
-                                    <Typography variant="body2" sx={{ mb: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                                         {practice.description}
                                     </Typography>
                                     <Alert severity="info" sx={{ mt: 2 }}>
-                                        <strong>Tip:</strong> {practice.tip}
+                                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                            💡 {practice.tip}
+                                        </Typography>
                                     </Alert>
                                 </CardContent>
                             </Card>
@@ -546,12 +558,12 @@ fun main() {
 
                 {/* Next Steps Section */}
                 <Box id="next-steps" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
                         <LaunchIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                         Next Steps
                     </Typography>
                     <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                        Now that you understand profile-based caching, explore these advanced features and integrations.
+                        Ready to explore more? Here are some recommended next steps:
                     </Typography>
 
                     <Box sx={{
@@ -559,67 +571,66 @@ fun main() {
                         gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' },
                         gap: 3
                     }}>
-                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                            <CardContent sx={{ flex: 1 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                    <ProfileIcon color="primary" sx={{ mr: 1 }} />
-                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                        All Profiles
-                                    </Typography>
-                                </Box>
-                                <Typography variant="body2" sx={{ mb: 2 }}>
-                                    Explore all 12 cache profiles including advanced features like ML optimization and zero-copy.
-                                </Typography>
-                                <Button
-                                    variant="outlined"
-                                    href="/documentation"
-                                    sx={{ mt: 'auto' }}
-                                >
-                                    View All Profiles
-                                </Button>
-                            </CardContent>
+                        <Card sx={{ textAlign: 'center', p: 3 }}>
+                            <ApiIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                                Explore Examples
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                See real-world usage patterns in Java, Kotlin, and Spring Boot
+                            </Typography>
+                            <Button variant="outlined" href="/examples" sx={{ mt: 1 }}>
+                                View Examples
+                            </Button>
                         </Card>
-                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                            <CardContent sx={{ flex: 1 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                    <SpeedIcon color="secondary" sx={{ mr: 1 }} />
-                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                        Spring Integration
-                                    </Typography>
-                                </Box>
-                                <Typography variant="body2" sx={{ mb: 2 }}>
-                                    Learn about Spring Boot auto-configuration and profile-based annotation caching.
-                                </Typography>
-                                <Button
-                                    variant="outlined"
-                                    href="/spring-guide"
-                                    sx={{ mt: 'auto' }}
-                                >
-                                    Spring Guide
-                                </Button>
-                            </CardContent>
+
+                        <Card sx={{ textAlign: 'center', p: 3 }}>
+                            <SpeedIcon sx={{ fontSize: 48, color: 'secondary.main', mb: 2 }} />
+                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                                Spring Boot Guide
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                Learn how to integrate JCacheX with Spring Boot applications
+                            </Typography>
+                            <Button variant="outlined" href="/spring-guide" sx={{ mt: 1 }}>
+                                Spring Guide
+                            </Button>
                         </Card>
-                        <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                            <CardContent sx={{ flex: 1 }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                    <PerformanceIcon color="success" sx={{ mr: 1 }} />
-                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                        Performance Benchmarks
-                                    </Typography>
-                                </Box>
-                                <Typography variant="body2" sx={{ mb: 2 }}>
-                                    See detailed performance comparisons between profiles and industry competitors.
-                                </Typography>
-                                <Button
-                                    variant="outlined"
-                                    href="/performance"
-                                    sx={{ mt: 'auto' }}
-                                >
-                                    View Benchmarks
-                                </Button>
-                            </CardContent>
+
+                        <Card sx={{ textAlign: 'center', p: 3 }}>
+                            <PerformanceIcon sx={{ fontSize: 48, color: 'success.main', mb: 2 }} />
+                            <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                                Performance Tips
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                Advanced performance optimization techniques and benchmarks
+                            </Typography>
+                            <Button variant="outlined" href="/performance" sx={{ mt: 1 }}>
+                                Performance Guide
+                            </Button>
                         </Card>
                     </Box>
+                </Box>
+
+                {/* Quick Reference */}
+                <Box id="quick-reference" sx={{ mb: 8 }}>
+                    <Alert severity="success" sx={{ p: 3 }}>
+                        <AlertTitle sx={{ fontWeight: 600, mb: 1 }}>
+                            🎉 You're Ready to Go!
+                        </AlertTitle>
+                        <Typography variant="body1" sx={{ mb: 2 }}>
+                            You now have everything you need to start using JCacheX in your application.
+                            Remember to choose the right profile for your workload and monitor performance using cache statistics.
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                            <Button variant="contained" href="/examples" startIcon={<PlayArrowIcon />}>
+                                Try Examples
+                            </Button>
+                            <Button variant="outlined" href="/documentation" startIcon={<SchoolIcon />}>
+                                Read Docs
+                            </Button>
+                        </Box>
+                    </Alert>
                 </Box>
             </Container>
         </Layout>

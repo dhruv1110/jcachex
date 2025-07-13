@@ -4,7 +4,8 @@ import { Container, Typography, Button, Box, Card, CardContent, Chip, Paper } fr
 import { ArrowForward as ArrowIcon, PlayArrow as PlayIcon, Speed, Security, Cloud, Settings, Star, Delete, Extension, Memory, Code } from '@mui/icons-material';
 import type { CodeTab, Module } from '../types';
 import { useVersion } from '../hooks';
-import { BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN, SPRING_USAGE, INSTALLATION_TABS, MODULES, FEATURES, CACHE_PROFILES } from '../constants';
+import { BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN, SPRING_USAGE, INSTALLATION_TABS, MODULES, FEATURES } from '../constants';
+import { CACHE_PROFILES } from '../constants/cacheProfiles';
 import PageWrapper from './PageWrapper';
 import Layout from './Layout';
 import CodeTabs from './CodeTabs';
