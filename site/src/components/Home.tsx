@@ -5,34 +5,19 @@ import { ArrowForward as ArrowIcon, PlayArrow as PlayIcon, Speed, Security, Clou
 import type { CodeTab, Module } from '../types';
 import { useVersion } from '../hooks';
 import { BASIC_USAGE_JAVA, BASIC_USAGE_KOTLIN, SPRING_USAGE, INSTALLATION_TABS, MODULES, FEATURES } from '../constants';
+import { PROGRESSIVE_LEARNING_EXAMPLES } from '../constants/progressiveLearning';
+import { REAL_WORLD_EXAMPLES } from '../constants/realWorldExamples';
 import { CACHE_PROFILES } from '../constants/cacheProfiles';
 import PageWrapper from './PageWrapper';
 import Layout from './Layout';
 import CodeTabs from './CodeTabs';
+import PerformanceComparison from './PerformanceComparison';
 
 const HomeComponent: React.FC = () => {
     const { version } = useVersion();
 
-    const heroCodeTabs: CodeTab[] = [
-        {
-            id: 'java',
-            label: 'Java',
-            language: 'java',
-            code: BASIC_USAGE_JAVA
-        },
-        {
-            id: 'kotlin',
-            label: 'Kotlin',
-            language: 'kotlin',
-            code: BASIC_USAGE_KOTLIN
-        },
-        {
-            id: 'spring',
-            label: 'Spring Boot',
-            language: 'java',
-            code: SPRING_USAGE
-        }
-    ];
+    // Use progressive learning examples for hero section
+    const heroCodeTabs: CodeTab[] = PROGRESSIVE_LEARNING_EXAMPLES;
 
     // Convert features from constants to MUI compatible format
     const featureIcons: { [key: string]: JSX.Element } = {
@@ -324,26 +309,33 @@ const HomeComponent: React.FC = () => {
                 </Container>
             </Box>
 
-            {/* Quick Start Section */}
+            {/* Progressive Learning Section */}
             <Box sx={{ py: 8, bgcolor: 'grey.50' }}>
                 <Container maxWidth="lg">
                     <Box sx={{ textAlign: 'center', mb: 6 }}>
                         <Chip
-                            label="Get Started"
+                            label="Progressive Learning"
                             sx={{ mb: 2, px: 2, py: 1 }}
                             variant="outlined"
                             color="primary"
                         />
                         <Typography variant="h2" component="h2" sx={{ mb: 2, fontWeight: 700 }}>
-                            Quick Start
+                            Start Your Journey
                         </Typography>
-                        <Typography variant="h6" sx={{ color: 'text.secondary' }}>
-                            Get up and running with JCacheX in minutes using intelligent profiles
+                        <Typography variant="h6" sx={{ color: 'text.secondary', maxWidth: '700px', mx: 'auto' }}>
+                            From 30-second success to production-ready deployment.
+                            Choose your learning path and see immediate results.
                         </Typography>
                     </Box>
 
-                    <Box sx={{ maxWidth: 800, mx: 'auto', mb: 4 }}>
-                        <CodeTabs tabs={heroCodeTabs} />
+                    <Box sx={{ maxWidth: 1000, mx: 'auto', mb: 4 }}>
+                        <CodeTabs
+                            tabs={heroCodeTabs}
+                            showPerformanceMetrics={true}
+                            showTryOnlineButtons={true}
+                            showCopyButtons={true}
+                            interactive={true}
+                        />
                     </Box>
 
                     <Box sx={{ textAlign: 'center' }}>
@@ -356,6 +348,49 @@ const HomeComponent: React.FC = () => {
                             sx={{ px: 4, py: 1.5 }}
                         >
                             View Full Documentation
+                        </Button>
+                    </Box>
+                </Container>
+            </Box>
+
+            {/* Real-World Examples Section */}
+            <Box sx={{ py: 8 }}>
+                <Container maxWidth="lg">
+                    <Box sx={{ textAlign: 'center', mb: 6 }}>
+                        <Chip
+                            label="Real-World Examples"
+                            sx={{ mb: 2, px: 2, py: 1 }}
+                            variant="outlined"
+                            color="secondary"
+                        />
+                        <Typography variant="h2" component="h2" sx={{ mb: 2, fontWeight: 700 }}>
+                            Production Use Cases
+                        </Typography>
+                        <Typography variant="h6" sx={{ color: 'text.secondary', maxWidth: '700px', mx: 'auto' }}>
+                            See how JCacheX solves real-world problems in high-traffic applications
+                        </Typography>
+                    </Box>
+
+                    <Box sx={{ maxWidth: 1000, mx: 'auto', mb: 4 }}>
+                        <CodeTabs
+                            tabs={REAL_WORLD_EXAMPLES}
+                            showPerformanceMetrics={true}
+                            showTryOnlineButtons={true}
+                            showCopyButtons={true}
+                            interactive={true}
+                        />
+                    </Box>
+
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Button
+                            component={Link}
+                            to="/examples"
+                            variant="outlined"
+                            size="large"
+                            endIcon={<ArrowIcon />}
+                            sx={{ px: 4, py: 1.5 }}
+                        >
+                            View All Examples
                         </Button>
                     </Box>
                 </Container>
@@ -379,94 +414,39 @@ const HomeComponent: React.FC = () => {
                 </Container>
             </Box>
 
-            {/* Performance Section */}
-            <Box sx={{ py: 8, bgcolor: 'linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%)' }}>
+            {/* Performance Comparison Section */}
+            <Box sx={{ py: 8, bgcolor: 'grey.50' }}>
                 <Container maxWidth="lg">
                     <Box sx={{ textAlign: 'center', mb: 6 }}>
                         <Chip
                             label="Performance"
-                            sx={{ mb: 2, px: 2, py: 1, bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }}
+                            sx={{ mb: 2, px: 2, py: 1 }}
                             variant="outlined"
+                            color="primary"
                         />
-                        <Typography variant="h2" component="h2" sx={{ mb: 2, fontWeight: 700, color: 'white' }}>
-                            Industry-Leading Performance
+                        <Typography variant="h2" component="h2" sx={{ mb: 2, fontWeight: 700 }}>
+                            Benchmark-Proven Performance
                         </Typography>
-                        <Typography variant="h6" sx={{ color: 'rgba(255,255,255,0.8)', maxWidth: '600px', mx: 'auto' }}>
-                            Outperform industry leaders with our profile-optimized cache implementations
+                        <Typography variant="h6" sx={{ color: 'text.secondary', maxWidth: '700px', mx: 'auto' }}>
+                            Interactive performance comparison showing why JCacheX outperforms alternatives
                         </Typography>
                     </Box>
 
-                    <Box
-                        sx={{
-                            display: 'grid',
-                            gridTemplateColumns: {
-                                xs: '1fr',
-                                md: 'repeat(3, 1fr)'
-                            },
-                            gap: 4,
-                            mb: 6
-                        }}
-                    >
-                        {[
-                            {
-                                title: 'Zero-Copy Profile',
-                                performance: '7.9ns',
-                                description: '2.6x faster than Caffeine',
-                                profile: 'ZERO_COPY'
-                            },
-                            {
-                                title: 'High-Performance Profile',
-                                performance: '24.6ns',
-                                description: 'Balanced performance',
-                                profile: 'HIGH_PERFORMANCE'
-                            },
-                            {
-                                title: 'Memory-Efficient Profile',
-                                performance: '39.7ns',
-                                description: 'Minimal memory usage',
-                                profile: 'MEMORY_EFFICIENT'
-                            }
-                        ].map((perf, index) => (
-                            <Card
-                                key={index}
-                                sx={{
-                                    bgcolor: 'rgba(255,255,255,0.1)',
-                                    backdropFilter: 'blur(10px)',
-                                    border: '1px solid rgba(255,255,255,0.2)',
-                                    transition: 'transform 0.2s ease-in-out',
-                                    '&:hover': {
-                                        transform: 'translateY(-4px)',
-                                        bgcolor: 'rgba(255,255,255,0.15)'
-                                    }
-                                }}
-                            >
-                                <CardContent sx={{ p: 3, textAlign: 'center' }}>
-                                    <Typography variant="h4" sx={{ fontWeight: 700, color: 'white', mb: 1 }}>
-                                        {perf.performance}
-                                    </Typography>
-                                    <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
-                                        {perf.title}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)', mb: 2 }}>
-                                        {perf.description}
-                                    </Typography>
-                                    <Chip
-                                        label={perf.profile}
-                                        size="small"
-                                        sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }}
-                                    />
-                                </CardContent>
-                            </Card>
-                        ))}
+                    <Box sx={{ maxWidth: 1000, mx: 'auto', mb: 4 }}>
+                        <PerformanceComparison
+                            showDetails={true}
+                            interactive={true}
+                        />
                     </Box>
 
                     <Box sx={{ textAlign: 'center' }}>
                         <Button
                             component={Link}
                             to="/performance"
-                            variant="contained"
+                            variant="outlined"
                             size="large"
-                            sx={{ px: 4, py: 1.5, bgcolor: 'white', color: 'primary.main' }}
+                            endIcon={<ArrowIcon />}
+                            sx={{ px: 4, py: 1.5 }}
                         >
                             View Detailed Benchmarks
                         </Button>
