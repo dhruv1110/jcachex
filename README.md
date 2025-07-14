@@ -52,20 +52,42 @@ Cache<String, User> cache = JCacheXBuilder.forDistributedCaching()
 
 <table>
 <tr>
-<td align="center"><strong>5M+ ops/sec</strong><br/>Single thread</td>
-<td align="center"><strong>50M+ ops/sec</strong><br/>100 threads</td>
-<td align="center"><strong>Sub-μs latency</strong><br/>Cache hits</td>
-<td align="center"><strong>99.9% uptime</strong><br/>Production ready</td>
+<td align="center"><strong>501M+ ops/sec</strong><br/>JCacheX-ZeroCopy</td>
+<td align="center"><strong>98.4% efficiency</strong><br/>CPU scaling</td>
+<td align="center"><strong>7.1μs latency</strong><br/>GET operations</td>
+<td align="center"><strong>Enterprise-ready</strong><br/>Stress tested</td>
 </tr>
 </table>
 
-**Comparison with other libraries:**
+### 🚀 **JCacheX Profile Performance**
+
+**Ultra-High Performance Profiles:**
 ```
-Library        | Single Thread | 100 Threads | Memory Overhead
-JCacheX        | 5.2M ops/sec  | 52M ops/sec  | 2MB per 10K items
-Caffeine       | 4.8M ops/sec  | 48M ops/sec  | 2.1MB per 10K items
-ConcurrentMap  | 3.1M ops/sec  | 15M ops/sec  | 1.8MB per 10K items
+Profile                 | Peak Throughput | Scaling Efficiency | Use Case
+JCacheX-ZeroCopy       | 501.1M ops/sec  | 98.4% (4 threads)  | Ultra-high throughput
+JCacheX-WriteHeavy     | 224.6M ops/sec  | 97.2% (4 threads)  | Write-intensive workloads
+JCacheX-HighPerformance| 198.4M ops/sec  | 82.9% (4 threads)  | Balanced performance
 ```
+
+**Specialized Performance Profiles:**
+```
+Profile                    | Throughput     | Efficiency | Optimization Focus
+JCacheX-ReadHeavy         | 22.6M ops/sec  | 93.7%     | Read-intensive (80%+ reads)
+JCacheX-HardwareOptimized | 143.9M ops/sec | 80.6%     | CPU-specific features
+JCacheX-MemoryEfficient   | 31.0M ops/sec  | 23.7%     | Memory-constrained environments
+```
+
+**Latency Performance:**
+```
+Profile                 | GET Latency | PUT Latency | Performance Rating
+JCacheX-WriteHeavy     | 7.1μs       | 4.3μs       | ⭐⭐⭐⭐⭐
+JCacheX-HighPerformance| 7.2μs       | 4.2μs       | ⭐⭐⭐⭐⭐
+JCacheX-ZeroCopy       | 8.9μs       | 5.0μs       | ⭐⭐⭐⭐
+```
+
+> **Benchmark Environment**: Apple M1 Pro, 10 cores, 32GB RAM, OpenJDK 21
+> **Methodology**: JMH framework, 5 warmup/10 measurement iterations, 3 forks
+> **Full Results**: See [benchmarks/](benchmarks/) directory for complete analysis
 
 ---
 

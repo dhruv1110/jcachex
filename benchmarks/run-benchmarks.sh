@@ -8,6 +8,9 @@ set -e
 
 # Parse command line arguments
 QUICK_MODE=false
+HARDCORE_MODE=false
+ENDURANCE_MODE=false
+ALL_MODE=false
 CLEANUP_ONLY=false
 
 show_usage() {
@@ -15,12 +18,18 @@ show_usage() {
     echo ""
     echo "Options:"
     echo "  --quick         Run quick validation with reduced iterations"
+    echo "  --hardcore      Run hardcore stress tests (extreme load, large objects, high concurrency)"
+    echo "  --endurance     Run endurance tests (sustained load, GC pressure, memory leak detection)"
+    echo "  --all           Run all benchmark suites (standard + hardcore + endurance)"
     echo "  --cleanup       Clean up temporary files and exit"
     echo "  --help          Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0              # Run full benchmarks"
+    echo "  $0              # Run standard benchmarks"
     echo "  $0 --quick      # Run quick validation"
+    echo "  $0 --hardcore   # Run hardcore stress tests"
+    echo "  $0 --endurance  # Run endurance tests"
+    echo "  $0 --all        # Run all benchmark suites"
     echo "  $0 --cleanup    # Clean up temporary files only"
 }
 
@@ -28,6 +37,18 @@ while [[ $# -gt 0 ]]; do
     case $1 in
         --quick)
             QUICK_MODE=true
+            shift
+            ;;
+        --hardcore)
+            HARDCORE_MODE=true
+            shift
+            ;;
+        --endurance)
+            ENDURANCE_MODE=true
+            shift
+            ;;
+        --all)
+            ALL_MODE=true
             shift
             ;;
         --cleanup)
@@ -118,6 +139,16 @@ run_benchmark() {
         MEASUREMENT_ITERATIONS=2
         FORKS=1
         BENCHMARK_TIME=1
+    elif [ "$HARDCORE_MODE" = true ]; then
+        WARMUP_ITERATIONS=5
+        MEASUREMENT_ITERATIONS=10
+        FORKS=3
+        BENCHMARK_TIME=10
+    elif [ "$ENDURANCE_MODE" = true ]; then
+        WARMUP_ITERATIONS=3
+        MEASUREMENT_ITERATIONS=5
+        FORKS=2
+        BENCHMARK_TIME=120
     else
         WARMUP_ITERATIONS=3
         MEASUREMENT_ITERATIONS=5
@@ -373,7 +404,15 @@ if __name__ == '__main__':
     main()
 EOF
 
-    # Run the parser
+    # Copy enhanced parser to results directory
+    cp "enhanced_parse_results.py" "$results_dir/"
+
+    # Run the enhanced parser
+    echo "Running enhanced analysis..."
+    python3 "$results_dir/enhanced_parse_results.py" "$results_dir"
+
+    # Keep the basic parser for compatibility
+    echo "Running basic analysis..."
     python3 "$results_dir/parse_results.py" "$results_dir"
 }
 
@@ -428,8 +467,8 @@ mkdir -p "$RESULTS_DIR"
 # Save test configuration
 cat > "$RESULTS_DIR/test_config.txt" << EOF
 Date: $(date)
-Test Mode: $(if [ "$QUICK_MODE" = true ]; then echo "Quick Validation"; else echo "Comprehensive Benchmark"; fi)
-Sample Size: $(if [ "$QUICK_MODE" = true ]; then echo "1 warmup, 2 measurement, 1 fork"; else echo "3 warmup, 5 measurement, 2 forks"; fi)
+Test Mode: $(if [ "$QUICK_MODE" = true ]; then echo "Quick Validation"; elif [ "$HARDCORE_MODE" = true ]; then echo "Hardcore Stress Testing"; elif [ "$ENDURANCE_MODE" = true ]; then echo "Endurance Testing"; elif [ "$ALL_MODE" = true ]; then echo "All Benchmark Suites"; else echo "Standard Benchmark"; fi)
+Sample Size: $(if [ "$QUICK_MODE" = true ]; then echo "1 warmup, 2 measurement, 1 fork"; elif [ "$HARDCORE_MODE" = true ]; then echo "5 warmup, 10 measurement, 3 forks"; elif [ "$ENDURANCE_MODE" = true ]; then echo "3 warmup, 5 measurement, 2 forks, 120s duration"; elif [ "$ALL_MODE" = true ]; then echo "Mixed configurations"; else echo "3 warmup, 5 measurement, 2 forks"; fi)
 OS: $OS_NAME $OS_VERSION ($ARCH)
 CPU: $CPU_MODEL
 CPU Cores: $CPU_CORES (Physical) / $CPU_THREADS (Logical)
@@ -441,24 +480,48 @@ EOF
 echo "Results will be saved to: $RESULTS_DIR"
 echo
 
-# Run the three key benchmarks
+# Run benchmarks based on mode
 echo "Running benchmarks..."
 echo
 
-# 1. Basic Operations Benchmark
-run_benchmark "basic_operations" "BasicOperationsBenchmark" \
-    "Single-threaded performance for fundamental cache operations (GET, PUT, REMOVE)"
+if [ "$HARDCORE_MODE" = true ]; then
+    # Run hardcore stress tests
+    run_benchmark "hardcore_stress" "HardcoreBenchmark" \
+        "Extreme stress testing with high concurrency, large objects, and memory pressure"
+elif [ "$ENDURANCE_MODE" = true ]; then
+    # Run endurance tests
+    run_benchmark "endurance_tests" "EnduranceBenchmark" \
+        "Long-running tests with sustained load, GC pressure, and memory leak detection"
+elif [ "$ALL_MODE" = true ]; then
+    # Run all benchmark suites
+    run_benchmark "basic_operations" "BasicOperationsBenchmark" \
+        "Single-threaded performance for fundamental cache operations (GET, PUT, REMOVE)"
 
-# 2. Concurrent Operations Benchmark
-run_benchmark "concurrent_operations" "ConcurrentBenchmark" \
-    "Multi-threaded performance under concurrent load scenarios"
+    run_benchmark "concurrent_operations" "ConcurrentBenchmark" \
+        "Multi-threaded performance under concurrent load scenarios"
 
-# 3. Throughput Benchmark
-run_benchmark "throughput" "ThroughputBenchmark" \
-    "Maximum sustained throughput measurements for different thread counts"
+    run_benchmark "throughput" "ThroughputBenchmark" \
+        "Maximum sustained throughput measurements for different thread counts"
 
-# Parse results and generate table
-echo "Generating performance summary table..."
+    run_benchmark "hardcore_stress" "HardcoreBenchmark" \
+        "Extreme stress testing with high concurrency, large objects, and memory pressure"
+
+    run_benchmark "endurance_tests" "EnduranceBenchmark" \
+        "Long-running tests with sustained load, GC pressure, and memory leak detection"
+else
+    # Run standard benchmarks (default)
+    run_benchmark "basic_operations" "BasicOperationsBenchmark" \
+        "Single-threaded performance for fundamental cache operations (GET, PUT, REMOVE)"
+
+    run_benchmark "concurrent_operations" "ConcurrentBenchmark" \
+        "Multi-threaded performance under concurrent load scenarios"
+
+    run_benchmark "throughput" "ThroughputBenchmark" \
+        "Maximum sustained throughput measurements for different thread counts"
+fi
+
+# Parse results and generate comprehensive table
+echo "Generating comprehensive performance analysis..."
 parse_results "$RESULTS_DIR"
 
 # Generate summary report
@@ -467,8 +530,8 @@ cat > "$RESULTS_DIR/benchmark_summary.md" << EOF
 
 ## Test Configuration
 - **Date:** $(date)
-- **Test Mode:** $(if [ "$QUICK_MODE" = true ]; then echo "Quick Validation"; else echo "Comprehensive Benchmark"; fi)
-- **Sample Size:** $(if [ "$QUICK_MODE" = true ]; then echo "1 warmup, 2 measurement, 1 fork"; else echo "3 warmup, 5 measurement, 2 forks"; fi)
+- **Test Mode:** $(if [ "$QUICK_MODE" = true ]; then echo "Quick Validation"; elif [ "$HARDCORE_MODE" = true ]; then echo "Hardcore Stress Testing"; elif [ "$ENDURANCE_MODE" = true ]; then echo "Endurance Testing"; elif [ "$ALL_MODE" = true ]; then echo "All Benchmark Suites"; else echo "Standard Benchmark"; fi)
+- **Sample Size:** $(if [ "$QUICK_MODE" = true ]; then echo "1 warmup, 2 measurement, 1 fork"; elif [ "$HARDCORE_MODE" = true ]; then echo "5 warmup, 10 measurement, 3 forks"; elif [ "$ENDURANCE_MODE" = true ]; then echo "3 warmup, 5 measurement, 2 forks, 120s duration"; elif [ "$ALL_MODE" = true ]; then echo "Mixed configurations"; else echo "3 warmup, 5 measurement, 2 forks"; fi)
 
 ## Hardware Information
 - **OS:** $OS_NAME $OS_VERSION ($ARCH)

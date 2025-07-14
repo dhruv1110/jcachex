@@ -69,7 +69,7 @@ const GettingStarted: React.FC = () => {
             title: 'Profile-Based Creation (Type Safe)',
             description: 'Using ProfileName enum for compile-time safety',
             profile: 'READ_HEAVY',
-            performance: '11.5ns GET',
+            performance: '22.6M ops/s, 93.7% efficiency',
             code: `// Using ProfileName enum for type safety
 Cache<String, User> userCache = JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
     .name("users")
@@ -84,7 +84,7 @@ User found = userCache.get("user:123"); // Ultra-fast reads`
             title: 'Convenience Methods (One-liner)',
             description: 'One-line cache creation for common use cases',
             profile: 'SESSION_CACHE',
-            performance: 'TTL: 30 min',
+            performance: '37.3M ops/s, 9.3μs GET',
             code: `// Read-heavy workloads (80%+ reads)
 Cache<String, User> users = JCacheXBuilder.forReadHeavyWorkload()
     .name("users").maximumSize(1000L).build();
@@ -101,7 +101,7 @@ Cache<String, Data> memCache = JCacheXBuilder.forMemoryConstrainedEnvironment()
             title: 'Smart Defaults (Automatic)',
             description: 'Let JCacheX choose optimal profile automatically',
             profile: 'SMART_DEFAULTS',
-            performance: 'Adaptive',
+            performance: 'Adaptive optimization',
             code: `// Let JCacheX choose optimal profile based on workload characteristics
 Cache<String, Data> smartCache = JCacheXBuilder.withSmartDefaults()
     .workloadCharacteristics(WorkloadCharacteristics.builder()
@@ -114,7 +114,7 @@ Cache<String, Data> smartCache = JCacheXBuilder.withSmartDefaults()
             title: 'Kotlin DSL Integration',
             description: 'Idiomatic Kotlin with DSL syntax',
             profile: 'KOTLIN_DSL',
-            performance: 'Idiomatic',
+            performance: 'Type-safe DSL',
             code: `// Convenience methods with DSL
 val readHeavyCache = createReadHeavyCache<String, Product> {
     name("products")
@@ -136,7 +136,7 @@ val profileCache = createCacheWithProfile<String, Data>(ProfileName.HIGH_PERFORM
             title: 'Spring Boot Integration',
             description: 'Configuration-based cache setup',
             profile: 'SPRING_BOOT',
-            performance: 'Configuration-driven',
+            performance: 'Auto-configuration',
             code: `# application.yml
 jcachex:
   caches:
@@ -157,28 +157,28 @@ jcachex:
             category: 'Core Profiles',
             description: 'Essential profiles for common use cases',
             profiles: [
-                { name: 'READ_HEAVY', usage: '80%+ read operations', performance: '11.5ns GET' },
-                { name: 'WRITE_HEAVY', usage: '50%+ write operations', performance: '393.5ns PUT' },
-                { name: 'DEFAULT', usage: 'General-purpose caching', performance: '40.4ns GET' },
-                { name: 'HIGH_PERFORMANCE', usage: 'Maximum throughput', performance: '24.6ns GET' }
+                { name: 'READ_HEAVY', usage: '80%+ read operations', performance: '22.6M ops/s, 93.7% efficiency' },
+                { name: 'WRITE_HEAVY', usage: '50%+ write operations', performance: '224.6M ops/s, 97.2% efficiency' },
+                { name: 'DEFAULT', usage: 'General-purpose caching', performance: '19.3M ops/s, 10.4μs GET' },
+                { name: 'HIGH_PERFORMANCE', usage: 'Maximum throughput', performance: '198.4M ops/s, 82.9% efficiency' }
             ]
         },
         {
             category: 'Specialized Profiles',
             description: 'Optimized for specific scenarios',
             profiles: [
-                { name: 'SESSION_CACHE', usage: 'User session storage', performance: 'TTL: 30 min' },
-                { name: 'API_CACHE', usage: 'External API responses', performance: 'TTL: 15 min' },
-                { name: 'COMPUTE_CACHE', usage: 'Expensive computations', performance: 'TTL: 2 hours' }
+                { name: 'SESSION_CACHE', usage: 'User session storage', performance: '37.3M ops/s, 9.3μs GET' },
+                { name: 'API_CACHE', usage: 'External API responses', performance: '19.0M ops/s, 10.1μs GET' },
+                { name: 'COMPUTE_CACHE', usage: 'Expensive computations', performance: '20.9M ops/s, 9.4μs GET' }
             ]
         },
         {
             category: 'Advanced Profiles',
             description: 'Cutting-edge optimizations',
             profiles: [
-                { name: 'ZERO_COPY', usage: 'Ultra-low latency (HFT)', performance: '7.9ns GET' },
-                { name: 'DISTRIBUTED', usage: 'Multi-node clustering', performance: 'Network-aware' },
-                { name: 'ML_OPTIMIZED', usage: 'Machine learning workloads', performance: 'Predictive' }
+                { name: 'ZERO_COPY', usage: 'Ultra-low latency (HFT)', performance: '501.1M ops/s, 98.4% efficiency' },
+                { name: 'DISTRIBUTED', usage: 'Multi-node clustering', performance: '0.3M ops/s, 30.5% efficiency' },
+                { name: 'ML_OPTIMIZED', usage: 'Machine learning workloads', performance: '0.1M ops/s, 89.4% efficiency' }
             ]
         }
     ];

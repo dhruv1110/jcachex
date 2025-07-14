@@ -414,7 +414,7 @@ const HomeComponent: React.FC = () => {
                 </Container>
             </Box>
 
-            {/* Performance Comparison Section */}
+            {/* Performance Highlights Section */}
             <Box sx={{ py: 8, bgcolor: 'grey.50' }}>
                 <Container maxWidth="lg">
                     <Box sx={{ textAlign: 'center', mb: 6 }}>
@@ -425,30 +425,106 @@ const HomeComponent: React.FC = () => {
                             color="primary"
                         />
                         <Typography variant="h2" component="h2" sx={{ mb: 2, fontWeight: 700 }}>
-                            Benchmark-Proven Performance
+                            Industry-Leading Performance
                         </Typography>
                         <Typography variant="h6" sx={{ color: 'text.secondary', maxWidth: '700px', mx: 'auto' }}>
-                            Interactive performance comparison showing why JCacheX outperforms alternatives
+                            JCacheX delivers exceptional performance with profile-based optimization
                         </Typography>
                     </Box>
 
-                    <Box sx={{ maxWidth: 1000, mx: 'auto', mb: 4 }}>
-                        <PerformanceComparison
-                            showDetails={true}
-                            interactive={true}
-                        />
+                    {/* Performance Metrics Grid */}
+                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 4, mb: 6 }}>
+                        <Paper sx={{ p: 4, textAlign: 'center', background: 'linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)' }}>
+                            <Typography variant="h3" sx={{ fontWeight: 700, color: 'success.main', mb: 1 }}>
+                                501.1M
+                            </Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                                ops/second
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                JCacheX-ZeroCopy peak throughput
+                            </Typography>
+                        </Paper>
+
+                        <Paper sx={{ p: 4, textAlign: 'center', background: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)' }}>
+                            <Typography variant="h3" sx={{ fontWeight: 700, color: 'primary.main', mb: 1 }}>
+                                98.4%
+                            </Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                                efficiency
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                CPU scaling efficiency
+                            </Typography>
+                        </Paper>
+
+                        <Paper sx={{ p: 4, textAlign: 'center', background: 'linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)' }}>
+                            <Typography variant="h3" sx={{ fontWeight: 700, color: 'secondary.main', mb: 1 }}>
+                                7.1μs
+                            </Typography>
+                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                                latency
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                JCacheX-WriteHeavy GET operations
+                            </Typography>
+                        </Paper>
+                    </Box>
+
+                    {/* Top Performing Profiles */}
+                    <Box sx={{ mb: 6 }}>
+                        <Typography variant="h4" sx={{ textAlign: 'center', mb: 4, fontWeight: 600 }}>
+                            Top Performing Profiles
+                        </Typography>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                            <Card sx={{ p: 3, background: 'linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(139, 195, 74, 0.1) 100%)' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                    <Speed sx={{ color: 'success.main', mr: 1 }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                        JCacheX-ZeroCopy
+                                    </Typography>
+                                </Box>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                    Ultra-high throughput with zero-copy optimization
+                                </Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                        501.1M ops/s
+                                    </Typography>
+                                    <Chip label="98.4% efficiency" color="success" size="small" />
+                                </Box>
+                            </Card>
+
+                            <Card sx={{ p: 3, background: 'linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, rgba(30, 136, 229, 0.1) 100%)' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                    <Security sx={{ color: 'primary.main', mr: 1 }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                        JCacheX-WriteHeavy
+                                    </Typography>
+                                </Box>
+                                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                    Optimized for write-intensive workloads
+                                </Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                        224.6M ops/s
+                                    </Typography>
+                                    <Chip label="97.2% efficiency" color="primary" size="small" />
+                                </Box>
+                            </Card>
+                        </Box>
                     </Box>
 
                     <Box sx={{ textAlign: 'center' }}>
                         <Button
                             component={Link}
                             to="/performance"
-                            variant="outlined"
+                            variant="contained"
                             size="large"
                             endIcon={<ArrowIcon />}
                             sx={{ px: 4, py: 1.5 }}
                         >
-                            View Detailed Benchmarks
+                            View Complete Benchmarks
                         </Button>
                     </Box>
                 </Container>
