@@ -68,6 +68,164 @@ public class ThroughputBenchmark extends BaseBenchmark {
         bh.consume(idx);
     }
 
+    // ===============================
+    // JCacheX Other Profiles - Single-threaded throughput
+    // ===============================
+
+    @Benchmark
+    @Threads(1)
+    public String jcacheXReadHeavyGetThroughput(ThreadState state) {
+        return jcacheXReadHeavy.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void jcacheXReadHeavyPutThroughput(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXReadHeavy.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(1)
+    public String jcacheXWriteHeavyGetThroughput(ThreadState state) {
+        return jcacheXWriteHeavy.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void jcacheXWriteHeavyPutThroughput(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXWriteHeavy.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(1)
+    public String jcacheXMemoryEfficientGetThroughput(ThreadState state) {
+        return jcacheXMemoryEfficient.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void jcacheXMemoryEfficientPutThroughput(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXMemoryEfficient.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(1)
+    public String jcacheXHighPerformanceGetThroughput(ThreadState state) {
+        return jcacheXHighPerformance.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void jcacheXHighPerformancePutThroughput(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXHighPerformance.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(1)
+    public String jcacheXSessionCacheGetThroughput(ThreadState state) {
+        return jcacheXSessionCache.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void jcacheXSessionCachePutThroughput(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXSessionCache.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(1)
+    public String jcacheXApiCacheGetThroughput(ThreadState state) {
+        return jcacheXApiCache.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void jcacheXApiCachePutThroughput(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXApiCache.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(1)
+    public String jcacheXComputeCacheGetThroughput(ThreadState state) {
+        return jcacheXComputeCache.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void jcacheXComputeCachePutThroughput(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXComputeCache.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(1)
+    public String jcacheXMlOptimizedGetThroughput(ThreadState state) {
+        return jcacheXMlOptimized.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void jcacheXMlOptimizedPutThroughput(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXMlOptimized.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(1)
+    public String jcacheXZeroCopyGetThroughput(ThreadState state) {
+        return jcacheXZeroCopy.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void jcacheXZeroCopyPutThroughput(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXZeroCopy.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(1)
+    public String jcacheXHardwareOptimizedGetThroughput(ThreadState state) {
+        return jcacheXHardwareOptimized.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void jcacheXHardwareOptimizedPutThroughput(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXHardwareOptimized.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(1)
+    public String jcacheXDistributedGetThroughput(ThreadState state) {
+        return jcacheXDistributed.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(1)
+    public void jcacheXDistributedPutThroughput(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXDistributed.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
     @Benchmark
     @Threads(1)
     public String caffeineGetThroughput(ThreadState state) {
@@ -139,6 +297,164 @@ public class ThroughputBenchmark extends BaseBenchmark {
     public void jcacheXDefaultPutThroughput4T(ThreadState state, Blackhole bh) {
         int idx = state.nextIndex();
         jcacheXDefault.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    // ===============================
+    // JCacheX Other Profiles - Multi-threaded throughput (4 threads)
+    // ===============================
+
+    @Benchmark
+    @Threads(4)
+    public String jcacheXReadHeavyGetThroughput4T(ThreadState state) {
+        return jcacheXReadHeavy.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void jcacheXReadHeavyPutThroughput4T(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXReadHeavy.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public String jcacheXWriteHeavyGetThroughput4T(ThreadState state) {
+        return jcacheXWriteHeavy.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void jcacheXWriteHeavyPutThroughput4T(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXWriteHeavy.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public String jcacheXMemoryEfficientGetThroughput4T(ThreadState state) {
+        return jcacheXMemoryEfficient.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void jcacheXMemoryEfficientPutThroughput4T(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXMemoryEfficient.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public String jcacheXHighPerformanceGetThroughput4T(ThreadState state) {
+        return jcacheXHighPerformance.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void jcacheXHighPerformancePutThroughput4T(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXHighPerformance.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public String jcacheXSessionCacheGetThroughput4T(ThreadState state) {
+        return jcacheXSessionCache.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void jcacheXSessionCachePutThroughput4T(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXSessionCache.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public String jcacheXApiCacheGetThroughput4T(ThreadState state) {
+        return jcacheXApiCache.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void jcacheXApiCachePutThroughput4T(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXApiCache.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public String jcacheXComputeCacheGetThroughput4T(ThreadState state) {
+        return jcacheXComputeCache.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void jcacheXComputeCachePutThroughput4T(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXComputeCache.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public String jcacheXMlOptimizedGetThroughput4T(ThreadState state) {
+        return jcacheXMlOptimized.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void jcacheXMlOptimizedPutThroughput4T(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXMlOptimized.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public String jcacheXZeroCopyGetThroughput4T(ThreadState state) {
+        return jcacheXZeroCopy.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void jcacheXZeroCopyPutThroughput4T(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXZeroCopy.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public String jcacheXHardwareOptimizedGetThroughput4T(ThreadState state) {
+        return jcacheXHardwareOptimized.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void jcacheXHardwareOptimizedPutThroughput4T(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXHardwareOptimized.put(getRandomKey(idx), getRandomValue(idx));
+        bh.consume(idx);
+    }
+
+    @Benchmark
+    @Threads(4)
+    public String jcacheXDistributedGetThroughput4T(ThreadState state) {
+        return jcacheXDistributed.get(getRandomKey(state.randomIndex()));
+    }
+
+    @Benchmark
+    @Threads(4)
+    public void jcacheXDistributedPutThroughput4T(ThreadState state, Blackhole bh) {
+        int idx = state.nextIndex();
+        jcacheXDistributed.put(getRandomKey(idx), getRandomValue(idx));
         bh.consume(idx);
     }
 
