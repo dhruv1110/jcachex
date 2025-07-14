@@ -43,11 +43,14 @@ jmh {
         listOf("avgt", "thrpt") // Average time and throughput
     jvmArgs =
         listOf(
-            "-Xms2g",
-            "-Xmx4g",
-            "-XX:+UseG1GC",
+            "-Xms16g",
+            "-Xmx16g",
+            "-XX:MaxDirectMemorySize=64g",
+            "-XX:+UseParallelGC",
             "-XX:+UnlockExperimentalVMOptions",
-            "-XX:+UseStringDeduplication",
+            "-XX:+UseCompressedOops",
+            "-XX:+DisableExplicitGC",
+            "-XX:+AlwaysPreTouch"
         )
 }
 

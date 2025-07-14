@@ -55,9 +55,9 @@ public final class ZeroCopyOptimizedCache<K, V> implements Cache<K, V> {
     private final DirectSerializer<V> serializer;
 
     // Configuration
-    private static final int DIRECT_BUFFER_SIZE = 1024 * 1024; // 1MB
-    private static final int BUFFER_POOL_SIZE = 16;
-    private static final int MAPPED_REGION_SIZE = 64 * 1024 * 1024; // 64MB
+    private static final int DIRECT_BUFFER_SIZE = 4 * 1024; // 4KB (reasonable for typical cache entries)
+    private static final int BUFFER_POOL_SIZE = 1024; // Larger pool to reduce allocation
+    private static final int MAPPED_REGION_SIZE = 16 * 1024 * 1024; // 16MB (reduced from 64MB)
 
     public ZeroCopyOptimizedCache(CacheConfig<K, V> config) {
         this.maximumSize = config.getMaximumSize();

@@ -4,31 +4,12 @@ import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 
 import java.util.concurrent.ThreadLocalRandom;
-import java.time.Duration;
 
 /**
  * Benchmark for basic cache operations: get, put, remove operations.
  * Tests all 12 JCacheX cache profiles against industry-leading implementations.
  */
 public class BasicOperationsBenchmark extends BaseBenchmark {
-
-    @State(Scope.Thread)
-    public static class ThreadState {
-        int index = 0;
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-
-        public int nextIndex() {
-            return index++ % OPERATIONS_COUNT;
-        }
-
-        public int randomIndex() {
-            return random.nextInt(OPERATIONS_COUNT);
-        }
-    }
-
-    // ===============================
-    // PUT operations benchmarks - All 12 JCacheX Profiles
-    // ===============================
 
     // Core Profiles (5)
     @Benchmark
@@ -37,6 +18,10 @@ public class BasicOperationsBenchmark extends BaseBenchmark {
         jcacheXDefault.put(getSequentialKey(idx), getSequentialValue(idx));
         bh.consume(idx);
     }
+
+    // ===============================
+    // PUT operations benchmarks - All 12 JCacheX Profiles
+    // ===============================
 
     @Benchmark
     public void jcacheXReadHeavyPut(ThreadState state, Blackhole bh) {
@@ -155,14 +140,12 @@ public class BasicOperationsBenchmark extends BaseBenchmark {
         bh.consume(idx);
     }
 
-    // ===============================
-    // GET operations benchmarks - All 12 JCacheX Profiles
-    // ===============================
-
     @Setup(Level.Invocation)
     public void setupGet() {
-        // Pre-populate all caches for GET benchmarks
-        for (int i = 0; i < OPERATIONS_COUNT; i++) {
+        // Pre-populate caches with WARMUP_SET_SIZE entries (50% of cache capacity)
+        // This creates realistic scenarios where caches are partially full
+        // and will need to evict during benchmarking
+        for (int i = 0; i < WARMUP_SET_SIZE; i++) {
             String key = getSequentialKey(i);
             String value = getSequentialValue(i);
 
@@ -194,6 +177,10 @@ public class BasicOperationsBenchmark extends BaseBenchmark {
             concurrentMap.put(key, value);
         }
     }
+
+    // ===============================
+    // GET operations benchmarks - All 12 JCacheX Profiles
+    // ===============================
 
     // Core Profiles GET benchmarks (5)
     @Benchmark
@@ -287,15 +274,15 @@ public class BasicOperationsBenchmark extends BaseBenchmark {
         return concurrentMap.get(getRandomKey(state.randomIndex()));
     }
 
-    // ===============================
-    // REMOVE operations benchmarks - All 12 JCacheX Profiles
-    // ===============================
-
     // Core Profiles REMOVE benchmarks (5)
     @Benchmark
     public String jcacheXDefaultRemove(ThreadState state) {
         return jcacheXDefault.remove(getRandomKey(state.randomIndex()));
     }
+
+    // ===============================
+    // REMOVE operations benchmarks - All 12 JCacheX Profiles
+    // ===============================
 
     @Benchmark
     public String jcacheXReadHeavyRemove(ThreadState state) {
@@ -391,10 +378,6 @@ public class BasicOperationsBenchmark extends BaseBenchmark {
         return concurrentMap.remove(getRandomKey(state.randomIndex()));
     }
 
-    // ===============================
-    // Mixed workload benchmarks (80% read, 20% write) - All 12 JCacheX Profiles
-    // ===============================
-
     // Core Profiles Mixed benchmarks (5)
     @Benchmark
     public void jcacheXDefaultMixed(ThreadState state, Blackhole bh) {
@@ -409,6 +392,10 @@ public class BasicOperationsBenchmark extends BaseBenchmark {
             bh.consume(idx);
         }
     }
+
+    // ===============================
+    // Mixed workload benchmarks (80% read, 20% write) - All 12 JCacheX Profiles
+    // ===============================
 
     @Benchmark
     public void jcacheXReadHeavyMixed(ThreadState state, Blackhole bh) {
@@ -592,6 +579,20 @@ public class BasicOperationsBenchmark extends BaseBenchmark {
         } else {
             concurrentMap.put(getSequentialKey(idx), getSequentialValue(idx));
             bh.consume(idx);
+        }
+    }
+
+    @State(Scope.Thread)
+    public static class ThreadState {
+        int index = 0;
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+
+        public int nextIndex() {
+            return index++ % OPERATIONS_COUNT;
+        }
+
+        public int randomIndex() {
+            return random.nextInt(OPERATIONS_COUNT);
         }
     }
 }

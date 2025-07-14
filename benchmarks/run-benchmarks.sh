@@ -99,7 +99,7 @@ collect_hardware_info() {
     echo "CPU Cores: $CPU_CORES (Physical) / $CPU_THREADS (Logical)"
     echo "Memory: ${MEMORY_GB}GB"
     echo "Java: $JAVA_VERSION ($JAVA_VENDOR)"
-    echo "JVM Args: -Xms2g -Xmx4g -XX:+UseG1GC"
+    echo "JVM Args: -Xms16g -Xmx16g -XX:MaxDirectMemorySize=64g -XX:+UseParallelGC -XX:+UnlockExperimentalVMOptions"
     echo
 }
 
@@ -130,7 +130,7 @@ run_benchmark() {
         -wi $WARMUP_ITERATIONS -i $MEASUREMENT_ITERATIONS -f $FORKS \
         -w ${BENCHMARK_TIME}s -r ${BENCHMARK_TIME}s \
         -tu ns -rf json -rff "$RESULTS_DIR/${benchmark_name}_results.json" \
-        -jvmArgs "-Xms2g -Xmx4g -XX:+UseG1GC" \
+        -jvmArgs "-Xms16g -Xmx16g -XX:MaxDirectMemorySize=64g -XX:+UseParallelGC -XX:+UnlockExperimentalVMOptions -XX:+UseCompressedOops -XX:+DisableExplicitGC -XX:+AlwaysPreTouch" \
         2>&1 | tee "$RESULTS_DIR/${benchmark_name}_results.txt"
 
     if [ $? -eq 0 ]; then
@@ -214,28 +214,29 @@ def parse_jmh_results(results_dir):
                         cache_impl = "JCacheX-HardwareOptimized"
                     elif 'jcacheXDistributed' in parts:
                         cache_impl = "JCacheX-Distributed"
-                    elif 'caffeine' in parts:
+                    elif 'caffeine' in parts.lower():
                         cache_impl = "Caffeine"
-                    elif 'ehcache' in parts:
+                    elif 'ehcache' in parts.lower():
                         cache_impl = "EhCache"
-                    elif 'cache2k' in parts:
+                    elif 'cache2k' in parts.lower():
                         cache_impl = "Cache2k"
                     elif 'concurrentMap' in parts:
                         cache_impl = "ConcurrentHashMap"
 
-                    # Determine operation type
+                    # Determine operation type (improved pattern matching)
                     operation = "Unknown"
-                    if 'Get' in parts or 'get' in parts:
-                        if 'Throughput' in parts:
+                    parts_lower = parts.lower()
+                    if 'get' in parts_lower:
+                        if 'throughput' in parts_lower:
                             operation = "GET_THROUGHPUT"
                         else:
                             operation = "GET_LATENCY"
-                    elif 'Put' in parts or 'put' in parts:
-                        if 'Throughput' in parts:
+                    elif 'put' in parts_lower:
+                        if 'throughput' in parts_lower:
                             operation = "PUT_THROUGHPUT"
                         else:
                             operation = "PUT_LATENCY"
-                    elif 'Mixed' in parts or 'mixed' in parts:
+                    elif 'mixed' in parts_lower:
                         operation = "MIXED_THROUGHPUT"
 
                     # Store result
@@ -434,7 +435,7 @@ CPU: $CPU_MODEL
 CPU Cores: $CPU_CORES (Physical) / $CPU_THREADS (Logical)
 - **Memory:** ${MEMORY_GB}GB
 - **Java:** $JAVA_VERSION ($JAVA_VENDOR)
-JVM Args: -Xms2g -Xmx4g -XX:+UseG1GC
+JVM Args: -Xms16g -Xmx16g -XX:MaxDirectMemorySize=64g -XX:+UseParallelGC -XX:+UnlockExperimentalVMOptions -XX:+UseCompressedOops -XX:+DisableExplicitGC -XX:+AlwaysPreTouch
 EOF
 
 echo "Results will be saved to: $RESULTS_DIR"

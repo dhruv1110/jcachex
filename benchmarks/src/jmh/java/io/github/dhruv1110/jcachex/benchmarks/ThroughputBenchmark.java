@@ -17,24 +17,13 @@ import java.util.concurrent.TimeUnit;
 @Fork(2)
 public class ThroughputBenchmark extends BaseBenchmark {
 
-    @State(Scope.Thread)
-    public static class ThreadState {
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        int counter = 0;
-
-        public int nextIndex() {
-            return counter++ % OPERATIONS_COUNT;
-        }
-
-        public int randomIndex() {
-            return random.nextInt(OPERATIONS_COUNT);
-        }
-    }
-
     @Setup(Level.Iteration)
     public void setupIteration() {
-        // Pre-populate caches for read operations
-        for (int i = 0; i < OPERATIONS_COUNT; i++) {
+        // Pre-populate caches with WARMUP_SET_SIZE entries (realistic production
+        // scenario)
+        // Working set is larger than cache capacity, forcing evictions during
+        // benchmarks
+        for (int i = 0; i < WARMUP_SET_SIZE; i++) {
             String key = getSequentialKey(i);
             String value = getSequentialValue(i);
 
@@ -61,15 +50,15 @@ public class ThroughputBenchmark extends BaseBenchmark {
         }
     }
 
-    // ===============================
-    // Single-threaded throughput
-    // ===============================
-
     @Benchmark
     @Threads(1)
     public String jcacheXDefaultGetThroughput(ThreadState state) {
         return jcacheXDefault.get(getRandomKey(state.randomIndex()));
     }
+
+    // ===============================
+    // Single-threaded throughput
+    // ===============================
 
     @Benchmark
     @Threads(1)
@@ -135,15 +124,15 @@ public class ThroughputBenchmark extends BaseBenchmark {
         bh.consume(idx);
     }
 
-    // ===============================
-    // Multi-threaded throughput (4 threads)
-    // ===============================
-
     @Benchmark
     @Threads(4)
     public String jcacheXDefaultGetThroughput4T(ThreadState state) {
         return jcacheXDefault.get(getRandomKey(state.randomIndex()));
     }
+
+    // ===============================
+    // Multi-threaded throughput (4 threads)
+    // ===============================
 
     @Benchmark
     @Threads(4)
@@ -209,10 +198,6 @@ public class ThroughputBenchmark extends BaseBenchmark {
         bh.consume(idx);
     }
 
-    // ===============================
-    // Realistic mixed workload throughput
-    // ===============================
-
     @Benchmark
     @Threads(1)
     public void jcacheXMixedThroughput(ThreadState state, Blackhole bh) {
@@ -226,6 +211,10 @@ public class ThroughputBenchmark extends BaseBenchmark {
             jcacheXDefault.put(getRandomKey(idx), getRandomValue(idx));
         }
     }
+
+    // ===============================
+    // Realistic mixed workload throughput
+    // ===============================
 
     @Benchmark
     @Threads(1)
@@ -283,10 +272,6 @@ public class ThroughputBenchmark extends BaseBenchmark {
         }
     }
 
-    // ===============================
-    // Multi-threaded mixed workload
-    // ===============================
-
     @Benchmark
     @Threads(4)
     public void jcacheXMixedThroughput4T(ThreadState state, Blackhole bh) {
@@ -300,6 +285,10 @@ public class ThroughputBenchmark extends BaseBenchmark {
             jcacheXDefault.put(getRandomKey(idx), getRandomValue(idx));
         }
     }
+
+    // ===============================
+    // Multi-threaded mixed workload
+    // ===============================
 
     @Benchmark
     @Threads(4)
@@ -354,6 +343,20 @@ public class ThroughputBenchmark extends BaseBenchmark {
             bh.consume(value);
         } else {
             concurrentMap.put(getRandomKey(idx), getRandomValue(idx));
+        }
+    }
+
+    @State(Scope.Thread)
+    public static class ThreadState {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        int counter = 0;
+
+        public int nextIndex() {
+            return counter++ % OPERATIONS_COUNT;
+        }
+
+        public int randomIndex() {
+            return random.nextInt(OPERATIONS_COUNT);
         }
     }
 }

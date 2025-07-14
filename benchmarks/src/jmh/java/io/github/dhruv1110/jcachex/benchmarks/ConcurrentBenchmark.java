@@ -17,26 +17,14 @@ import java.util.concurrent.TimeUnit;
 @Threads(Threads.MAX) // Use all available threads
 public class ConcurrentBenchmark extends BaseBenchmark {
 
-    @State(Scope.Thread)
-    public static class ThreadState {
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        int baseIndex;
-
-        @Setup(Level.Trial)
-        public void setup() {
-            // Each thread gets a different base index to reduce key collisions
-            baseIndex = random.nextInt(1000) * 1000;
-        }
-
-        public int getIndex() {
-            return baseIndex + random.nextInt(OPERATIONS_COUNT);
-        }
-    }
+    private static final String HOT_KEY = "hotkey";
 
     @Setup(Level.Iteration)
     public void setupIteration() {
-        // Pre-populate caches for concurrent access
-        for (int i = 0; i < OPERATIONS_COUNT; i++) {
+        // Pre-populate caches with WARMUP_SET_SIZE for realistic concurrent scenarios
+        // Cache capacity will be exceeded during concurrent operations, testing
+        // eviction performance
+        for (int i = 0; i < WARMUP_SET_SIZE; i++) {
             String key = getSequentialKey(i);
             String value = getSequentialValue(i);
 
@@ -235,8 +223,6 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     // High contention scenarios (same key accessed by multiple threads)
     // ===============================
 
-    private static final String HOT_KEY = "hotkey";
-
     @Benchmark
     public String jcacheXHighContention(ThreadState state) {
         // 80% chance to access the hot key, 20% random key
@@ -266,5 +252,21 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     public String concurrentMapHighContention(ThreadState state) {
         String key = state.random.nextInt(100) < 80 ? HOT_KEY : getRandomKey(state.getIndex());
         return concurrentMap.get(key);
+    }
+
+    @State(Scope.Thread)
+    public static class ThreadState {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        int baseIndex;
+
+        @Setup(Level.Trial)
+        public void setup() {
+            // Each thread gets a different base index to reduce key collisions
+            baseIndex = random.nextInt(1000) * 1000;
+        }
+
+        public int getIndex() {
+            return baseIndex + random.nextInt(OPERATIONS_COUNT);
+        }
     }
 }
