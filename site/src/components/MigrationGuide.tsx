@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useVersion } from '../hooks';
 import {
     Box,
     Container,
@@ -43,6 +44,7 @@ const MigrationGuide: React.FC<MigrationGuideProps> = ({
     showBenefits = true,
     interactive = true
 }) => {
+    const { version } = useVersion();
     const [activeStep, setActiveStep] = useState(0);
     const [selectedMigration, setSelectedMigration] = useState<'caffeine' | 'redis'>('caffeine');
 
@@ -108,7 +110,7 @@ const MigrationGuide: React.FC<MigrationGuideProps> = ({
                                 {`<dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-core</artifactId>
-    <version>1.0.0</version>
+    <version>${version}</version>
 </dependency>`}
                             </Typography>
                         </Paper>
@@ -282,14 +284,14 @@ Cache<String, User> simpleCache = JCacheXBuilder
                         <Paper sx={{ p: 2, bgcolor: 'grey.50', mb: 2 }}>
                             <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                                 {`// Gradle
-implementation 'io.github.dhruv1110:jcachex-core:1.0.18'
-implementation 'io.github.dhruv1110:jcachex-spring:1.0.18'
+implementation 'io.github.dhruv1110:jcachex-core:${version}'
+implementation 'io.github.dhruv1110:jcachex-spring:${version}'
 
 // Maven
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-core</artifactId>
-    <version>1.0.18</version>
+    <version>${version}</version>
 </dependency>`}
                             </Typography>
                         </Paper>

@@ -22,6 +22,7 @@ import {
     Paper,
     Grid,
 } from '@mui/material';
+import { useVersion } from '../hooks';
 import {
     CloudDownload as CloudDownloadIcon,
     Build as BuildIcon,
@@ -46,6 +47,7 @@ import { Breadcrumbs } from './SEO';
 const GettingStarted: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const { version } = useVersion();
     const [activeTab, setActiveTab] = useState('installation');
     const [selectedProfile, setSelectedProfile] = useState('READ_HEAVY');
     const [codeExample, setCodeExample] = useState('');
@@ -66,21 +68,21 @@ const GettingStarted: React.FC = () => {
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-core</artifactId>
-    <version>1.0.18</version>
+    <version>${version}</version>
 </dependency>
 
 <!-- For Spring Boot integration -->
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-spring</artifactId>
-    <version>1.0.18</version>
+    <version>${version}</version>
 </dependency>
 
 <!-- For Kotlin DSL -->
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-kotlin</artifactId>
-    <version>1.0.18</version>
+    <version>${version}</version>
 </dependency>`
         },
         {
@@ -88,22 +90,22 @@ const GettingStarted: React.FC = () => {
             label: 'Gradle',
             language: 'groovy',
             code: `// JCacheX Core
-implementation 'io.github.dhruv1110:jcachex-core:1.0.18'
+implementation 'io.github.dhruv1110:jcachex-core:${version}'
 
 // For Spring Boot integration
-implementation 'io.github.dhruv1110:jcachex-spring:1.0.18'
+implementation 'io.github.dhruv1110:jcachex-spring:${version}'
 
 // For Kotlin DSL
-implementation 'io.github.dhruv1110:jcachex-kotlin:1.0.18'`
+implementation 'io.github.dhruv1110:jcachex-kotlin:${version}'`
         },
         {
             id: 'sbt',
             label: 'SBT',
             language: 'scala',
             code: `libraryDependencies ++= Seq(
-  "io.github.dhruv1110" % "jcachex-core" % "1.0.18",
-  "io.github.dhruv1110" % "jcachex-spring" % "1.0.18",
-  "io.github.dhruv1110" % "jcachex-kotlin" % "1.0.18"
+  "io.github.dhruv1110" % "jcachex-core" % "${version}",
+  "io.github.dhruv1110" % "jcachex-spring" % "${version}",
+  "io.github.dhruv1110" % "jcachex-kotlin" % "${version}"
 )`
         },
         {
@@ -111,9 +113,9 @@ implementation 'io.github.dhruv1110:jcachex-kotlin:1.0.18'`
             label: 'Kotlin DSL',
             language: 'kotlin',
             code: `dependencies {
-    implementation("io.github.dhruv1110:jcachex-core:1.0.18")
-    implementation("io.github.dhruv1110:jcachex-spring:1.0.18")
-    implementation("io.github.dhruv1110:jcachex-kotlin:1.0.18")
+    implementation("io.github.dhruv1110:jcachex-core:${version}")
+    implementation("io.github.dhruv1110:jcachex-spring:${version}")
+    implementation("io.github.dhruv1110:jcachex-kotlin:${version}")
 }`
         }
     ];

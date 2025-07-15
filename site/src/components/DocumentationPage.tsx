@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useVersion } from '../hooks';
 import {
     Box,
     Container,
@@ -59,6 +60,7 @@ import Layout from './Layout';
 const DocumentationPage: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const { version } = useVersion();
 
     const platformsData = [
         {
@@ -607,7 +609,7 @@ const DocumentationPage: React.FC = () => {
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-core</artifactId>
-    <version>1.0.18</version>
+    <version>${version}</version>
 </dependency>
 
 // Modern JCacheXBuilder with profiles
@@ -640,7 +642,7 @@ User user = cache.get("user123");  // Ultra-fast retrieval`
                                     label: 'Kotlin',
                                     language: 'kotlin',
                                     code: `// Gradle dependency
-implementation 'io.github.dhruv1110:jcachex-kotlin:1.0.18'
+implementation 'io.github.dhruv1110:jcachex-kotlin:${version}'
 
 // Modern Kotlin DSL with profiles
 import io.github.dhruv1110.jcachex.kotlin.*
@@ -674,7 +676,7 @@ val user = cache["user123"]  // ZeroCopy retrieval`
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-spring-boot-starter</artifactId>
-    <version>1.0.18</version>
+    <version>${version}</version>
 </dependency>
 
 // Auto-configuration with profiles
