@@ -2,24 +2,26 @@ package io.github.dhruv1110.jcachex;
 
 import io.github.dhruv1110.jcachex.impl.*;
 import io.github.dhruv1110.jcachex.profiles.CacheProfile;
+import io.github.dhruv1110.jcachex.profiles.ProfileName;
 import io.github.dhruv1110.jcachex.profiles.ProfileRegistry;
 import io.github.dhruv1110.jcachex.profiles.WorkloadCharacteristics;
 
-import java.util.List;
-
 import java.time.Duration;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
 /**
- * Unified cache builder that simplifies cache creation using profiles and smart
- * defaults.
+ * The unified cache builder for JCacheX that simplifies cache creation using
+ * profiles and smart defaults.
  *
+ * <p>
  * This builder eliminates the complexity of choosing between multiple cache
  * implementations
  * and eviction strategies by providing a profile-based approach that
  * automatically selects
  * the optimal configuration for specific use cases.
+ * </p>
  *
  * <h2>Key Benefits:</h2>
  * <ul>
@@ -38,68 +40,54 @@ import java.util.function.Function;
  * <h2>Usage Examples:</h2>
  *
  * <h3>Profile-Based Creation (Recommended):</h3>
- *
+ * 
  * <pre>{@code
- * // Read-heavy workload (e.g., user profiles)
- * Cache<String, User> userCache = UnifiedCacheBuilder.forProfile(ProfileRegistry.getProfile("READ_HEAVY"))
+ * // Using ProfileName enum for type safety
+ * Cache<String, User> userCache = JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
  *         .name("users")
  *         .maximumSize(1000L)
  *         .build();
  *
- * // API response caching
- * Cache<String, ApiResponse> apiCache = UnifiedCacheBuilder.forProfile(ProfileRegistry.getProfile("API_CACHE"))
- *         .name("api-responses")
- *         .maximumSize(500L)
- *         .expireAfterWrite(Duration.ofMinutes(15))
- *         .build();
- *
- * // Session storage
- * Cache<String, UserSession> sessionCache = UnifiedCacheBuilder.forProfile(ProfileRegistry.getProfile("SESSION_CACHE"))
- *         .name("sessions")
- *         .maximumSize(2000L)
+ * // Using convenience methods
+ * Cache<String, Product> productCache = JCacheXBuilder.forReadHeavyWorkload()
+ *         .name("products")
+ *         .maximumSize(5000L)
+ *         .expireAfterWrite(Duration.ofMinutes(30))
  *         .build();
  * }</pre>
  *
  * <h3>Smart Defaults (When unsure):</h3>
- *
+ * 
  * <pre>{@code
- * // Let the builder choose the best profile based on workload characteristics
- * Cache<String, Product> productCache = UnifiedCacheBuilder.withSmartDefaults()
- *         .name("products")
+ * // Let JCacheX choose the best profile based on workload characteristics
+ * Cache<String, Data> smartCache = JCacheXBuilder.withSmartDefaults()
+ *         .name("adaptive-cache")
  *         .maximumSize(1000L)
  *         .workloadCharacteristics(WorkloadCharacteristics.builder()
  *                 .readToWriteRatio(8.0) // Read-heavy
- *                 .accessPattern(AccessPattern.TEMPORAL_LOCALITY)
+ *                 .accessPattern(WorkloadCharacteristics.AccessPattern.TEMPORAL_LOCALITY)
  *                 .build())
  *         .build();
+ * }</pre>
  *
+ * <h3>Simple Cases:</h3>
+ * 
+ * <pre>{@code
  * // Minimal configuration - uses DEFAULT profile
- * Cache<String, String> simpleCache = UnifiedCacheBuilder.create()
+ * Cache<String, String> simpleCache = JCacheXBuilder.create()
  *         .name("simple")
  *         .maximumSize(100L)
  *         .build();
  * }</pre>
  *
- * <h3>Advanced Configuration:</h3>
- *
- * <pre>{@code
- * // Override profile settings when needed
- * Cache<String, LargeObject> customCache = UnifiedCacheBuilder
- *         .forProfile(ProfileRegistry.getProfile("MEMORY_EFFICIENT"))
- *         .name("large-objects")
- *         .maximumSize(50L)
- *         .expireAfterAccess(Duration.ofMinutes(10))
- *         .loader(key -> loadFromDatabase(key))
- *         .build();
- * }</pre>
- *
  * @param <K> the type of keys maintained by the cache
  * @param <V> the type of mapped values
+ * @see ProfileName
  * @see ProfileRegistry
  * @see WorkloadCharacteristics
  * @since 1.0.0
  */
-public final class UnifiedCacheBuilder<K, V> {
+public final class JCacheXBuilder<K, V> {
 
     private final CacheConfig.Builder<K, V> configBuilder;
     private CacheProfile<K, V> profile;
@@ -107,16 +95,36 @@ public final class UnifiedCacheBuilder<K, V> {
     private WorkloadCharacteristics workloadCharacteristics;
     private boolean useSmartDefaults;
 
-    private UnifiedCacheBuilder(CacheProfile<K, V> profile) {
+    private JCacheXBuilder(CacheProfile<K, V> profile) {
         this.configBuilder = CacheConfig.newBuilder();
         this.profile = profile;
         this.useSmartDefaults = false;
     }
 
-    private UnifiedCacheBuilder(boolean useSmartDefaults) {
+    private JCacheXBuilder(boolean useSmartDefaults) {
         this.configBuilder = CacheConfig.newBuilder();
         this.profile = null;
         this.useSmartDefaults = useSmartDefaults;
+    }
+
+    // ===== PROFILE-BASED CREATION METHODS =====
+
+    /**
+     * Creates a new builder with the specified cache profile using ProfileName enum
+     * for type safety.
+     *
+     * @param profileName the profile name enum
+     * @param <K>         the key type
+     * @param <V>         the value type
+     * @return a new builder instance
+     */
+    @SuppressWarnings("unchecked")
+    public static <K, V> JCacheXBuilder<K, V> fromProfile(ProfileName profileName) {
+        CacheProfile<?, ?> profile = ProfileRegistry.getProfile(profileName.getValue());
+        if (profile == null) {
+            throw new IllegalArgumentException("Profile not found: " + profileName.getValue());
+        }
+        return new JCacheXBuilder<>((CacheProfile<K, V>) profile);
     }
 
     /**
@@ -128,8 +136,8 @@ public final class UnifiedCacheBuilder<K, V> {
      * @return a new builder instance
      */
     @SuppressWarnings("unchecked")
-    public static <K, V> UnifiedCacheBuilder<K, V> forProfile(CacheProfile<?, ?> profile) {
-        return new UnifiedCacheBuilder<>((CacheProfile<K, V>) profile);
+    public static <K, V> JCacheXBuilder<K, V> forProfile(CacheProfile<?, ?> profile) {
+        return new JCacheXBuilder<>((CacheProfile<K, V>) profile);
     }
 
     /**
@@ -140,8 +148,8 @@ public final class UnifiedCacheBuilder<K, V> {
      * @param <V> the value type
      * @return a new builder instance
      */
-    public static <K, V> UnifiedCacheBuilder<K, V> withSmartDefaults() {
-        return new UnifiedCacheBuilder<>(true);
+    public static <K, V> JCacheXBuilder<K, V> withSmartDefaults() {
+        return new JCacheXBuilder<>(true);
     }
 
     /**
@@ -151,9 +159,145 @@ public final class UnifiedCacheBuilder<K, V> {
      * @param <V> the value type
      * @return a new builder instance
      */
-    public static <K, V> UnifiedCacheBuilder<K, V> create() {
-        return forProfile(ProfileRegistry.getDefaultProfile());
+    public static <K, V> JCacheXBuilder<K, V> create() {
+        return fromProfile(ProfileName.DEFAULT);
     }
+
+    // ===== CONVENIENCE METHODS FOR COMMON WORKLOADS =====
+
+    /**
+     * Creates a builder optimized for read-heavy workloads (80%+ reads).
+     * Uses READ_HEAVY profile with enhanced LFU eviction.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return a pre-configured builder
+     */
+    public static <K, V> JCacheXBuilder<K, V> forReadHeavyWorkload() {
+        return fromProfile(ProfileName.READ_HEAVY);
+    }
+
+    /**
+     * Creates a builder optimized for write-heavy workloads (50%+ writes).
+     * Uses WRITE_HEAVY profile with enhanced LRU eviction.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return a pre-configured builder
+     */
+    public static <K, V> JCacheXBuilder<K, V> forWriteHeavyWorkload() {
+        return fromProfile(ProfileName.WRITE_HEAVY);
+    }
+
+    /**
+     * Creates a builder optimized for memory-constrained environments.
+     * Uses MEMORY_EFFICIENT profile with minimal memory footprint.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return a pre-configured builder
+     */
+    public static <K, V> JCacheXBuilder<K, V> forMemoryConstrainedEnvironment() {
+        return fromProfile(ProfileName.MEMORY_EFFICIENT);
+    }
+
+    /**
+     * Creates a builder optimized for maximum performance and throughput.
+     * Uses HIGH_PERFORMANCE profile with aggressive caching strategies.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return a pre-configured builder
+     */
+    public static <K, V> JCacheXBuilder<K, V> forHighPerformance() {
+        return fromProfile(ProfileName.HIGH_PERFORMANCE);
+    }
+
+    /**
+     * Creates a builder optimized for user session storage.
+     * Uses SESSION_CACHE profile with time-based expiration.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return a pre-configured builder
+     */
+    public static <K, V> JCacheXBuilder<K, V> forSessionStorage() {
+        return fromProfile(ProfileName.SESSION_CACHE);
+    }
+
+    /**
+     * Creates a builder optimized for API response caching.
+     * Uses API_CACHE profile with short TTL and network-aware optimizations.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return a pre-configured builder
+     */
+    public static <K, V> JCacheXBuilder<K, V> forApiResponseCaching() {
+        return fromProfile(ProfileName.API_CACHE);
+    }
+
+    /**
+     * Creates a builder optimized for expensive computation results.
+     * Uses COMPUTE_CACHE profile with long TTL and computation-aware optimizations.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return a pre-configured builder
+     */
+    public static <K, V> JCacheXBuilder<K, V> forComputationCaching() {
+        return fromProfile(ProfileName.COMPUTE_CACHE);
+    }
+
+    /**
+     * Creates a builder optimized for machine learning workloads.
+     * Uses ML_OPTIMIZED profile with predictive caching capabilities.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return a pre-configured builder
+     */
+    public static <K, V> JCacheXBuilder<K, V> forMachineLearning() {
+        return fromProfile(ProfileName.ML_OPTIMIZED);
+    }
+
+    /**
+     * Creates a builder optimized for ultra-low latency requirements.
+     * Uses ZERO_COPY profile with minimal memory allocation.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return a pre-configured builder
+     */
+    public static <K, V> JCacheXBuilder<K, V> forUltraLowLatency() {
+        return fromProfile(ProfileName.ZERO_COPY);
+    }
+
+    /**
+     * Creates a builder optimized for hardware-specific features.
+     * Uses HARDWARE_OPTIMIZED profile with CPU-specific optimizations.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return a pre-configured builder
+     */
+    public static <K, V> JCacheXBuilder<K, V> forHardwareOptimization() {
+        return fromProfile(ProfileName.HARDWARE_OPTIMIZED);
+    }
+
+    /**
+     * Creates a builder optimized for distributed caching environments.
+     * Uses DISTRIBUTED profile with cluster-aware optimizations.
+     *
+     * @param <K> the key type
+     * @param <V> the value type
+     * @return a pre-configured builder
+     */
+    public static <K, V> JCacheXBuilder<K, V> forDistributedCaching() {
+        return fromProfile(ProfileName.DISTRIBUTED);
+    }
+
+    // ===== CONFIGURATION METHODS =====
 
     /**
      * Sets the cache name for identification and debugging.
@@ -161,7 +305,7 @@ public final class UnifiedCacheBuilder<K, V> {
      * @param name the cache name
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> name(String name) {
+    public JCacheXBuilder<K, V> name(String name) {
         this.name = name;
         return this;
     }
@@ -173,7 +317,7 @@ public final class UnifiedCacheBuilder<K, V> {
      * @param workloadCharacteristics the workload characteristics
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> workloadCharacteristics(WorkloadCharacteristics workloadCharacteristics) {
+    public JCacheXBuilder<K, V> workloadCharacteristics(WorkloadCharacteristics workloadCharacteristics) {
         this.workloadCharacteristics = workloadCharacteristics;
         return this;
     }
@@ -184,7 +328,7 @@ public final class UnifiedCacheBuilder<K, V> {
      * @param maximumSize the maximum size
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> maximumSize(long maximumSize) {
+    public JCacheXBuilder<K, V> maximumSize(long maximumSize) {
         configBuilder.maximumSize(maximumSize);
         return this;
     }
@@ -195,52 +339,51 @@ public final class UnifiedCacheBuilder<K, V> {
      * @param maximumWeight the maximum weight
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> maximumWeight(long maximumWeight) {
+    public JCacheXBuilder<K, V> maximumWeight(long maximumWeight) {
         configBuilder.maximumWeight(maximumWeight);
         return this;
     }
 
     /**
-     * Sets the time after which entries should expire after being written.
+     * Sets the duration after which entries are automatically removed after write.
      *
      * @param duration the expiration duration
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> expireAfterWrite(Duration duration) {
+    public JCacheXBuilder<K, V> expireAfterWrite(Duration duration) {
         configBuilder.expireAfterWrite(duration);
         return this;
     }
 
     /**
-     * Sets the time after which entries should expire after being accessed.
+     * Sets the duration after which entries are automatically removed after access.
      *
      * @param duration the expiration duration
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> expireAfterAccess(Duration duration) {
+    public JCacheXBuilder<K, V> expireAfterAccess(Duration duration) {
         configBuilder.expireAfterAccess(duration);
         return this;
     }
 
     /**
-     * Sets the time after which entries should be automatically refreshed.
+     * Sets the duration after which entries are automatically refreshed.
      *
      * @param duration the refresh duration
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> refreshAfterWrite(Duration duration) {
+    public JCacheXBuilder<K, V> refreshAfterWrite(Duration duration) {
         configBuilder.refreshAfterWrite(duration);
         return this;
     }
 
     /**
-     * Sets the function to use for loading values when they are not present in the
-     * cache.
+     * Sets the function to use for loading values when keys are not present.
      *
      * @param loader the value loader function
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> loader(Function<K, V> loader) {
+    public JCacheXBuilder<K, V> loader(Function<K, V> loader) {
         configBuilder.loader(loader);
         return this;
     }
@@ -251,7 +394,7 @@ public final class UnifiedCacheBuilder<K, V> {
      * @param asyncLoader the async value loader function
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> asyncLoader(Function<K, CompletableFuture<V>> asyncLoader) {
+    public JCacheXBuilder<K, V> asyncLoader(Function<K, CompletableFuture<V>> asyncLoader) {
         configBuilder.asyncLoader(asyncLoader);
         return this;
     }
@@ -262,7 +405,7 @@ public final class UnifiedCacheBuilder<K, V> {
      * @param weigher the weigher function
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> weigher(java.util.function.BiFunction<K, V, Long> weigher) {
+    public JCacheXBuilder<K, V> weigher(java.util.function.BiFunction<K, V, Long> weigher) {
         configBuilder.weigher(weigher);
         return this;
     }
@@ -273,7 +416,7 @@ public final class UnifiedCacheBuilder<K, V> {
      * @param recordStats whether to record statistics
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> recordStats(boolean recordStats) {
+    public JCacheXBuilder<K, V> recordStats(boolean recordStats) {
         configBuilder.recordStats(recordStats);
         return this;
     }
@@ -283,7 +426,7 @@ public final class UnifiedCacheBuilder<K, V> {
      *
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> recordStats() {
+    public JCacheXBuilder<K, V> recordStats() {
         return recordStats(true);
     }
 
@@ -293,10 +436,12 @@ public final class UnifiedCacheBuilder<K, V> {
      * @param listener the event listener
      * @return this builder instance
      */
-    public UnifiedCacheBuilder<K, V> listener(CacheEventListener<K, V> listener) {
+    public JCacheXBuilder<K, V> listener(CacheEventListener<K, V> listener) {
         configBuilder.addListener(listener);
         return this;
     }
+
+    // ===== BUILD METHOD =====
 
     /**
      * Builds and returns the configured cache instance.
@@ -311,7 +456,7 @@ public final class UnifiedCacheBuilder<K, V> {
 
         // Ensure we have a profile
         if (profile == null) {
-            profile = (CacheProfile<K, V>) ProfileRegistry.getDefaultProfile();
+            profile = (CacheProfile<K, V>) ProfileRegistry.getProfile(ProfileName.DEFAULT.getValue());
         }
 
         // Store current configuration values before applying profile
@@ -335,13 +480,15 @@ public final class UnifiedCacheBuilder<K, V> {
         return createCacheInstance(config);
     }
 
+    // ===== PRIVATE HELPER METHODS =====
+
     /**
      * Selects the optimal profile based on workload characteristics.
      */
     @SuppressWarnings("unchecked")
     private CacheProfile<K, V> selectOptimalProfile() {
         if (workloadCharacteristics == null) {
-            return (CacheProfile<K, V>) ProfileRegistry.getDefaultProfile();
+            return (CacheProfile<K, V>) ProfileRegistry.getProfile(ProfileName.DEFAULT.getValue());
         }
 
         // Use ProfileRegistry to find suitable profiles, ordered by priority
@@ -352,7 +499,7 @@ public final class UnifiedCacheBuilder<K, V> {
             return (CacheProfile<K, V>) suitableProfiles.get(0); // Highest priority
         }
 
-        return (CacheProfile<K, V>) ProfileRegistry.getDefaultProfile();
+        return (CacheProfile<K, V>) ProfileRegistry.getProfile(ProfileName.DEFAULT.getValue());
     }
 
     /**
@@ -362,27 +509,18 @@ public final class UnifiedCacheBuilder<K, V> {
         // Apply eviction strategy from profile
         configBuilder.evictionStrategy(profile.getEvictionStrategy());
 
-        // Only apply profile defaults for values that haven't been explicitly
-        // configured
-        // Note: Since CacheConfig.Builder doesn't track what was explicitly set,
-        // we use the profile's applyConfiguration but selectively
-
-        // For critical Spring-configurable values, don't override if they were set
-        // This is a simple heuristic: if maximumSize was set to something other than
-        // default,
-        // preserve it
+        // For critical configurable values, don't override if they were set
         if (preProfileConfig.getMaximumSize() != null) {
             // User explicitly set maximumSize, preserve it
             configBuilder.maximumSize(preProfileConfig.getMaximumSize());
         }
 
-        if (preProfileConfig.isRecordStats() != false) {
+        if (preProfileConfig.isRecordStats()) {
             // User explicitly set recordStats, preserve it
             configBuilder.recordStats(preProfileConfig.isRecordStats());
         }
 
         // Apply other profile defaults for values that are typically not set explicitly
-        // in Spring configuration
         configBuilder.initialCapacity(profile.getRecommendedInitialCapacity(
                 preProfileConfig.getMaximumSize() != null ? preProfileConfig.getMaximumSize() : 1000L));
         configBuilder.concurrencyLevel(profile.getRecommendedConcurrencyLevel());
@@ -404,10 +542,6 @@ public final class UnifiedCacheBuilder<K, V> {
         if (config.getConcurrencyLevel() == 16) { // Default value
             configBuilder.concurrencyLevel(profile.getRecommendedConcurrencyLevel());
         }
-
-        // Apply statistics setting if not explicitly set
-        // Note: We need to check if this was explicitly set by the user
-        // For now, we'll let explicit configuration take precedence
     }
 
     /**
@@ -431,7 +565,7 @@ public final class UnifiedCacheBuilder<K, V> {
      */
     public String getConfigurationSummary() {
         StringBuilder summary = new StringBuilder();
-        summary.append("UnifiedCacheBuilder Configuration:\n");
+        summary.append("JCacheXBuilder Configuration:\n");
         summary.append("  Profile: ").append(profile != null ? profile.getName() : "Not selected").append("\n");
         summary.append("  Smart Defaults: ").append(useSmartDefaults).append("\n");
         summary.append("  Cache Name: ").append(name != null ? name : "Not set").append("\n");

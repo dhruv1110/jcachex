@@ -5,7 +5,7 @@ package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.CacheConfig
 import io.github.dhruv1110.jcachex.FrequencySketchType
-import io.github.dhruv1110.jcachex.UnifiedCacheBuilder
+import io.github.dhruv1110.jcachex.JCacheXBuilder
 import io.github.dhruv1110.jcachex.profiles.WorkloadCharacteristics
 
 /*
@@ -63,10 +63,10 @@ class CacheConfigBuilder<K, V> {
 }
 
 /**
- * DSL scope for UnifiedCacheBuilder providing a Kotlin-idiomatic configuration experience.
+ * DSL scope for JCacheXBuilder providing a Kotlin-idiomatic configuration experience.
  */
 @Suppress("TooManyFunctions")
-class UnifiedCacheBuilderScope<K, V>(private val builder: UnifiedCacheBuilder<K, V>) {
+class JCacheXBuilderScope<K, V>(private val builder: JCacheXBuilder<K, V>) {
     fun name(name: String) = apply { builder.name(name) }
 
     fun maximumSize(size: Long) = apply { builder.maximumSize(size) }
@@ -125,3 +125,14 @@ class WorkloadCharacteristicsScope {
 
     fun build(): WorkloadCharacteristics = builder.build()
 }
+
+// ===== LEGACY SUPPORT =====
+
+/**
+ * @deprecated Use JCacheXBuilderScope instead
+ */
+@Deprecated(
+    "Use JCacheXBuilderScope instead",
+    ReplaceWith("JCacheXBuilderScope<K, V>", "io.github.dhruv1110.jcachex.kotlin.JCacheXBuilderScope"),
+)
+typealias UnifiedCacheBuilderScope<K, V> = JCacheXBuilderScope<K, V>

@@ -5,6 +5,7 @@ import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.FrequencySketchType;
 import io.github.dhruv1110.jcachex.impl.*;
+import io.github.dhruv1110.jcachex.impl.UltraFastCache;
 
 import java.time.Duration;
 import java.util.function.Function;
@@ -371,6 +372,8 @@ public final class CacheProfileBuilder {
                     return new WriteHeavyOptimizedCache<>(config);
                 } else if (implementationClass == JVMOptimizedCache.class) {
                     return new JVMOptimizedCache<>(config);
+                } else if (implementationClass == UltraFastCache.class) {
+                    return new UltraFastCache<>(config);
                 } else if (implementationClass == HardwareOptimizedCache.class) {
                     return new HardwareOptimizedCache<>(config);
                 } else if (implementationClass == MLOptimizedCache.class) {

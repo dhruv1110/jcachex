@@ -1,8 +1,8 @@
 package io.github.dhruv1110.jcachex.example.kotlin
 
 import io.github.dhruv1110.jcachex.kotlin.*
-import io.github.dhruv1110.jcachex.UnifiedCacheBuilder
-import io.github.dhruv1110.jcachex.CacheBuilder
+import io.github.dhruv1110.jcachex.JCacheXBuilder
+import io.github.dhruv1110.jcachex.kotlin.*
 import io.github.dhruv1110.jcachex.profiles.ProfileRegistry
 import io.github.dhruv1110.jcachex.CacheEventListener
 import kotlinx.coroutines.*
@@ -67,7 +67,7 @@ private suspend fun demonstrateBasicExtensionsAndOperators() {
     println("=== 1. Basic Extensions & Operator Overloading ===")
 
     // Create cache with new unified builder
-    val userCache = CacheBuilder.newBuilder<String, User>()
+    val userCache = JCacheXBuilder.create<String, User>()
         .maximumSize(100)
         .expireAfterWrite(Duration.ofMinutes(30))
         .recordStats(true)
@@ -113,22 +113,22 @@ private suspend fun demonstrateProfileBasedCaches() {
     println("=== 2. Profile-based Cache Creation with New Patterns ===")
 
     // Create caches using profiles from the registry
-    val readHeavyCache = UnifiedCacheBuilder.forProfile<String, String>(ProfileRegistry.getProfile("READ_HEAVY"))
+    val readHeavyCache = JCacheXBuilder.forProfile<String, String>(ProfileRegistry.getProfile("READ_HEAVY"))
         .maximumSize(1000)
         .recordStats(true)
         .build()
 
-    val writeHeavyCache = UnifiedCacheBuilder.forProfile<String, String>(ProfileRegistry.getProfile("WRITE_HEAVY"))
+    val writeHeavyCache = JCacheXBuilder.forProfile<String, String>(ProfileRegistry.getProfile("WRITE_HEAVY"))
         .maximumSize(500)
         .recordStats(true)
         .build()
 
-    val memoryEfficientCache = UnifiedCacheBuilder.forProfile<String, String>(ProfileRegistry.getProfile("MEMORY_EFFICIENT"))
+    val memoryEfficientCache = JCacheXBuilder.forProfile<String, String>(ProfileRegistry.getProfile("MEMORY_EFFICIENT"))
         .maximumSize(100)
         .recordStats(true)
         .build()
 
-    val highPerformanceCache = UnifiedCacheBuilder.forProfile<String, String>(ProfileRegistry.getProfile("HIGH_PERFORMANCE"))
+    val highPerformanceCache = JCacheXBuilder.forProfile<String, String>(ProfileRegistry.getProfile("HIGH_PERFORMANCE"))
         .maximumSize(2000)
         .recordStats(true)
         .build()
@@ -156,7 +156,7 @@ private suspend fun demonstrateProfileBasedCaches() {
 private suspend fun demonstrateCoroutineSupport() {
     println("=== 3. Coroutine Support ===")
 
-    val apiCache = CacheBuilder.newBuilder<String, String>()
+    val apiCache = JCacheXBuilder.create<String, String>()
         .maximumSize(50)
         .expireAfterWrite(Duration.ofMinutes(5))
         .recordStats(true)
@@ -197,7 +197,7 @@ private suspend fun demonstrateCoroutineSupport() {
 private suspend fun demonstrateCollectionOperations() {
     println("=== 4. Collection-like Operations ===")
 
-    val productCache = CacheBuilder.newBuilder<String, Product>()
+    val productCache = JCacheXBuilder.create<String, Product>()
         .maximumSize(20)
         .recordStats(true)
         .build()
@@ -248,7 +248,7 @@ private suspend fun demonstrateCollectionOperations() {
 private suspend fun demonstrateStatisticsAndMonitoring() {
     println("=== 5. Statistics and Monitoring ===")
 
-    val monitoredCache = CacheBuilder.newBuilder<String, String>()
+    val monitoredCache = JCacheXBuilder.create<String, String>()
         .maximumSize(50)
         .recordStats(true)
         .build()
@@ -290,7 +290,7 @@ private suspend fun demonstrateStatisticsAndMonitoring() {
 private suspend fun demonstrateAdvancedOperations() {
     println("=== 6. Advanced Operations ===")
 
-    val advancedCache = CacheBuilder.newBuilder<String, Int>()
+    val advancedCache = JCacheXBuilder.create<String, Int>()
         .maximumSize(100)
         .recordStats(true)
         .build()

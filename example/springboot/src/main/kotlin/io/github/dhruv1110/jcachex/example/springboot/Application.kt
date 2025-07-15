@@ -1,7 +1,7 @@
 package io.github.dhruv1110.jcachex.example.springboot
 
 import io.github.dhruv1110.jcachex.Cache
-import io.github.dhruv1110.jcachex.CacheBuilder
+import io.github.dhruv1110.jcachex.JCacheXBuilder
 import io.github.dhruv1110.jcachex.FrequencySketchType
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy
 import org.springframework.beans.factory.annotation.Qualifier
@@ -35,8 +35,7 @@ class CacheConfiguration {
     @Bean
     @Qualifier("userCache")
     fun userCache(): Cache<String, User> {
-        return CacheBuilder.newBuilder<String, User>()
-            .cacheType(CacheBuilder.CacheType.DEFAULT) // Uses TinyWindowLFU by default
+        return JCacheXBuilder.create<String, User>()
             .maximumSize(1000L)
             .expireAfterWrite(Duration.ofMinutes(30))
             .recordStats(true)
@@ -47,8 +46,7 @@ class CacheConfiguration {
     @Bean
     @Qualifier("productCache")
     fun productCache(): Cache<String, Product> {
-        return CacheBuilder.newBuilder<String, Product>()
-            .cacheType(CacheBuilder.CacheType.READ_ONLY_OPTIMIZED)
+        return JCacheXBuilder.forReadHeavyWorkload<String, Product>()
             .maximumSize(5000L)
             .expireAfterWrite(Duration.ofHours(2))
             .recordStats(true)
@@ -59,8 +57,7 @@ class CacheConfiguration {
     @Bean
     @Qualifier("sessionCache")
     fun sessionCache(): Cache<String, UserSession> {
-        return CacheBuilder.newBuilder<String, UserSession>()
-            .cacheType(CacheBuilder.CacheType.WRITE_HEAVY_OPTIMIZED)
+        return JCacheXBuilder.forWriteHeavyWorkload<String, UserSession>()
             .maximumSize(10000L)
             .expireAfterAccess(Duration.ofMinutes(30))
             .recordStats(true)
@@ -71,8 +68,7 @@ class CacheConfiguration {
     @Bean
     @Qualifier("performanceCache")
     fun performanceCache(): Cache<String, String> {
-        return CacheBuilder.newBuilder<String, String>()
-            .cacheType(CacheBuilder.CacheType.JIT_OPTIMIZED)
+        return JCacheXBuilder.forHighPerformance<String, String>()
             .maximumSize(1000L)
             .expireAfterWrite(Duration.ofMinutes(15))
             .recordStats(true)
@@ -83,12 +79,9 @@ class CacheConfiguration {
     @Bean
     @Qualifier("analyticsCache")
     fun analyticsCache(): Cache<String, AnalyticsData> {
-        return CacheBuilder.newBuilder<String, AnalyticsData>()
-            .cacheType(CacheBuilder.CacheType.JIT_OPTIMIZED)
+        return JCacheXBuilder.forHighPerformance<String, AnalyticsData>()
             .maximumSize(2000L)
             .expireAfterWrite(Duration.ofHours(1))
-            .evictionStrategy(EvictionStrategy.ENHANCED_LFU<String, AnalyticsData>())
-            .frequencySketchType(FrequencySketchType.OPTIMIZED)
             .recordStats(true)
             .build()
     }

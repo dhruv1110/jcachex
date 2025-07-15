@@ -2,8 +2,8 @@ package io.github.dhruv1110.jcachex.spring.core;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.UnifiedCacheBuilder;
-import io.github.dhruv1110.jcachex.CacheBuilder;
+import io.github.dhruv1110.jcachex.JCacheXBuilder;
+// CacheBuilder removed - using JCacheXBuilder for all local caches
 import io.github.dhruv1110.jcachex.impl.*;
 import io.github.dhruv1110.jcachex.profiles.CacheProfile;
 import io.github.dhruv1110.jcachex.profiles.ProfileRegistry;
@@ -255,7 +255,7 @@ public class JCacheXCacheFactory {
     /**
      * Creates a cache instance using modern design patterns with profile support.
      *
-     * This method uses the new UnifiedCacheBuilder and profile system to create
+     * This method uses the new JCacheXBuilder and profile system to create
      * optimal cache instances based on configuration.
      */
     @SuppressWarnings("unchecked")
@@ -268,25 +268,22 @@ public class JCacheXCacheFactory {
             return createCacheWithProfile(cacheName, profileName, cacheConfig);
         }
 
-        // Check if a specific cache type is requested (for backward compatibility)
-        String cacheType = cacheConfig.getCacheType();
-        if (cacheType != null && !cacheType.trim().isEmpty() && !"DEFAULT".equalsIgnoreCase(cacheType)) {
-            return createCacheWithType(cacheName, cacheType, cacheConfig);
-        }
+        // Legacy cache type configuration is no longer supported - using profile-based
+        // approach instead
 
         // Use smart defaults when no profile or specific type is specified
         return createCacheWithSmartDefaults(cacheName, cacheConfig);
     }
 
     /**
-     * Creates a cache using the UnifiedCacheBuilder with the specified profile.
+     * Creates a cache using the JCacheXBuilder with the specified profile.
      */
     @SuppressWarnings("unchecked")
     private <K, V> Cache<K, V> createCacheWithProfile(String cacheName, String profileName,
             JCacheXProperties.CacheConfig cacheConfig) {
 
         CacheProfile<?, ?> profile = getProfileByName(profileName);
-        UnifiedCacheBuilder<Object, Object> builder = UnifiedCacheBuilder.forProfile(profile);
+        JCacheXBuilder<Object, Object> builder = JCacheXBuilder.forProfile(profile);
 
         // Apply cache name
         builder.name(cacheName);
@@ -297,28 +294,8 @@ public class JCacheXCacheFactory {
         return (Cache<K, V>) builder.build();
     }
 
-    /**
-     * Creates a cache using CacheBuilder with the specified cache type for backward
-     * compatibility.
-     */
-    @SuppressWarnings("unchecked")
-    private <K, V> Cache<K, V> createCacheWithType(String cacheName, String cacheType,
-            JCacheXProperties.CacheConfig cacheConfig) {
-
-        CacheBuilder.CacheType builderCacheType = mapCacheType(cacheType);
-        CacheBuilder<Object, Object> builder = CacheBuilder.<Object, Object>newBuilder()
-                .cacheType(builderCacheType);
-
-        // Apply configuration settings via CacheConfig
-        CacheConfig.Builder<Object, Object> configBuilder = CacheConfig.newBuilder();
-        applyCacheConfig(configBuilder, cacheConfig);
-        CacheConfig<Object, Object> config = configBuilder.build();
-
-        // Apply settings to CacheBuilder
-        applyCacheConfigToBuilder(builder, config);
-
-        return (Cache<K, V>) builder.build();
-    }
+    // Legacy CacheBuilder support removed - all caches now use JCacheXBuilder with
+    // profiles
 
     /**
      * Creates a cache using smart defaults when no profile or type is specified.
@@ -327,7 +304,7 @@ public class JCacheXCacheFactory {
     private <K, V> Cache<K, V> createCacheWithSmartDefaults(String cacheName,
             JCacheXProperties.CacheConfig cacheConfig) {
 
-        UnifiedCacheBuilder<Object, Object> builder = UnifiedCacheBuilder.withSmartDefaults();
+        JCacheXBuilder<Object, Object> builder = JCacheXBuilder.withSmartDefaults();
 
         // Apply cache name
         builder.name(cacheName);
@@ -364,56 +341,12 @@ public class JCacheXCacheFactory {
         return profile != null ? profile : ProfileRegistry.getDefaultProfile();
     }
 
-    /**
-     * Maps string cache type to CacheBuilder.CacheType enum.
-     */
-    private CacheBuilder.CacheType mapCacheType(String cacheType) {
-        if (cacheType == null)
-            return CacheBuilder.CacheType.DEFAULT;
-
-        switch (cacheType.toUpperCase()) {
-            case "OPTIMIZED":
-                return CacheBuilder.CacheType.OPTIMIZED;
-            case "JIT_OPTIMIZED":
-            case "JIT-OPTIMIZED":
-                return CacheBuilder.CacheType.JIT_OPTIMIZED;
-            case "ALLOCATION_OPTIMIZED":
-            case "ALLOCATION-OPTIMIZED":
-                return CacheBuilder.CacheType.ALLOCATION_OPTIMIZED;
-            case "LOCALITY_OPTIMIZED":
-            case "LOCALITY-OPTIMIZED":
-                return CacheBuilder.CacheType.LOCALITY_OPTIMIZED;
-            case "ZERO_COPY_OPTIMIZED":
-            case "ZERO-COPY-OPTIMIZED":
-                return CacheBuilder.CacheType.ZERO_COPY_OPTIMIZED;
-            case "READ_ONLY_OPTIMIZED":
-            case "READ-ONLY-OPTIMIZED":
-                return CacheBuilder.CacheType.READ_ONLY_OPTIMIZED;
-            case "WRITE_HEAVY_OPTIMIZED":
-            case "WRITE-HEAVY-OPTIMIZED":
-                return CacheBuilder.CacheType.WRITE_HEAVY_OPTIMIZED;
-            case "JVM_OPTIMIZED":
-            case "JVM-OPTIMIZED":
-                return CacheBuilder.CacheType.JVM_OPTIMIZED;
-            case "HARDWARE_OPTIMIZED":
-            case "HARDWARE-OPTIMIZED":
-                return CacheBuilder.CacheType.HARDWARE_OPTIMIZED;
-            case "ML_OPTIMIZED":
-            case "ML-OPTIMIZED":
-                return CacheBuilder.CacheType.ML_OPTIMIZED;
-            case "PROFILED_OPTIMIZED":
-            case "PROFILED-OPTIMIZED":
-                return CacheBuilder.CacheType.PROFILED_OPTIMIZED;
-            case "DEFAULT":
-            default:
-                return CacheBuilder.CacheType.DEFAULT;
-        }
-    }
+    // Legacy cache type mapping removed - using profile-based approach
 
     /**
-     * Applies cache configuration to UnifiedCacheBuilder.
+     * Applies cache configuration to JCacheXBuilder.
      */
-    private void applyCacheConfiguration(UnifiedCacheBuilder<Object, Object> builder,
+    private void applyCacheConfiguration(JCacheXBuilder<Object, Object> builder,
             JCacheXProperties.CacheConfig config) {
 
         if (config.getMaximumSize() != null) {
@@ -437,34 +370,8 @@ public class JCacheXCacheFactory {
         builder.recordStats(enableStats);
     }
 
-    /**
-     * Applies CacheConfig settings to CacheBuilder for backward compatibility.
-     */
-    private void applyCacheConfigToBuilder(CacheBuilder<Object, Object> builder, CacheConfig<Object, Object> config) {
-        if (config.getMaximumSize() != null) {
-            builder.maximumSize(config.getMaximumSize());
-        }
-
-        if (config.getMaximumWeight() != null) {
-            builder.maximumWeight(config.getMaximumWeight());
-        }
-
-        if (config.getExpireAfterWrite() != null) {
-            builder.expireAfterWrite(config.getExpireAfterWrite());
-        }
-
-        if (config.getExpireAfterAccess() != null) {
-            builder.expireAfterAccess(config.getExpireAfterAccess());
-        }
-
-        if (config.getRefreshAfterWrite() != null) {
-            builder.refreshAfterWrite(config.getRefreshAfterWrite());
-        }
-
-        if (config.isRecordStats()) {
-            builder.recordStats();
-        }
-    }
+    // Legacy CacheBuilder configuration support removed - using JCacheXBuilder with
+    // profiles
 
     /**
      * Creates a base configuration builder for the specified cache name.

@@ -1,4 +1,4 @@
-package io.github.dhruv1110.jcachex.impl;
+package io.github.dhruv1110.jcachex.internal.util;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;

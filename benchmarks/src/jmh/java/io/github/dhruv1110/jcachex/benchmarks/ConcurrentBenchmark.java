@@ -17,30 +17,30 @@ import java.util.concurrent.TimeUnit;
 @Threads(Threads.MAX) // Use all available threads
 public class ConcurrentBenchmark extends BaseBenchmark {
 
-    @State(Scope.Thread)
-    public static class ThreadState {
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        int baseIndex;
-
-        @Setup(Level.Trial)
-        public void setup() {
-            // Each thread gets a different base index to reduce key collisions
-            baseIndex = random.nextInt(1000) * 1000;
-        }
-
-        public int getIndex() {
-            return baseIndex + random.nextInt(OPERATIONS_COUNT);
-        }
-    }
+    private static final String HOT_KEY = "hotkey";
 
     @Setup(Level.Iteration)
     public void setupIteration() {
-        // Pre-populate caches for concurrent access
-        for (int i = 0; i < OPERATIONS_COUNT; i++) {
+        // Pre-populate caches with WARMUP_SET_SIZE for realistic concurrent scenarios
+        // Cache capacity will be exceeded during concurrent operations, testing
+        // eviction performance
+        for (int i = 0; i < WARMUP_SET_SIZE; i++) {
             String key = getSequentialKey(i);
             String value = getSequentialValue(i);
 
-            jcacheXCache.put(key, value);
+            // Populate all JCacheX cache profiles
+            jcacheXDefault.put(key, value);
+            jcacheXReadHeavy.put(key, value);
+            jcacheXWriteHeavy.put(key, value);
+            jcacheXMemoryEfficient.put(key, value);
+            jcacheXHighPerformance.put(key, value);
+            jcacheXSessionCache.put(key, value);
+            jcacheXApiCache.put(key, value);
+            jcacheXComputeCache.put(key, value);
+            jcacheXMlOptimized.put(key, value);
+            jcacheXZeroCopy.put(key, value);
+            jcacheXHardwareOptimized.put(key, value);
+            jcacheXDistributed.put(key, value);
             caffeineCache.put(key, value);
             cache2kCache.put(key, value);
             ehcacheCache.put(key, value);
@@ -59,7 +59,7 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     @Group("readHeavy")
     @GroupThreads(9) // 9 reader threads
     public String jcacheXReadHeavy(ThreadState state) {
-        return jcacheXCache.get(getRandomKey(state.getIndex()));
+        return jcacheXDefault.get(getRandomKey(state.getIndex()));
     }
 
     @Benchmark
@@ -67,7 +67,7 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     @GroupThreads(1) // 1 writer thread
     public void jcacheXWriteHeavy(ThreadState state, Blackhole bh) {
         int idx = state.getIndex();
-        jcacheXCache.put(getRandomKey(idx), getRandomValue(idx));
+        jcacheXDefault.put(getRandomKey(idx), getRandomValue(idx));
         bh.consume(idx);
     }
 
@@ -143,7 +143,7 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     @Group("writeHeavy")
     @GroupThreads(3) // 3 reader threads
     public String jcacheXReadLight(ThreadState state) {
-        return jcacheXCache.get(getRandomKey(state.getIndex()));
+        return jcacheXDefault.get(getRandomKey(state.getIndex()));
     }
 
     @Benchmark
@@ -151,7 +151,7 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     @GroupThreads(7) // 7 writer threads
     public void jcacheXWriteLight(ThreadState state, Blackhole bh) {
         int idx = state.getIndex();
-        jcacheXCache.put(getRandomKey(idx), getRandomValue(idx));
+        jcacheXDefault.put(getRandomKey(idx), getRandomValue(idx));
         bh.consume(idx);
     }
 
@@ -223,13 +223,11 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     // High contention scenarios (same key accessed by multiple threads)
     // ===============================
 
-    private static final String HOT_KEY = "hotkey";
-
     @Benchmark
     public String jcacheXHighContention(ThreadState state) {
         // 80% chance to access the hot key, 20% random key
         String key = state.random.nextInt(100) < 80 ? HOT_KEY : getRandomKey(state.getIndex());
-        return jcacheXCache.get(key);
+        return jcacheXDefault.get(key);
     }
 
     @Benchmark
@@ -254,5 +252,21 @@ public class ConcurrentBenchmark extends BaseBenchmark {
     public String concurrentMapHighContention(ThreadState state) {
         String key = state.random.nextInt(100) < 80 ? HOT_KEY : getRandomKey(state.getIndex());
         return concurrentMap.get(key);
+    }
+
+    @State(Scope.Thread)
+    public static class ThreadState {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        int baseIndex;
+
+        @Setup(Level.Trial)
+        public void setup() {
+            // Each thread gets a different base index to reduce key collisions
+            baseIndex = random.nextInt(1000) * 1000;
+        }
+
+        public int getIndex() {
+            return baseIndex + random.nextInt(OPERATIONS_COUNT);
+        }
     }
 }

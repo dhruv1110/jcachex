@@ -15,13 +15,14 @@ public class AsyncCacheExample {
     private final ExecutorService asyncExecutor;
 
     public AsyncCacheExample() {
-        CacheConfig<String, String> config = CacheConfig.<String, String>builder()
+        // Use modern JCacheXBuilder with async-optimized profile
+        this.cache = JCacheXBuilder.forHighPerformance()
+                .name("async-cache")
                 .maximumSize(1000L)
                 .expireAfterWrite(Duration.ofMinutes(30))
                 .recordStats(true)
                 .build();
 
-        this.cache = new DefaultCache<>(config);
         this.asyncExecutor = Executors.newFixedThreadPool(4);
     }
 

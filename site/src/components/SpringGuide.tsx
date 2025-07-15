@@ -5,7 +5,20 @@ import { Section, Grid, FeatureCard, InstallationGuide, Badge } from './common';
 import { MetaTags, Breadcrumbs } from './SEO';
 import CodeTabs from './CodeTabs';
 import { CodeTab, Feature, Resource } from '../types';
-import './SpringGuide.css';
+import Layout from './Layout';
+import { Container, Typography } from '@mui/material';
+import {
+    Settings as SettingsIcon,
+    Build as BuildIcon,
+    Check as CheckIcon,
+    Info as InfoIcon,
+    Rocket as RocketIcon,
+    Analytics as AnalyticsIcon,
+    Monitor as MonitorIcon,
+    Security as SecurityIcon,
+    Api as ApiIcon,
+    Extension as ExtensionIcon,
+} from '@mui/icons-material';
 
 
 const SpringGuide: React.FC = () => {
@@ -15,8 +28,8 @@ const SpringGuide: React.FC = () => {
     // Default SEO data for Spring guide
     const seoData = {
         title: 'Spring Boot Integration Guide - JCacheX',
-        description: 'Complete guide to integrating JCacheX with Spring Boot applications. Auto-configuration, annotations, health checks, and monitoring.',
-        keywords: ['Spring Boot cache', 'JCacheX Spring', 'Spring cache integration', 'Spring Boot starter', 'cache annotations'],
+        description: 'Complete guide to integrating JCacheX with Spring Boot applications. Auto-configuration, profile-based caching, annotations, health checks, and monitoring.',
+        keywords: ['Spring Boot cache', 'JCacheX Spring', 'Spring cache integration', 'Spring Boot starter', 'cache annotations', 'cache profiles'],
         canonical: 'https://dhruv1110.github.io/jcachex/spring'
     };
 
@@ -68,38 +81,49 @@ const SpringGuide: React.FC = () => {
             id: 'yaml',
             label: 'application.yml',
             language: 'yaml',
-            code: `# JCacheX Configuration
+            code: `# JCacheX Spring Boot Configuration
 jcachex:
   enabled: true
   auto-create-caches: true
   enable-statistics: true
   enable-jmx: true
 
-  # Default cache configuration
-  default:
-    maximum-size: 1000
-    expire-after-write-seconds: 1800  # 30 minutes
-    expire-after-access-seconds: 900  # 15 minutes
-    eviction-strategy: LRU
-    record-stats: true
-
-  # Named cache configurations
-  caches:
-    users:
-      maximum-size: 5000
-      expire-after-write-seconds: 3600  # 1 hour
+  # Profile-based cache configurations
+  profiles:
+    read-heavy:
+      maximum-size: 10000
+      expire-after-access-seconds: 1800  # 30 minutes
       eviction-strategy: LFU
       record-stats: true
 
+    write-heavy:
+      maximum-size: 5000
+      expire-after-write-seconds: 300   # 5 minutes
+      eviction-strategy: LRU
+      record-stats: true
+
+    high-performance:
+      maximum-size: 50000
+      expire-after-access-seconds: 3600  # 1 hour
+      eviction-strategy: LRU
+      record-stats: true
+
+  # Named cache configurations with profiles
+  caches:
+    users:
+      profile: read-heavy
+      maximum-size: 5000
+      expire-after-write-seconds: 3600  # 1 hour
+
     products:
+      profile: high-performance
       maximum-size: 10000
       expire-after-write-seconds: 7200  # 2 hours
-      eviction-strategy: LRU
 
     sessions:
+      profile: write-heavy
       maximum-size: 50000
       expire-after-access-seconds: 1800  # 30 minutes
-      eviction-strategy: FIFO
 
 # Spring Boot Actuator Configuration
 management:
@@ -124,28 +148,40 @@ spring:
             id: 'properties',
             label: 'application.properties',
             language: 'properties',
-            code: `# JCacheX Configuration
+            code: `# JCacheX Spring Boot Configuration
 jcachex.enabled=true
 jcachex.auto-create-caches=true
 jcachex.enable-statistics=true
 jcachex.enable-jmx=true
 
-# Default cache configuration
-jcachex.default.maximum-size=1000
-jcachex.default.expire-after-write-seconds=1800
-jcachex.default.expire-after-access-seconds=900
-jcachex.default.eviction-strategy=LRU
-jcachex.default.record-stats=true
+# Profile-based cache configurations
+jcachex.profiles.read-heavy.maximum-size=10000
+jcachex.profiles.read-heavy.expire-after-access-seconds=1800
+jcachex.profiles.read-heavy.eviction-strategy=LFU
+jcachex.profiles.read-heavy.record-stats=true
 
-# Named cache configurations
+jcachex.profiles.write-heavy.maximum-size=5000
+jcachex.profiles.write-heavy.expire-after-write-seconds=300
+jcachex.profiles.write-heavy.eviction-strategy=LRU
+jcachex.profiles.write-heavy.record-stats=true
+
+jcachex.profiles.high-performance.maximum-size=50000
+jcachex.profiles.high-performance.expire-after-access-seconds=3600
+jcachex.profiles.high-performance.eviction-strategy=LRU
+jcachex.profiles.high-performance.record-stats=true
+
+# Named cache configurations with profiles
+jcachex.caches.users.profile=read-heavy
 jcachex.caches.users.maximum-size=5000
 jcachex.caches.users.expire-after-write-seconds=3600
-jcachex.caches.users.eviction-strategy=LFU
-jcachex.caches.users.record-stats=true
 
+jcachex.caches.products.profile=high-performance
 jcachex.caches.products.maximum-size=10000
 jcachex.caches.products.expire-after-write-seconds=7200
-jcachex.caches.products.eviction-strategy=LRU
+
+jcachex.caches.sessions.profile=write-heavy
+jcachex.caches.sessions.maximum-size=50000
+jcachex.caches.sessions.expire-after-access-seconds=1800
 
 # Spring Boot Actuator
 management.endpoints.web.exposure.include=health,info,metrics,caches,jcachex
@@ -172,27 +208,38 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    // Basic caching with default configuration
-    @JCacheXCacheable(cacheName = "users")
+    // Profile-based caching for read-heavy operations
+    @JCacheXCacheable(cacheName = "users", profile = "READ_HEAVY")
     public User findById(Long id) {
         log.info("Loading user from database: {}", id);
         return userRepository.findById(id)
             .orElseThrow(() -> new UserNotFoundException("User not found: " + id));
     }
 
-    // Custom cache configuration
+    // High-performance caching for frequently accessed data
     @JCacheXCacheable(
         cacheName = "userProfiles",
-        expireAfterWrite = 30,
-        expireAfterWriteUnit = TimeUnit.MINUTES
+        profile = "HIGH_PERFORMANCE",
+        key = "#userId"
     )
     public UserProfile getUserProfile(String userId) {
         log.info("Building user profile for: {}", userId);
         return buildUserProfile(userId);
     }
 
-    // Cache eviction
-    @JCacheXCacheEvict(cacheName = "users")
+    // Write-heavy caching for frequently updated data
+    @JCacheXCacheable(
+        cacheName = "userPreferences",
+        profile = "WRITE_HEAVY",
+        condition = "#result != null"
+    )
+    public UserPreferences getUserPreferences(Long userId) {
+        log.info("Loading user preferences: {}", userId);
+        return userRepository.findPreferencesById(userId);
+    }
+
+    // Cache eviction with profile support
+    @JCacheXCacheEvict(cacheName = "users", profile = "READ_HEAVY")
     public User updateUser(Long id, UserUpdateRequest request) {
         User user = findById(id);
         user.setName(request.getName());
@@ -200,11 +247,13 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    // Clear all cache entries
-    @JCacheXCacheEvict(cacheName = "users", allEntries = true)
-    public void clearAllUsers() {
-        log.info("Clearing all user caches");
-        userRepository.deleteAll();
+    // Clear multiple caches with different profiles
+    @JCacheXCacheEvict(
+        cacheName = {"users", "userProfiles", "userPreferences"},
+        allEntries = true
+    )
+    public void clearAllUserCaches() {
+        log.info("Clearing all user-related caches");
     }
 }`
         },
@@ -231,6 +280,12 @@ public class UserController {
         return ResponseEntity.ok(profile);
     }
 
+    @GetMapping("/{id}/preferences")
+    public ResponseEntity<UserPreferences> getUserPreferences(@PathVariable Long id) {
+        UserPreferences preferences = userService.getUserPreferences(id);
+        return ResponseEntity.ok(preferences);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody UserUpdateRequest request) {
         User user = userService.updateUser(id, request);
@@ -239,7 +294,7 @@ public class UserController {
 
     @DeleteMapping("/cache")
     public ResponseEntity<Void> clearCache() {
-        userService.clearAllUsers();
+        userService.clearAllUserCaches();
         return ResponseEntity.ok().build();
     }
 }`
@@ -263,17 +318,42 @@ public class CacheConfiguration {
         return new JCacheXCacheFactory();
     }
 
-    // Custom cache configuration
+    // Profile-based cache configuration
+    @Bean("readHeavyCache")
+    public Cache<String, Object> readHeavyCache() {
+        return JCacheXBuilder.forReadHeavyWorkload()
+            .maximumSize(10000)
+            .expireAfterAccess(Duration.ofMinutes(30))
+            .recordStats()
+            .build();
+    }
+
+    @Bean("writeHeavyCache")
+    public Cache<String, Object> writeHeavyCache() {
+        return JCacheXBuilder.forWriteHeavyWorkload()
+            .maximumSize(5000)
+            .expireAfterWrite(Duration.ofMinutes(5))
+            .recordStats()
+            .build();
+    }
+
+    @Bean("highPerformanceCache")
+    public Cache<String, Object> highPerformanceCache() {
+        return JCacheXBuilder.forHighPerformance()
+            .maximumSize(50000)
+            .expireAfterAccess(Duration.ofHours(1))
+            .recordStats()
+            .build();
+    }
+
+    // Custom cache with specific profile
     @Bean("customCache")
     public Cache<String, Object> customCache() {
-        CacheConfig<String, Object> config = CacheConfig.<String, Object>builder()
-            .maximumSize(1000L)
+        return JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
+            .maximumSize(1000)
             .expireAfterWrite(Duration.ofMinutes(30))
-            .evictionStrategy(EvictionStrategy.LRU)
-            .recordStats(true)
+            .recordStats()
             .build();
-
-        return new DefaultCache<>(config);
     }
 }`
         }
@@ -380,47 +460,47 @@ public class CacheMetrics implements MeterBinder {
         {
             icon: '🎯',
             title: '@JCacheXCacheable',
-            description: 'Cache method results with flexible configuration',
-            details: ['Custom TTL', 'Conditional caching', 'Key generation']
+            description: 'Cache method results with profile-based optimization',
+            details: ['Profile support', 'Custom TTL', 'Conditional caching', 'Key generation']
         },
         {
             icon: '🗑️',
             title: '@JCacheXCacheEvict',
-            description: 'Remove entries from cache after method execution',
-            details: ['Single entry eviction', 'Clear all entries', 'Conditional eviction']
+            description: 'Remove entries from cache with profile awareness',
+            details: ['Profile-based eviction', 'Single entry eviction', 'Clear all entries', 'Conditional eviction']
         },
         {
             icon: '🔄',
             title: '@JCacheXCachePut',
-            description: 'Update cache entries regardless of method outcome',
-            details: ['Force cache update', 'Custom value expression', 'Conditional updates']
+            description: 'Update cache entries with profile configuration',
+            details: ['Profile support', 'Force cache update', 'Custom value expression', 'Conditional updates']
         },
         {
             icon: '📦',
             title: '@JCacheXCaching',
-            description: 'Combine multiple cache operations in one annotation',
-            details: ['Multiple cache operations', 'Complex caching scenarios', 'Batch operations']
+            description: 'Combine multiple cache operations with profiles',
+            details: ['Multiple profiles', 'Complex caching scenarios', 'Batch operations', 'Performance optimization']
         }
     ];
 
     const features: Feature[] = [
         {
             icon: '🚀',
-            title: 'Auto-Configuration',
-            description: 'Zero-configuration setup with sensible defaults',
-            details: ['Automatic cache manager', 'Default cache settings', 'Environment-based config']
+            title: 'Profile-Based Auto-Configuration',
+            description: 'Zero-configuration setup with intelligent profiles',
+            details: ['READ_HEAVY optimization', 'WRITE_HEAVY optimization', 'HIGH_PERFORMANCE tuning', 'Environment-based config']
         },
         {
             icon: '⚙️',
             title: 'Flexible Configuration',
-            description: 'Comprehensive configuration options via properties',
-            details: ['Per-cache settings', 'Global defaults', 'Runtime configuration']
+            description: 'Comprehensive configuration options via profiles',
+            details: ['Per-cache profiles', 'Global profile defaults', 'Runtime profile switching', 'Custom profile creation']
         },
         {
             icon: '📊',
-            title: 'Actuator Integration',
-            description: 'Built-in health checks and metrics endpoints',
-            details: ['Health indicators', 'Cache statistics', 'Management endpoints']
+            title: 'Enhanced Actuator Integration',
+            description: 'Built-in health checks and metrics with profile insights',
+            details: ['Profile-specific metrics', 'Health indicators', 'Cache statistics', 'Performance monitoring']
         }
     ];
 
@@ -448,84 +528,147 @@ public class CacheMetrics implements MeterBinder {
         }
     ];
 
+    const navigationItems = [
+        {
+            id: 'spring-setup',
+            title: 'Setup',
+            icon: <SettingsIcon />,
+            children: [
+                { id: 'spring-installation', title: 'Installation', icon: <BuildIcon /> },
+                { id: 'spring-configuration', title: 'Configuration', icon: <SettingsIcon /> },
+                { id: 'spring-auto-config', title: 'Auto-Configuration', icon: <CheckIcon /> }
+            ]
+        },
+        {
+            id: 'spring-usage',
+            title: 'Usage',
+            icon: <ApiIcon />,
+            children: [
+                { id: 'spring-annotations', title: 'Annotations', icon: <ExtensionIcon /> },
+                { id: 'spring-profiles', title: 'Profiles', icon: <RocketIcon /> },
+                { id: 'spring-cache-manager', title: 'Cache Manager', icon: <SettingsIcon /> }
+            ]
+        },
+        {
+            id: 'spring-monitoring',
+            title: 'Monitoring',
+            icon: <MonitorIcon />,
+            children: [
+                { id: 'spring-actuator', title: 'Actuator', icon: <AnalyticsIcon /> },
+                { id: 'spring-metrics', title: 'Metrics', icon: <MonitorIcon /> },
+                { id: 'spring-health', title: 'Health Checks', icon: <SecurityIcon /> }
+            ]
+        },
+        {
+            id: 'spring-examples',
+            title: 'Examples',
+            icon: <InfoIcon />,
+            children: [
+                { id: 'spring-basic', title: 'Basic Usage', icon: <BuildIcon /> },
+                { id: 'spring-advanced', title: 'Advanced', icon: <ExtensionIcon /> },
+                { id: 'spring-production', title: 'Production', icon: <RocketIcon /> }
+            ]
+        }
+    ];
+
+    const sidebarConfig = {
+        title: "Spring Boot Guide",
+        navigationItems: navigationItems,
+        expandedByDefault: true
+    };
+
     return (
-        <div className="spring-guide-page">
-            <MetaTags seo={seoData} />
-            <Breadcrumbs items={[
-                { label: 'Home', path: '/' },
-                { label: 'Spring Boot', path: '/spring', current: true }
-            ]} />
+        <Layout sidebarConfig={sidebarConfig}>
+            <Container
+                maxWidth={false}
+                sx={{
+                    py: 4,
+                    px: { xs: 2, sm: 3, md: 0 }, // Remove horizontal padding on desktop since Layout handles sidebar offset
+                    pr: { xs: 2, sm: 3, md: 4 }, // Keep right padding on desktop
+                    pl: { xs: 2, sm: 3, md: 0 }, // Remove left padding on desktop
+                    ml: { xs: 0, md: 0 }, // No extra margin on mobile
+                    mt: { xs: 1, md: 0 }, // Small top margin on mobile to avoid FAB overlap
+                    minHeight: { xs: 'calc(100vh - 80px)', md: 'auto' }, // Ensure full height on mobile
+                }}
+            >
+                <MetaTags seo={seoData} />
+                <Breadcrumbs items={[
+                    { label: 'Home', path: '/' },
+                    { label: 'Spring Boot', path: '/spring', current: true }
+                ]} />
 
-            {/* Header */}
-            <Section background="gradient" padding="lg" centered>
-                <div className="spring-header">
-                    <h1 className="spring-title">Spring Boot Integration</h1>
-                    <p className="spring-subtitle">
-                        Complete guide to integrating JCacheX with Spring Boot applications.
-                        From zero to production-ready caching in minutes.
-                    </p>
-                </div>
-            </Section>
+                {/* Header */}
+                <Section padding="lg" centered>
+                    <div className="spring-header">
+                        <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
+                            Spring Boot Integration
+                        </Typography>
+                        <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
+                            Complete guide to integrating JCacheX with Spring Boot applications.
+                            From zero to production-ready caching in minutes.
+                        </Typography>
+                    </div>
+                </Section>
 
-            {/* Why JCacheX + Spring Boot */}
-            <Section padding="lg">
-                <div className="intro-section">
-                    <h2 className="section-title">Why JCacheX + Spring Boot?</h2>
-                    <p className="section-description">
-                        Spring Boot provides excellent caching abstractions, but most cache providers are either
-                        too simple for production or too complex to configure. JCacheX bridges this gap with
-                        enterprise-grade features and zero-configuration setup.
-                    </p>
+                {/* Why JCacheX + Spring Boot */}
+                <Section padding="lg">
+                    <div className="intro-section">
+                        <h2 className="section-title">Why JCacheX + Spring Boot?</h2>
+                        <p className="section-description">
+                            Spring Boot provides excellent caching abstractions, but most cache providers are either
+                            too simple for production or too complex to configure. JCacheX bridges this gap with
+                            enterprise-grade features and zero-configuration setup.
+                        </p>
 
-                    <Grid columns={3} gap="lg">
-                        <FeatureCard
-                            icon="🚀"
-                            title="Zero Configuration"
-                            description="Works out of the box with sensible defaults"
-                            details={['Auto-detection', 'Smart defaults', 'No XML configuration']}
-                        />
-                        <FeatureCard
-                            icon="📊"
-                            title="Production Ready"
-                            description="Built-in monitoring and management"
-                            details={['Health checks', 'Metrics export', 'JMX support']}
-                        />
-                        <FeatureCard
-                            icon="⚡"
-                            title="High Performance"
-                            description="Optimized for Spring Boot workloads"
-                            details={['Async support', 'Thread-safe', 'Low latency']}
-                        />
-                    </Grid>
-                </div>
-            </Section>
+                        <Grid columns={3} gap="lg">
+                            <FeatureCard
+                                icon="🚀"
+                                title="Zero Configuration"
+                                description="Works out of the box with sensible defaults"
+                                details={['Auto-detection', 'Smart defaults', 'No XML configuration']}
+                            />
+                            <FeatureCard
+                                icon="📊"
+                                title="Production Ready"
+                                description="Built-in monitoring and management"
+                                details={['Health checks', 'Metrics export', 'JMX support']}
+                            />
+                            <FeatureCard
+                                icon="⚡"
+                                title="High Performance"
+                                description="Optimized for Spring Boot workloads"
+                                details={['Async support', 'Thread-safe', 'Low latency']}
+                            />
+                        </Grid>
+                    </div>
+                </Section>
 
-            {/* Step-by-Step Setup */}
-            <Section background="dark" padding="lg">
-                <div className="setup-guide">
-                    <h2 className="section-title">📋 Step-by-Step Setup</h2>
-                    <p className="section-description">
-                        Follow these steps to add enterprise-grade caching to your Spring Boot application.
-                        Each step builds on the previous one with clear explanations.
-                    </p>
+                {/* Step-by-Step Setup */}
+                <Section padding="lg">
+                    <div className="setup-guide">
+                        <h2 className="section-title">📋 Step-by-Step Setup</h2>
+                        <p className="section-description">
+                            Follow these steps to add enterprise-grade caching to your Spring Boot application.
+                            Each step builds on the previous one with clear explanations.
+                        </p>
 
-                    <div className="setup-steps">
-                        <div className="step">
-                            <div className="step-header">
-                                <span className="step-number">1</span>
-                                <h3 className="step-title">Add JCacheX Spring Boot Starter</h3>
-                            </div>
-                            <div className="step-content">
-                                <p>
-                                    The Spring Boot starter automatically configures JCacheX and integrates
-                                    it with Spring's caching abstraction. No additional configuration needed!
-                                </p>
-                                <CodeTabs tabs={[
-                                    {
-                                        id: 'maven-setup',
-                                        label: 'Maven',
-                                        language: 'xml',
-                                        code: `<dependencies>
+                        <div className="setup-steps">
+                            <div className="step">
+                                <div className="step-header">
+                                    <span className="step-number">1</span>
+                                    <h3 className="step-title">Add JCacheX Spring Boot Starter</h3>
+                                </div>
+                                <div className="step-content">
+                                    <p>
+                                        The Spring Boot starter automatically configures JCacheX and integrates
+                                        it with Spring's caching abstraction. No additional configuration needed!
+                                    </p>
+                                    <CodeTabs tabs={[
+                                        {
+                                            id: 'maven-setup',
+                                            label: 'Maven',
+                                            language: 'xml',
+                                            code: `<dependencies>
     <!-- JCacheX Spring Boot Starter -->
     <dependency>
         <groupId>io.github.dhruv1110</groupId>
@@ -545,12 +688,12 @@ public class CacheMetrics implements MeterBinder {
         <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 </dependencies>`
-                                    },
-                                    {
-                                        id: 'gradle-setup',
-                                        label: 'Gradle',
-                                        language: 'groovy',
-                                        code: `dependencies {
+                                        },
+                                        {
+                                            id: 'gradle-setup',
+                                            label: 'Gradle',
+                                            language: 'groovy',
+                                            code: `dependencies {
     // JCacheX Spring Boot Starter
     implementation 'io.github.dhruv1110:jcachex-spring-boot-starter:${version}'
 
@@ -560,36 +703,36 @@ public class CacheMetrics implements MeterBinder {
     // Spring Boot Actuator (for monitoring)
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 }`
-                                    }
-                                ]} />
-                                <div className="step-explanation">
-                                    <h4>💡 What you get with the starter:</h4>
-                                    <ul>
-                                        <li><strong>Auto-configuration</strong>: JCacheX is automatically configured and ready to use</li>
-                                        <li><strong>Spring integration</strong>: Works seamlessly with @Cacheable, @CacheEvict, etc.</li>
-                                        <li><strong>Health checks</strong>: Automatic health indicators for monitoring</li>
-                                        <li><strong>Metrics</strong>: Cache statistics exposed to Micrometer/Actuator</li>
-                                    </ul>
+                                        }
+                                    ]} />
+                                    <div className="step-explanation">
+                                        <h4>💡 What you get with the starter:</h4>
+                                        <ul>
+                                            <li><strong>Auto-configuration</strong>: JCacheX is automatically configured and ready to use</li>
+                                            <li><strong>Spring integration</strong>: Works seamlessly with @Cacheable, @CacheEvict, etc.</li>
+                                            <li><strong>Health checks</strong>: Automatic health indicators for monitoring</li>
+                                            <li><strong>Metrics</strong>: Cache statistics exposed to Micrometer/Actuator</li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="step">
-                            <div className="step-header">
-                                <span className="step-number">2</span>
-                                <h3 className="step-title">Enable Caching in Your Application</h3>
-                            </div>
-                            <div className="step-content">
-                                <p>
-                                    Add @EnableCaching to your main application class to activate Spring's caching features.
-                                    JCacheX will automatically be used as the cache provider.
-                                </p>
-                                <CodeTabs tabs={[
-                                    {
-                                        id: 'enable-caching',
-                                        label: 'Application Class',
-                                        language: 'java',
-                                        code: `package com.example.demo;
+                            <div className="step">
+                                <div className="step-header">
+                                    <span className="step-number">2</span>
+                                    <h3 className="step-title">Enable Caching in Your Application</h3>
+                                </div>
+                                <div className="step-content">
+                                    <p>
+                                        Add @EnableCaching to your main application class to activate Spring's caching features.
+                                        JCacheX will automatically be used as the cache provider.
+                                    </p>
+                                    <CodeTabs tabs={[
+                                        {
+                                            id: 'enable-caching',
+                                            label: 'Application Class',
+                                            language: 'java',
+                                            code: `package com.example.demo;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -605,35 +748,35 @@ public class DemoApplication {
 }
 
 // That's it! JCacheX is now active and ready to use`
-                                    }
-                                ]} />
-                                <div className="step-explanation">
-                                    <h4>🔍 What @EnableCaching does:</h4>
-                                    <ul>
-                                        <li><strong>Activates annotations</strong>: @Cacheable, @CacheEvict, @CachePut now work</li>
-                                        <li><strong>Proxy creation</strong>: Spring creates proxies for cached methods</li>
-                                        <li><strong>Cache manager setup</strong>: JCacheX cache manager is automatically configured</li>
-                                    </ul>
+                                        }
+                                    ]} />
+                                    <div className="step-explanation">
+                                        <h4>🔍 What @EnableCaching does:</h4>
+                                        <ul>
+                                            <li><strong>Activates annotations</strong>: @Cacheable, @CacheEvict, @CachePut now work</li>
+                                            <li><strong>Proxy creation</strong>: Spring creates proxies for cached methods</li>
+                                            <li><strong>Cache manager setup</strong>: JCacheX cache manager is automatically configured</li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="step">
-                            <div className="step-header">
-                                <span className="step-number">3</span>
-                                <h3 className="step-title">Add Caching to Your Services</h3>
-                            </div>
-                            <div className="step-content">
-                                <p>
-                                    Now you can add caching to any method using Spring's annotations.
-                                    Let's start with a simple example that every developer can understand.
-                                </p>
-                                <CodeTabs tabs={[
-                                    {
-                                        id: 'service-caching',
-                                        label: 'User Service with Caching',
-                                        language: 'java',
-                                        code: `@Service
+                            <div className="step">
+                                <div className="step-header">
+                                    <span className="step-number">3</span>
+                                    <h3 className="step-title">Add Caching to Your Services</h3>
+                                </div>
+                                <div className="step-content">
+                                    <p>
+                                        Now you can add caching to any method using Spring's annotations.
+                                        Let's start with a simple example that every developer can understand.
+                                    </p>
+                                    <CodeTabs tabs={[
+                                        {
+                                            id: 'service-caching',
+                                            label: 'User Service with Caching',
+                                            language: 'java',
+                                            code: `@Service
 @Transactional
 public class UserService {
 
@@ -685,37 +828,37 @@ public class UserService {
         return saved;
     }
 }`
-                                    }
-                                ]} />
-                                <div className="step-explanation">
-                                    <h4>🎯 Annotation Explained:</h4>
-                                    <ul>
-                                        <li><strong>@Cacheable</strong>: Stores method result in cache, returns cached value on subsequent calls</li>
-                                        <li><strong>@CacheEvict</strong>: Removes entries from cache when data changes</li>
-                                        <li><strong>@CachePut</strong>: Always executes method and updates cache with result</li>
-                                        <li><strong>key = "#userId"</strong>: Uses method parameter as cache key</li>
-                                        <li><strong>allEntries = true</strong>: Clears entire cache, not just one entry</li>
-                                    </ul>
+                                        }
+                                    ]} />
+                                    <div className="step-explanation">
+                                        <h4>🎯 Annotation Explained:</h4>
+                                        <ul>
+                                            <li><strong>@Cacheable</strong>: Stores method result in cache, returns cached value on subsequent calls</li>
+                                            <li><strong>@CacheEvict</strong>: Removes entries from cache when data changes</li>
+                                            <li><strong>@CachePut</strong>: Always executes method and updates cache with result</li>
+                                            <li><strong>key = "#userId"</strong>: Uses method parameter as cache key</li>
+                                            <li><strong>allEntries = true</strong>: Clears entire cache, not just one entry</li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="step">
-                            <div className="step-header">
-                                <span className="step-number">4</span>
-                                <h3 className="step-title">Configure Cache Settings (Optional)</h3>
-                            </div>
-                            <div className="step-content">
-                                <p>
-                                    JCacheX works great with zero configuration, but you can customize settings
-                                    for optimal performance in your specific use case.
-                                </p>
-                                <CodeTabs tabs={[
-                                    {
-                                        id: 'application-yml',
-                                        label: 'application.yml',
-                                        language: 'yaml',
-                                        code: `# JCacheX Configuration
+                            <div className="step">
+                                <div className="step-header">
+                                    <span className="step-number">4</span>
+                                    <h3 className="step-title">Configure Cache Settings (Optional)</h3>
+                                </div>
+                                <div className="step-content">
+                                    <p>
+                                        JCacheX works great with zero configuration, but you can customize settings
+                                        for optimal performance in your specific use case.
+                                    </p>
+                                    <CodeTabs tabs={[
+                                        {
+                                            id: 'application-yml',
+                                            label: 'application.yml',
+                                            language: 'yaml',
+                                            code: `# JCacheX Configuration
 jcachex:
   # Enable JCacheX (default: true)
   enabled: true
@@ -742,15 +885,15 @@ jcachex:
       eviction-strategy: LFU
       record-stats: true
 
-    userSearches:
-      maximum-size: 1000
-      expire-after-write-seconds: 900   # 15 minutes
-      eviction-strategy: LRU
-
     products:
       maximum-size: 10000
       expire-after-write-seconds: 7200  # 2 hours
       eviction-strategy: LRU
+
+    sessions:
+      maximum-size: 50000
+      expire-after-access-seconds: 1800  # 30 minutes
+      eviction-strategy: FIFO
 
 # Spring Boot Actuator Configuration
 management:
@@ -763,13 +906,14 @@ management:
       show-details: always
     caches:
       enabled: true`
-                                    },
-                                    {
-                                        id: 'application-properties',
-                                        label: 'application.properties',
-                                        language: 'properties',
-                                        code: `# JCacheX Configuration
+                                        },
+                                        {
+                                            id: 'application-properties',
+                                            label: 'application.properties',
+                                            language: 'properties',
+                                            code: `# JCacheX Configuration
 jcachex.enabled=true
+jcachex.auto-create-caches=true
 jcachex.enable-statistics=true
 jcachex.enable-jmx=true
 
@@ -784,41 +928,47 @@ jcachex.default.record-stats=true
 jcachex.caches.users.maximum-size=5000
 jcachex.caches.users.expire-after-write-seconds=3600
 jcachex.caches.users.eviction-strategy=LFU
+jcachex.caches.users.record-stats=true
 
-jcachex.caches.userSearches.maximum-size=1000
-jcachex.caches.userSearches.expire-after-write-seconds=900
+jcachex.caches.products.maximum-size=10000
+jcachex.caches.products.expire-after-write-seconds=7200
+jcachex.caches.products.eviction-strategy=LRU
 
-# Actuator endpoints
+# Spring Boot Actuator
 management.endpoints.web.exposure.include=health,info,metrics,caches,jcachex
 management.endpoint.health.show-details=always
-management.endpoint.caches.enabled=true`
-                                    }
-                                ]} />
+management.endpoint.caches.enabled=true
+
+# Application
+spring.application.name=jcachex-spring-demo
+spring.cache.type=jcachex`
+                                        }
+                                    ]} />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </Section>
+                </Section>
 
-            {/* Real-World Spring Boot Examples */}
-            <Section padding="lg">
-                <div className="examples-section">
-                    <h2 className="section-title">🏗️ Real-World Spring Boot Examples</h2>
-                    <p className="section-description">
-                        See how JCacheX solves common Spring Boot performance challenges with
-                        production-ready code you can use immediately.
-                    </p>
+                {/* Real-World Spring Boot Examples */}
+                <Section padding="lg">
+                    <div className="examples-section">
+                        <h2 className="section-title">🏗️ Real-World Spring Boot Examples</h2>
+                        <p className="section-description">
+                            See how JCacheX solves common Spring Boot performance challenges with
+                            production-ready code you can use immediately.
+                        </p>
 
-                    <div className="example-categories">
-                        <div className="example-category">
-                            <h3>📊 REST API with Database Caching</h3>
-                            <p>Complete example of a REST controller with optimized database caching:</p>
-                            <CodeTabs tabs={[
-                                {
-                                    id: 'rest-controller',
-                                    label: 'Product Controller',
-                                    language: 'java',
-                                    code: `@RestController
+                        <div className="example-categories">
+                            <div className="example-category">
+                                <h3>📊 REST API with Database Caching</h3>
+                                <p>Complete example of a REST controller with optimized database caching:</p>
+                                <CodeTabs tabs={[
+                                    {
+                                        id: 'rest-controller',
+                                        label: 'Product Controller',
+                                        language: 'java',
+                                        code: `@RestController
 @RequestMapping("/api/products")
 @Validated
 public class ProductController {
@@ -939,19 +1089,19 @@ public class ProductService {
         log.info("Deleted product and cleared caches: {}", id);
     }
 }`
-                                }
-                            ]} />
-                        </div>
+                                    }
+                                ]} />
+                            </div>
 
-                        <div className="example-category">
-                            <h3>🔐 Security & Session Caching</h3>
-                            <p>Optimize authentication and session management with intelligent caching:</p>
-                            <CodeTabs tabs={[
-                                {
-                                    id: 'security-service',
-                                    label: 'Authentication Service',
-                                    language: 'java',
-                                    code: `@Service
+                            <div className="example-category">
+                                <h3>🔐 Security & Session Caching</h3>
+                                <p>Optimize authentication and session management with intelligent caching:</p>
+                                <CodeTabs tabs={[
+                                    {
+                                        id: 'security-service',
+                                        label: 'Authentication Service',
+                                        language: 'java',
+                                        code: `@Service
 public class AuthenticationService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthenticationService.class);
@@ -1047,32 +1197,32 @@ public class SessionCacheService {
         sessionRepository.deleteById(sessionId);
     }
 }`
-                                }
-                            ]} />
+                                    }
+                                ]} />
+                            </div>
                         </div>
                     </div>
-                </div>
-            </Section>
+                </Section>
 
-            {/* Monitoring & Management */}
-            <Section background="dark" padding="lg">
-                <div className="monitoring-section">
-                    <h2 className="section-title">📊 Monitoring & Management</h2>
-                    <p className="section-description">
-                        JCacheX provides comprehensive monitoring through Spring Boot Actuator.
-                        Monitor cache performance and health in production.
-                    </p>
+                {/* Monitoring & Management */}
+                <Section padding="lg">
+                    <div className="monitoring-section">
+                        <h2 className="section-title">📊 Monitoring & Management</h2>
+                        <p className="section-description">
+                            JCacheX provides comprehensive monitoring through Spring Boot Actuator.
+                            Monitor cache performance and health in production.
+                        </p>
 
-                    <div className="monitoring-examples">
-                        <div className="monitoring-category">
-                            <h3>Health Checks</h3>
-                            <p>Automatic health indicators show cache status:</p>
-                            <CodeTabs tabs={[
-                                {
-                                    id: 'health-endpoint',
-                                    label: 'GET /actuator/health',
-                                    language: 'json',
-                                    code: `{
+                        <div className="monitoring-examples">
+                            <div className="monitoring-category">
+                                <h3>Health Checks</h3>
+                                <p>Automatic health indicators show cache status:</p>
+                                <CodeTabs tabs={[
+                                    {
+                                        id: 'health-endpoint',
+                                        label: 'GET /actuator/health',
+                                        language: 'json',
+                                        code: `{
   "status": "UP",
   "components": {
     "jcachex": {
@@ -1096,19 +1246,19 @@ public class SessionCacheService {
     }
   }
 }`
-                                }
-                            ]} />
-                        </div>
+                                    }
+                                ]} />
+                            </div>
 
-                        <div className="monitoring-category">
-                            <h3>Cache Metrics</h3>
-                            <p>Detailed performance metrics via Micrometer:</p>
-                            <CodeTabs tabs={[
-                                {
-                                    id: 'metrics-endpoint',
-                                    label: 'GET /actuator/metrics/cache.gets',
-                                    language: 'json',
-                                    code: `{
+                            <div className="monitoring-category">
+                                <h3>Cache Metrics</h3>
+                                <p>Detailed performance metrics via Micrometer:</p>
+                                <CodeTabs tabs={[
+                                    {
+                                        id: 'metrics-endpoint',
+                                        label: 'GET /actuator/metrics/cache.gets',
+                                        language: 'json',
+                                        code: `{
   "name": "cache.gets",
   "description": "Cache gets",
   "baseUnit": "operations",
@@ -1129,19 +1279,19 @@ public class SessionCacheService {
     }
   ]
 }`
-                                }
-                            ]} />
-                        </div>
+                                    }
+                                ]} />
+                            </div>
 
-                        <div className="monitoring-category">
-                            <h3>Custom Management Endpoint</h3>
-                            <p>Create custom endpoints for cache management:</p>
-                            <CodeTabs tabs={[
-                                {
-                                    id: 'management-controller',
-                                    label: 'Cache Management Controller',
-                                    language: 'java',
-                                    code: `@RestController
+                            <div className="monitoring-category">
+                                <h3>Custom Management Endpoint</h3>
+                                <p>Create custom endpoints for cache management:</p>
+                                <CodeTabs tabs={[
+                                    {
+                                        id: 'management-controller',
+                                        label: 'Cache Management Controller',
+                                        language: 'java',
+                                        code: `@RestController
 @RequestMapping("/actuator/jcachex")
 @ConditionalOnProperty(name = "management.endpoint.jcachex.enabled", havingValue = "true")
 public class JCacheXManagementController {
@@ -1219,83 +1369,84 @@ public class JCacheXManagementController {
         return ResponseEntity.notFound().build();
     }
 }`
-                                }
-                            ]} />
+                                    }
+                                ]} />
+                            </div>
                         </div>
                     </div>
-                </div>
-            </Section>
+                </Section>
 
-            {/* Best Practices for Spring Boot */}
-            <Section padding="lg">
-                <div className="best-practices">
-                    <h2 className="section-title">🎯 Spring Boot Best Practices</h2>
+                {/* Best Practices for Spring Boot */}
+                <Section padding="lg">
+                    <div className="best-practices">
+                        <h2 className="section-title">🎯 Spring Boot Best Practices</h2>
 
-                    <Grid columns={2} gap="lg">
-                        <div className="practices-section">
-                            <h3>✅ Spring Boot Specific Do's</h3>
-                            <ul className="practices-list">
-                                <li><strong>Use profiles for different environments</strong> - Dev/staging/prod configs</li>
-                                <li><strong>Enable Actuator endpoints</strong> - Monitor cache health and metrics</li>
-                                <li><strong>Use conditional caching</strong> - Cache based on user roles or conditions</li>
-                                <li><strong>Implement cache warming</strong> - Pre-populate caches on startup</li>
-                                <li><strong>Use async caching</strong> - For non-blocking cache operations</li>
-                                <li><strong>Configure proper timeouts</strong> - For distributed scenarios</li>
-                                <li><strong>Use SpEL expressions</strong> - For dynamic cache keys and conditions</li>
+                        <Grid columns={2} gap="lg">
+                            <div className="practices-section">
+                                <h3>✅ Spring Boot Specific Do's</h3>
+                                <ul className="practices-list">
+                                    <li><strong>Use profiles for different environments</strong> - Dev/staging/prod configs</li>
+                                    <li><strong>Enable Actuator endpoints</strong> - Monitor cache health and metrics</li>
+                                    <li><strong>Use conditional caching</strong> - Cache based on user roles or conditions</li>
+                                    <li><strong>Implement cache warming</strong> - Pre-populate caches on startup</li>
+                                    <li><strong>Use async caching</strong> - For non-blocking cache operations</li>
+                                    <li><strong>Configure proper timeouts</strong> - For distributed scenarios</li>
+                                    <li><strong>Use SpEL expressions</strong> - For dynamic cache keys and conditions</li>
+                                </ul>
+                            </div>
+
+                            <div className="practices-section">
+                                <h3>❌ Spring Boot Specific Don'ts</h3>
+                                <ul className="practices-list">
+                                    <li><strong>Don't cache in @Transactional methods</strong> - Can cause data consistency issues</li>
+                                    <li><strong>Don't use caching with @Async</strong> - Proxy issues can occur</li>
+                                    <li><strong>Don't cache large objects</strong> - Can cause memory pressure</li>
+                                    <li><strong>Don't forget error handling</strong> - Cache exceptions should be handled</li>
+                                    <li><strong>Don't cache user-specific data globally</strong> - Security risk</li>
+                                    <li><strong>Don't cache everything</strong> - Only cache expensive operations</li>
+                                    <li><strong>Don't ignore cache statistics</strong> - Monitor performance regularly</li>
+                                </ul>
+                            </div>
+                        </Grid>
+                    </div>
+                </Section>
+
+                {/* Production Deployment */}
+                <Section padding="lg" centered>
+                    <div className="deployment-section">
+                        <h2 className="deployment-title">🚀 Ready for Production?</h2>
+                        <p className="deployment-subtitle">
+                            Your Spring Boot application now has enterprise-grade caching!
+                            Deploy with confidence using these final tips.
+                        </p>
+
+                        <div className="deployment-checklist">
+                            <h3>Pre-Production Checklist</h3>
+                            <ul>
+                                <li>✅ Cache hit rates &gt; 80% for frequently accessed data</li>
+                                <li>✅ Memory usage under 70% of allocated heap</li>
+                                <li>✅ Health checks passing consistently</li>
+                                <li>✅ Metrics being collected and monitored</li>
+                                <li>✅ Cache invalidation strategies tested</li>
+                                <li>✅ Load testing completed with caching enabled</li>
                             </ul>
                         </div>
 
-                        <div className="practices-section">
-                            <h3>❌ Spring Boot Specific Don'ts</h3>
-                            <ul className="practices-list">
-                                <li><strong>Don't cache in @Transactional methods</strong> - Can cause data consistency issues</li>
-                                <li><strong>Don't use caching with @Async</strong> - Proxy issues can occur</li>
-                                <li><strong>Don't cache large objects</strong> - Can cause memory pressure</li>
-                                <li><strong>Don't forget error handling</strong> - Cache exceptions should be handled</li>
-                                <li><strong>Don't cache user-specific data globally</strong> - Security risk</li>
-                                <li><strong>Don't cache everything</strong> - Only cache expensive operations</li>
-                                <li><strong>Don't ignore cache statistics</strong> - Monitor performance regularly</li>
-                            </ul>
+                        <div className="next-steps-buttons">
+                            <a href="/examples" className="btn btn-primary">
+                                More Examples
+                            </a>
+                            <a href="/faq" className="btn btn-secondary">
+                                Common Questions
+                            </a>
+                            <a href="https://github.com/dhruv1110/JCacheX/tree/main/examples/springboot" className="btn btn-secondary">
+                                Complete Example on GitHub
+                            </a>
                         </div>
-                    </Grid>
-                </div>
-            </Section>
-
-            {/* Production Deployment */}
-            <Section background="gradient" padding="lg" centered>
-                <div className="deployment-section">
-                    <h2 className="deployment-title">🚀 Ready for Production?</h2>
-                    <p className="deployment-subtitle">
-                        Your Spring Boot application now has enterprise-grade caching!
-                        Deploy with confidence using these final tips.
-                    </p>
-
-                    <div className="deployment-checklist">
-                        <h3>Pre-Production Checklist</h3>
-                        <ul>
-                            <li>✅ Cache hit rates &gt; 80% for frequently accessed data</li>
-                            <li>✅ Memory usage under 70% of allocated heap</li>
-                            <li>✅ Health checks passing consistently</li>
-                            <li>✅ Metrics being collected and monitored</li>
-                            <li>✅ Cache invalidation strategies tested</li>
-                            <li>✅ Load testing completed with caching enabled</li>
-                        </ul>
                     </div>
-
-                    <div className="next-steps-buttons">
-                        <a href="/examples" className="btn btn-primary">
-                            More Examples
-                        </a>
-                        <a href="/faq" className="btn btn-secondary">
-                            Common Questions
-                        </a>
-                        <a href="https://github.com/dhruv1110/JCacheX/tree/main/examples/springboot" className="btn btn-secondary">
-                            Complete Example on GitHub
-                        </a>
-                    </div>
-                </div>
-            </Section>
-        </div>
+                </Section>
+            </Container>
+        </Layout>
     );
 };
 

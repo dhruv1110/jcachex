@@ -2,7 +2,7 @@ package io.github.dhruv1110.jcachex.spring.core;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.UnifiedCacheBuilder;
+import io.github.dhruv1110.jcachex.JCacheXBuilder;
 import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import io.github.dhruv1110.jcachex.profiles.CacheProfile;
 import io.github.dhruv1110.jcachex.profiles.ProfileRegistry;
@@ -282,17 +282,17 @@ public class JCacheXCacheManager implements CacheManager {
     private JCacheXSpringCache createCache(String cacheName) {
         JCacheXProperties.CacheConfig cacheConfig = getCacheConfig(cacheName);
 
-        // Use UnifiedCacheBuilder with profile support
-        UnifiedCacheBuilder<Object, Object> builder;
+        // Use JCacheXBuilder with profile support
+        JCacheXBuilder<Object, Object> builder;
 
         // Check if a profile is specified in configuration
         String profileName = cacheConfig.getProfile();
         if (profileName != null && !profileName.isEmpty()) {
             CacheProfile<?, ?> profile = getProfileByName(profileName);
-            builder = UnifiedCacheBuilder.forProfile(profile);
+            builder = JCacheXBuilder.forProfile(profile);
         } else {
             // Use smart defaults if no profile specified
-            builder = UnifiedCacheBuilder.withSmartDefaults();
+            builder = JCacheXBuilder.withSmartDefaults();
         }
 
         // Apply configuration settings

@@ -4,7 +4,7 @@ import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheEntry;
 import io.github.dhruv1110.jcachex.CacheStats;
-import io.github.dhruv1110.jcachex.impl.ConfigurationProvider;
+import io.github.dhruv1110.jcachex.internal.util.ConfigurationProvider;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;

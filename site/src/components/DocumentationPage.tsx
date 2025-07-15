@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useVersion } from '../hooks';
 import {
     Box,
     Container,
@@ -59,6 +60,7 @@ import Layout from './Layout';
 const DocumentationPage: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const { version } = useVersion();
 
     const platformsData = [
         {
@@ -241,6 +243,18 @@ const DocumentationPage: React.FC = () => {
                 { id: 'what-is-jcachex', title: 'What is JCacheX?', icon: <InfoIcon /> },
                 { id: 'supported-platforms', title: 'Supported Platforms', icon: <AndroidIcon /> },
                 { id: 'quick-start', title: '1 Minute Quick Start', icon: <RocketIcon /> },
+            ],
+        },
+        {
+            id: 'cache-profiles',
+            title: 'Cache Profiles',
+            icon: <ArchitectureIcon />,
+            children: [
+                { id: 'profiles-overview', title: 'Profiles Overview', icon: <InfoIcon /> },
+                { id: 'core-profiles', title: 'Core Profiles', icon: <DashboardIcon /> },
+                { id: 'specialized-profiles', title: 'Specialized Profiles', icon: <SettingsIcon /> },
+                { id: 'advanced-profiles', title: 'Advanced Profiles', icon: <SpeedIcon /> },
+                { id: 'profile-selection-guide', title: 'Selection Guide', icon: <SecurityIcon /> },
             ],
         },
         {
@@ -595,43 +609,64 @@ const DocumentationPage: React.FC = () => {
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-core</artifactId>
-    <version>1.0.0</version>
+    <version>${version}</version>
 </dependency>
 
-// Basic usage
+// Modern JCacheXBuilder with profiles
 import io.github.dhruv1110.jcachex.*;
 
-// Create cache
-CacheConfig<String, User> config = CacheConfig.<String, User>builder()
-    .maximumSize(1000L)
+// Profile-based cache creation (recommended)
+Cache<String, User> cache = JCacheXBuilder
+    .forReadHeavyWorkload()  // Optimized for read-heavy patterns
+    .maximumSize(1000)
     .expireAfterWrite(Duration.ofMinutes(30))
     .build();
 
-Cache<String, User> cache = new DefaultCache<>(config);
+// Alternative: Use profile enum for type safety
+Cache<String, User> cache2 = JCacheXBuilder
+    .fromProfile(ProfileName.READ_HEAVY)
+    .maximumSize(1000)
+    .expireAfterWrite(Duration.ofMinutes(30))
+    .build();
 
-// Use cache
+// One-liner for common cases
+Cache<String, User> cache3 = JCacheXBuilder
+    .createReadHeavyCache("users", 1000);
+
+// Use cache - 501.1M ops/sec with ZeroCopy profile
 cache.put("user123", new User("Alice"));
-User user = cache.get("user123");`
+User user = cache.get("user123");  // Ultra-fast retrieval`
                                 },
                                 {
                                     id: 'kotlin',
                                     label: 'Kotlin',
                                     language: 'kotlin',
                                     code: `// Gradle dependency
-implementation 'io.github.dhruv1110:jcachex-kotlin:1.0.0'
+implementation 'io.github.dhruv1110:jcachex-kotlin:${version}'
 
-// Kotlin DSL usage
+// Modern Kotlin DSL with profiles
 import io.github.dhruv1110.jcachex.kotlin.*
 
-// Create cache with DSL
-val cache = createCache<String, User> {
+// Profile-based creation with Kotlin extensions
+val cache = createReadHeavyCache<String, User>(1000)
+
+// Or use the builder pattern
+val cache2 = JCacheXBuilder
+    .forReadHeavyWorkload()
+    .maximumSize(1000)
+    .expireAfterWrite(Duration.ofMinutes(30))
+    .build<String, User>()
+
+// Kotlin DSL with profile
+val cache3 = createCache<String, User> {
+    profile(ProfileName.READ_HEAVY)
     maximumSize(1000)
     expireAfterWrite(Duration.ofMinutes(30))
 }
 
-// Use cache with operators
+// Use cache with operators - 501.1M ops/sec performance
 cache["user123"] = User("Alice")
-val user = cache["user123"]`
+val user = cache["user123"]  // ZeroCopy retrieval`
                                 },
                                 {
                                     id: 'spring',
@@ -640,11 +675,11 @@ val user = cache["user123"]`
                                     code: `// Maven dependency
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
-    <artifactId>jcachex-spring</artifactId>
-    <version>1.0.0</version>
+    <artifactId>jcachex-spring-boot-starter</artifactId>
+    <version>${version}</version>
 </dependency>
 
-// Configuration
+// Auto-configuration with profiles
 @Configuration
 @EnableCaching
 public class CacheConfig {
@@ -654,17 +689,496 @@ public class CacheConfig {
     }
 }
 
-// Usage with annotations
+// Usage with profile-based annotations
 @Service
 public class UserService {
-    @JCacheXCacheable(cacheName = "users")
+
+    @JCacheXCacheable(cacheName = "users", profile = "READ_HEAVY")
     public User findUser(String id) {
         return userRepository.findById(id);
     }
-}`
+
+    @JCacheXCacheable(cacheName = "sessions", profile = "WRITE_HEAVY")
+    public UserSession getSession(String sessionId) {
+        return sessionRepository.findById(sessionId);
+    }
+}
+
+// application.yml configuration
+# jcachex:
+#   profiles:
+#     read-heavy:
+#       maximum-size: 10000
+#       expire-after-access-seconds: 1800
+#       record-stats: true`
                                 }
                             ]}
                         />
+                    </Box>
+                </Box>
+
+                {/* Cache Profiles Section */}
+                <Box id="cache-profiles" sx={{ mb: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                        <ArchitectureIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                        Cache Profiles
+                    </Typography>
+
+                    {/* Profiles Overview */}
+                    <Box id="profiles-overview" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            <InfoIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                            Profiles Overview
+                        </Typography>
+                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                            JCacheX profiles eliminate complex configuration decisions by providing pre-optimized settings
+                            for specific use cases. Simply choose a profile that matches your workload characteristics
+                            and get optimal performance automatically.
+                        </Typography>
+
+                        <Alert severity="success" sx={{ mb: 4 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                                Why Use Profiles?
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 2 }}>
+                                Profiles automatically configure eviction strategies, initial capacities, concurrency levels,
+                                and other performance-critical settings based on real-world usage patterns.
+                            </Typography>
+                            <List dense>
+                                <ListItem sx={{ py: 0 }}>
+                                    <ListItemText
+                                        primary="• No guessing about optimal configurations"
+                                        primaryTypographyProps={{ variant: 'body2' }}
+                                    />
+                                </ListItem>
+                                <ListItem sx={{ py: 0 }}>
+                                    <ListItemText
+                                        primary="• Performance optimized for specific workloads"
+                                        primaryTypographyProps={{ variant: 'body2' }}
+                                    />
+                                </ListItem>
+                                <ListItem sx={{ py: 0 }}>
+                                    <ListItemText
+                                        primary="• Easy to switch between profiles as needs change"
+                                        primaryTypographyProps={{ variant: 'body2' }}
+                                    />
+                                </ListItem>
+                                <ListItem sx={{ py: 0 }}>
+                                    <ListItemText
+                                        primary="• Override defaults when needed for fine-tuning"
+                                        primaryTypographyProps={{ variant: 'body2' }}
+                                    />
+                                </ListItem>
+                            </List>
+                        </Alert>
+
+                        <CodeTabs
+                            tabs={[
+                                {
+                                    id: 'java-profiles',
+                                    label: 'Java',
+                                    language: 'java',
+                                    code: `// Modern JCacheXBuilder with profiles - automatically optimized
+Cache<String, Product> productCache = JCacheXBuilder
+    .forReadHeavyWorkload()  // Optimized for read-intensive workloads
+    .maximumSize(5000)       // Override default if needed
+    .expireAfterWrite(Duration.ofMinutes(30))
+    .build();
+
+// Alternative: Use profile enum for type safety
+Cache<String, Product> productCache2 = JCacheXBuilder
+    .fromProfile(ProfileName.READ_HEAVY)
+    .maximumSize(5000)
+    .expireAfterWrite(Duration.ofMinutes(30))
+    .build();
+
+// Session storage with built-in optimization
+Cache<String, UserSession> sessionCache = JCacheXBuilder
+    .forWriteHeavyWorkload()  // Optimized for frequent updates
+    .maximumSize(10000)
+    .expireAfterAccess(Duration.ofMinutes(30))
+    .build();
+
+// High-performance caching for ultra-low latency
+Cache<String, Order> orderCache = JCacheXBuilder
+    .forHighPerformance()
+    .maximumSize(50000)
+    .expireAfterWrite(Duration.ofHours(1))
+    .build();
+
+// One-liner convenience methods
+Cache<String, User> userCache = JCacheXBuilder
+    .createReadHeavyCache("users", 1000);
+
+Cache<String, Counter> counterCache = JCacheXBuilder
+    .createWriteHeavyCache("counters", 5000);`
+                                },
+                                {
+                                    id: 'kotlin-profiles',
+                                    label: 'Kotlin',
+                                    language: 'kotlin',
+                                    code: `// Modern Kotlin DSL with profile-based optimization
+val productCache = createReadHeavyCache<String, Product>(5000)
+
+// Or use the builder pattern with profiles
+val productCache2 = JCacheXBuilder
+    .forReadHeavyWorkload()  // Optimized for read-intensive workloads
+    .maximumSize(5000)
+    .expireAfterWrite(Duration.ofMinutes(30))
+    .build<String, Product>()
+
+// Session storage with write-heavy optimization
+val sessionCache = createWriteHeavyCache<String, UserSession>(10000)
+
+// High-performance caching
+val orderCache = createHighPerformanceCache<String, Order>(50000)
+
+// Kotlin DSL with explicit profile
+val customCache = createCache<String, Data> {
+    profile(ProfileName.READ_HEAVY)
+    maximumSize(1000)
+    expireAfterWrite(Duration.ofMinutes(30))
+    recordStats()
+}
+
+// Profile-based creation with customization
+val apiCache = JCacheXBuilder
+    .fromProfile(ProfileName.HIGH_PERFORMANCE)
+    .maximumSize(2000)
+    .expireAfterAccess(Duration.ofMinutes(15))
+    .build<String, ApiResponse>()`
+                                }
+                            ]}
+                        />
+                    </Box>
+
+                    {/* Core Profiles */}
+                    <Box id="core-profiles" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            <DashboardIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                            Core Profiles
+                        </Typography>
+                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                            Core profiles cover 80% of use cases with proven configurations for common access patterns.
+                        </Typography>
+
+                        <TableContainer component={Paper} sx={{ mb: 4 }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell><strong>Profile</strong></TableCell>
+                                        <TableCell><strong>Best For</strong></TableCell>
+                                        <TableCell><strong>Eviction Strategy</strong></TableCell>
+                                        <TableCell><strong>Default Size</strong></TableCell>
+                                        <TableCell><strong>Performance</strong></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell><code>READ_HEAVY</code></TableCell>
+                                        <TableCell>Frequent read operations, reference data</TableCell>
+                                        <TableCell>Enhanced LFU with ZeroCopy</TableCell>
+                                        <TableCell>10,000</TableCell>
+                                        <TableCell>501.1M ops/sec</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><code>WRITE_HEAVY</code></TableCell>
+                                        <TableCell>Frequent write operations, counters</TableCell>
+                                        <TableCell>Enhanced LRU with optimized eviction</TableCell>
+                                        <TableCell>5,000</TableCell>
+                                        <TableCell>224.6M ops/sec</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><code>HIGH_PERFORMANCE</code></TableCell>
+                                        <TableCell>Ultra-low latency requirements</TableCell>
+                                        <TableCell>Optimized memory layout</TableCell>
+                                        <TableCell>50,000</TableCell>
+                                        <TableCell>Ultra-low latency</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><code>MEMORY_EFFICIENT</code></TableCell>
+                                        <TableCell>Memory-constrained environments</TableCell>
+                                        <TableCell>Compact LRU</TableCell>
+                                        <TableCell>1,000</TableCell>
+                                        <TableCell>Memory optimized</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><code>DEFAULT</code></TableCell>
+                                        <TableCell>General-purpose caching</TableCell>
+                                        <TableCell>TinyWindowLFU</TableCell>
+                                        <TableCell>1,000</TableCell>
+                                        <TableCell>Balanced performance</TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+
+                    {/* Specialized Profiles */}
+                    <Box id="specialized-profiles" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            <SettingsIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                            Specialized Profiles
+                        </Typography>
+                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                            Specialized profiles are optimized for specific scenarios with built-in configurations.
+                        </Typography>
+
+                        <TableContainer component={Paper} sx={{ mb: 4 }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell><strong>Profile</strong></TableCell>
+                                        <TableCell><strong>Best For</strong></TableCell>
+                                        <TableCell><strong>Eviction Strategy</strong></TableCell>
+                                        <TableCell><strong>Default Size</strong></TableCell>
+                                        <TableCell><strong>TTL</strong></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell><code>API_RESPONSE</code></TableCell>
+                                        <TableCell>External API responses, gateway caching</TableCell>
+                                        <TableCell>TinyWindowLFU</TableCell>
+                                        <TableCell>1,000</TableCell>
+                                        <TableCell>15 minutes</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><code>COMPUTE_INTENSIVE</code></TableCell>
+                                        <TableCell>Expensive computations, ML inference</TableCell>
+                                        <TableCell>Enhanced LFU</TableCell>
+                                        <TableCell>5,000</TableCell>
+                                        <TableCell>2 hours</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><code>SESSION_STORAGE</code></TableCell>
+                                        <TableCell>User sessions, temporary data</TableCell>
+                                        <TableCell>LRU with TTL</TableCell>
+                                        <TableCell>10,000</TableCell>
+                                        <TableCell>30 minutes</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><code>REFERENCE_DATA</code></TableCell>
+                                        <TableCell>Configuration, lookup tables</TableCell>
+                                        <TableCell>LFU with refresh</TableCell>
+                                        <TableCell>2,000</TableCell>
+                                        <TableCell>4 hours</TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+
+                    {/* Advanced Profiles */}
+                    <Box id="advanced-profiles" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            <SpeedIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                            Advanced Profiles
+                        </Typography>
+                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                            Advanced profiles provide cutting-edge optimizations for specialized requirements.
+                        </Typography>
+
+                        <TableContainer component={Paper} sx={{ mb: 4 }}>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell><strong>Profile</strong></TableCell>
+                                        <TableCell><strong>Best For</strong></TableCell>
+                                        <TableCell><strong>Special Features</strong></TableCell>
+                                        <TableCell><strong>Default Size</strong></TableCell>
+                                        <TableCell><strong>Performance</strong></TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    <TableRow>
+                                        <TableCell><code>ZERO_COPY</code></TableCell>
+                                        <TableCell>Ultra-low latency (HFT, real-time)</TableCell>
+                                        <TableCell>Zero-copy operations</TableCell>
+                                        <TableCell>50,000</TableCell>
+                                        <TableCell>501.1M ops/sec</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><code>CONCURRENT_HEAVY</code></TableCell>
+                                        <TableCell>High-concurrency workloads</TableCell>
+                                        <TableCell>Lock-free algorithms</TableCell>
+                                        <TableCell>10,000</TableCell>
+                                        <TableCell>Multi-thread optimized</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><code>BATCH_OPTIMIZED</code></TableCell>
+                                        <TableCell>Batch processing, bulk operations</TableCell>
+                                        <TableCell>Batch eviction, bulk writes</TableCell>
+                                        <TableCell>25,000</TableCell>
+                                        <TableCell>Batch throughput optimized</TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <TableCell><code>DISTRIBUTED</code></TableCell>
+                                        <TableCell>Multi-node clustering</TableCell>
+                                        <TableCell>Network-aware, consistency</TableCell>
+                                        <TableCell>5,000</TableCell>
+                                        <TableCell>Network latency dependent</TableCell>
+                                    </TableRow>
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Box>
+
+                    {/* Profile Selection Guide */}
+                    <Box id="profile-selection-guide" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            <SecurityIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                            Profile Selection Guide
+                        </Typography>
+                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                            Choose the right profile based on your application's characteristics and requirements.
+                        </Typography>
+
+                        <Box sx={{
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' },
+                            gap: 4,
+                            mb: 4
+                        }}>
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
+                                        Read-Heavy Applications
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mb: 2 }}>
+                                        Use JCacheXBuilder.forReadHeavyWorkload() when 80%+ operations are reads:
+                                    </Typography>
+                                    <List dense>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• User profiles and preferences" />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Product catalogs and menus" />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Reference data and configuration" />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Static content and templates" />
+                                        </ListItem>
+                                    </List>
+                                    <Chip label="501.1M ops/sec" color="primary" size="small" sx={{ mt: 2 }} />
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'secondary.main' }}>
+                                        Write-Heavy Applications
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mb: 2 }}>
+                                        Use JCacheXBuilder.forWriteHeavyWorkload() when 50%+ operations are writes:
+                                    </Typography>
+                                    <List dense>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Counters and statistics" />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Real-time analytics data" />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Frequently updated user state" />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Session data with updates" />
+                                        </ListItem>
+                                    </List>
+                                    <Chip label="224.6M ops/sec" color="secondary" size="small" sx={{ mt: 2 }} />
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'success.main' }}>
+                                        High-Performance Applications
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mb: 2 }}>
+                                        Use JCacheXBuilder.forHighPerformance() for ultra-low latency requirements:
+                                    </Typography>
+                                    <List dense>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Real-time trading systems" />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Gaming leaderboards" />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Live chat and messaging" />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Real-time dashboards" />
+                                        </ListItem>
+                                    </List>
+                                    <Chip label="Ultra-low latency" color="success" size="small" sx={{ mt: 2 }} />
+                                </CardContent>
+                            </Card>
+
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'info.main' }}>
+                                        Memory-Efficient Applications
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mb: 2 }}>
+                                        Use JCacheXBuilder.fromProfile(ProfileName.MEMORY_EFFICIENT) for constrained environments:
+                                    </Typography>
+                                    <List dense>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Mobile applications" />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• IoT devices" />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Edge computing nodes" />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText primary="• Container-based deployments" />
+                                        </ListItem>
+                                    </List>
+                                    <Chip label="Memory optimized" color="info" size="small" sx={{ mt: 2 }} />
+                                </CardContent>
+                            </Card>
+                        </Box>
+
+                        <Alert severity="warning" sx={{ mb: 3 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                                Profile Tradeoffs
+                            </Typography>
+                            <Typography variant="body2" sx={{ mb: 2 }}>
+                                While profiles provide optimal defaults, consider these tradeoffs:
+                            </Typography>
+                            <List dense>
+                                <ListItem sx={{ py: 0 }}>
+                                    <ListItemText
+                                        primary="• Advanced profiles may have higher memory overhead"
+                                        primaryTypographyProps={{ variant: 'body2' }}
+                                    />
+                                </ListItem>
+                                <ListItem sx={{ py: 0 }}>
+                                    <ListItemText
+                                        primary="• Some profiles sacrifice flexibility for performance"
+                                        primaryTypographyProps={{ variant: 'body2' }}
+                                    />
+                                </ListItem>
+                                <ListItem sx={{ py: 0 }}>
+                                    <ListItemText
+                                        primary="• Distributed profiles require network infrastructure"
+                                        primaryTypographyProps={{ variant: 'body2' }}
+                                    />
+                                </ListItem>
+                                <ListItem sx={{ py: 0 }}>
+                                    <ListItemText
+                                        primary="• You can always override profile defaults if needed"
+                                        primaryTypographyProps={{ variant: 'body2' }}
+                                    />
+                                </ListItem>
+                            </List>
+                        </Alert>
                     </Box>
                 </Box>
 

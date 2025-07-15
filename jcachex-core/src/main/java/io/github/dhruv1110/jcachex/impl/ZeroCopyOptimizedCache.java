@@ -4,6 +4,7 @@ import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheEntry;
 import io.github.dhruv1110.jcachex.CacheStats;
+import io.github.dhruv1110.jcachex.internal.util.CacheCommonOperations;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -54,9 +55,9 @@ public final class ZeroCopyOptimizedCache<K, V> implements Cache<K, V> {
     private final DirectSerializer<V> serializer;
 
     // Configuration
-    private static final int DIRECT_BUFFER_SIZE = 1024 * 1024; // 1MB
-    private static final int BUFFER_POOL_SIZE = 16;
-    private static final int MAPPED_REGION_SIZE = 64 * 1024 * 1024; // 64MB
+    private static final int DIRECT_BUFFER_SIZE = 4 * 1024; // 4KB (reasonable for typical cache entries)
+    private static final int BUFFER_POOL_SIZE = 1024; // Larger pool to reduce allocation
+    private static final int MAPPED_REGION_SIZE = 16 * 1024 * 1024; // 16MB (reduced from 64MB)
 
     public ZeroCopyOptimizedCache(CacheConfig<K, V> config) {
         this.maximumSize = config.getMaximumSize();
@@ -243,6 +244,24 @@ public final class ZeroCopyOptimizedCache<K, V> implements Cache<K, V> {
     private final DirectEntry<V> createEntryZeroCopy(V value, DirectBuffer buffer) {
         // Serialize directly to buffer without intermediate allocation
         int serializedSize = serializer.serializeZeroCopy(value, buffer);
+
+        // If serialization failed due to buffer size, try with a larger buffer
+        if (serializedSize < 0) {
+            // Return small buffer to pool
+            bufferPool.release(buffer);
+
+            // Create a larger buffer for oversized values
+            byte[] valueBytes = value.toString().getBytes();
+            int requiredSize = valueBytes.length;
+            DirectBuffer largeBuffer = new DirectBuffer(requiredSize);
+
+            // Serialize to the larger buffer
+            ByteBuffer byteBuffer = largeBuffer.getBuffer();
+            byteBuffer.put(valueBytes);
+
+            return new DirectEntry<>(largeBuffer, requiredSize);
+        }
+
         return new DirectEntry<>(buffer, serializedSize);
     }
 
@@ -491,6 +510,14 @@ public final class ZeroCopyOptimizedCache<K, V> implements Cache<K, V> {
 
             ByteBuffer byteBuffer = buffer.getBuffer();
             byte[] valueBytes = value.toString().getBytes();
+
+            // Check if buffer has enough capacity
+            if (byteBuffer.remaining() < valueBytes.length) {
+                // Value is too large for zero-copy optimization
+                // Return -1 to indicate fallback to regular serialization
+                return -1;
+            }
+
             byteBuffer.put(valueBytes);
             return valueBytes.length;
         }
