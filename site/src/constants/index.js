@@ -245,19 +245,23 @@ export const ARCHITECTURE = [
     }
 ];
 
-// Common code examples
+// Common code examples with modern JCacheXBuilder patterns
 export const BASIC_USAGE_JAVA = `import io.github.dhruv1110.jcachex.*;
+import io.github.dhruv1110.jcachex.profiles.ProfileName;
+import java.time.Duration;
 
-// Create cache configuration
-CacheConfig<String, User> config = CacheConfig.<String, User>builder()
+// Profile-based creation (recommended)
+Cache<String, User> cache = JCacheXBuilder.forReadHeavyWorkload()
+    .name("users")
     .maximumSize(1000L)
     .expireAfterWrite(Duration.ofMinutes(30))
-    .evictionStrategy(EvictionStrategy.LRU)
-    .recordStats(true)
     .build();
 
-// Create cache instance
-Cache<String, User> cache = new DefaultCache<>(config);
+// Or use ProfileName enum for type safety
+Cache<String, User> cache = JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
+    .name("users")
+    .maximumSize(1000L)
+    .build();
 
 // Basic operations
 cache.put("user123", new User("Alice", "alice@example.com"));
@@ -265,13 +269,20 @@ User user = cache.get("user123");
 System.out.println("User: " + user.getName());`;
 
 export const BASIC_USAGE_KOTLIN = `import io.github.dhruv1110.jcachex.kotlin.*
+import io.github.dhruv1110.jcachex.profiles.ProfileName
+import java.time.Duration
 
-// Create cache with Kotlin DSL
-val cache = cache<String, User> {
-    maxSize = 1000
-    expireAfterWrite = 30.minutes
-    evictionStrategy = EvictionStrategy.LRU
-    recordStats = true
+// Kotlin DSL with convenience methods
+val cache = createReadHeavyCache<String, User> {
+    name("users")
+    maximumSize(1000L)
+    expireAfterWrite(Duration.ofMinutes(30))
+}
+
+// Or use profile-based creation
+val cache = createCacheWithProfile<String, User>(ProfileName.READ_HEAVY) {
+    name("users")
+    maximumSize(1000L)
 }
 
 // Basic operations with operator overloading
@@ -283,6 +294,7 @@ export const SPRING_USAGE = `@Service
 public class UserService {
 
     @JCacheXCacheable(cacheName = "users",
+                      profile = "READ_HEAVY",
                       expireAfterWrite = 30,
                       expireAfterWriteUnit = TimeUnit.MINUTES)
     public User findUserById(String id) {

@@ -58,10 +58,64 @@ const GettingStarted: React.FC = () => {
     ];
 
     const installationTabs = [
-        { id: 'maven', label: 'Maven', icon: <BuildIcon /> },
-        { id: 'gradle', label: 'Gradle', icon: <BuildIcon /> },
-        { id: 'sbt', label: 'SBT', icon: <ExtensionIcon /> },
-        { id: 'kotlin', label: 'Kotlin DSL', icon: <ExtensionIcon /> },
+        {
+            id: 'maven',
+            label: 'Maven',
+            language: 'xml',
+            code: `<!-- JCacheX Core -->
+<dependency>
+    <groupId>io.github.dhruv1110</groupId>
+    <artifactId>jcachex-core</artifactId>
+    <version>1.0.18</version>
+</dependency>
+
+<!-- For Spring Boot integration -->
+<dependency>
+    <groupId>io.github.dhruv1110</groupId>
+    <artifactId>jcachex-spring</artifactId>
+    <version>1.0.18</version>
+</dependency>
+
+<!-- For Kotlin DSL -->
+<dependency>
+    <groupId>io.github.dhruv1110</groupId>
+    <artifactId>jcachex-kotlin</artifactId>
+    <version>1.0.18</version>
+</dependency>`
+        },
+        {
+            id: 'gradle',
+            label: 'Gradle',
+            language: 'groovy',
+            code: `// JCacheX Core
+implementation 'io.github.dhruv1110:jcachex-core:1.0.18'
+
+// For Spring Boot integration
+implementation 'io.github.dhruv1110:jcachex-spring:1.0.18'
+
+// For Kotlin DSL
+implementation 'io.github.dhruv1110:jcachex-kotlin:1.0.18'`
+        },
+        {
+            id: 'sbt',
+            label: 'SBT',
+            language: 'scala',
+            code: `libraryDependencies ++= Seq(
+  "io.github.dhruv1110" % "jcachex-core" % "1.0.18",
+  "io.github.dhruv1110" % "jcachex-spring" % "1.0.18",
+  "io.github.dhruv1110" % "jcachex-kotlin" % "1.0.18"
+)`
+        },
+        {
+            id: 'kotlin',
+            label: 'Kotlin DSL',
+            language: 'kotlin',
+            code: `dependencies {
+    implementation("io.github.dhruv1110:jcachex-core:1.0.18")
+    implementation("io.github.dhruv1110:jcachex-spring:1.0.18")
+    implementation("io.github.dhruv1110:jcachex-kotlin:1.0.18")
+}`
+        }
     ];
 
     const profileExamples = [
@@ -336,39 +390,7 @@ jcachex:
                                 <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                                     1. Add Dependency
                                 </Typography>
-                                <CodeTabs
-                                    tabs={[
-                                        {
-                                            id: 'maven',
-                                            label: 'Maven',
-                                            language: 'xml',
-                                            code: `<dependency>
-    <groupId>io.github.dhruv1110</groupId>
-    <artifactId>jcachex-core</artifactId>
-    <version>0.1.18</version>
-</dependency>`
-                                        },
-                                        {
-                                            id: 'gradle',
-                                            label: 'Gradle',
-                                            language: 'groovy',
-                                            code: `implementation 'io.github.dhruv1110:jcachex-core:0.1.18'`
-                                        },
-                                        {
-                                            id: 'sbt',
-                                            label: 'SBT',
-                                            language: 'scala',
-                                            code: `libraryDependencies += "io.github.dhruv1110" % "jcachex-core" % "0.1.18"`
-                                        },
-                                        {
-                                            id: 'kotlin',
-                                            label: 'Kotlin DSL',
-                                            language: 'kotlin',
-                                            code: `// Kotlin DSL
-implementation("io.github.dhruv1110:jcachex-kotlin:0.1.18")`
-                                        }
-                                    ]}
-                                />
+                                <CodeTabs tabs={installationTabs} />
                             </Paper>
                         </Box>
                         <Box sx={{ flex: 1 }}>

@@ -6,8 +6,11 @@ export const PROGRESSIVE_LEARNING_EXAMPLES: CodeTab[] = [
         id: 'thirty-second',
         label: '30-Second Start',
         language: 'java',
-        code: `// Single line cache creation - immediate success!
-Cache<String, String> cache = JCacheX.create().build();
+        code: `// Profile-based creation - immediate success!
+Cache<String, String> cache = JCacheXBuilder.create()
+    .name("quickstart")
+    .maximumSize(1000L)
+    .build();
 
 // Put and get in 3 lines
 cache.put("user1", "Alice");
@@ -22,7 +25,7 @@ System.out.println("✅ Success! Retrieved: " + user);
         language: 'java',
         code: `// Show the "magic" of profiles - ONE line gives optimal config
 Cache<String, Product> cache = JCacheXBuilder
-    .forReadHeavyWorkload()  // 11.5ns GET performance automatically!
+    .forReadHeavyWorkload()  // 22.6M ops/sec automatically!
     .name("products")
     .maximumSize(10000L)
     .build();
@@ -31,7 +34,7 @@ Cache<String, Product> cache = JCacheXBuilder
 cache.put("product42", new Product("Premium Widget", 99.99));
 Product product = cache.get("product42");
 
-System.out.println("⚡ Retrieved in ~11.5ns: " + product.getName());
+System.out.println("⚡ Retrieved at 22.6M ops/sec: " + product.getName());
 System.out.println("🎯 Hit rate: " + cache.stats().hitRate() * 100 + "%");`
     },
     {
@@ -44,8 +47,8 @@ Cache<String, User> cache = JCacheXBuilder.forReadHeavyWorkload()
     .maximumSize(50000L)
     .expireAfterWrite(Duration.ofHours(2))
     .recordStats(true)
-    .evictionListener(this::onEviction)
-    .loadingCache(this::loadFromDatabase)
+    .listener(this::onEviction)
+    .loader(this::loadFromDatabase)
     .build();
 
 // Automatic database loading with error handling

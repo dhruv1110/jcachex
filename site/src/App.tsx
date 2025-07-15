@@ -10,6 +10,8 @@ import ExamplesPage from './components/Examples';
 import SpringGuide from './components/SpringGuide';
 import FAQPage from './components/FAQ';
 import DocumentationPage from './components/DocumentationPage';
+import TroubleshootingGuide from './components/TroubleshootingGuide';
+import MigrationGuide from './components/MigrationGuide';
 import PerformanceBenchmarks from './components/PerformanceBenchmarks';
 import NotFoundPage from './components/NotFound';
 import lightTheme from './theme';
@@ -27,6 +29,8 @@ const App: React.FC = () => {
                     <Route path="/spring" element={<SpringGuide />} />
                     <Route path="/spring-boot" element={<SpringGuide />} />
                     <Route path="/faq" element={<FAQPage />} />
+                    <Route path="/troubleshooting" element={<TroubleshootingGuide />} />
+                    <Route path="/migration" element={<MigrationGuide />} />
                     <Route path="/performance" element={<PerformanceBenchmarks />} />
                     <Route path="/benchmarks" element={<PerformanceBenchmarks />} />
                     <Route path="/docs" element={<DocumentationPage />} />
@@ -34,6 +38,8 @@ const App: React.FC = () => {
                     <Route path="/docs/getting-started" element={<GettingStarted />} />
                     <Route path="/docs/examples" element={<ExamplesPage />} />
                     <Route path="/docs/spring" element={<SpringGuide />} />
+                    <Route path="/docs/troubleshooting" element={<TroubleshootingGuide />} />
+                    <Route path="/docs/migration" element={<MigrationGuide />} />
                     <Route path="*" element={<NotFoundPage />} />
                 </Routes>
             </ThemeProvider>

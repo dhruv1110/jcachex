@@ -1,17 +1,19 @@
-// Basic usage examples with minimal code strings
-export const BASIC_USAGE_JAVA = `// The simplest possible start
-Cache<String, User> cache = JCacheX.create().build();
+// Basic usage examples with modern JCacheXBuilder patterns
+export const BASIC_USAGE_JAVA = `// Profile-based creation (recommended)
+Cache<String, User> cache = JCacheXBuilder.forReadHeavyWorkload()
+    .name("users")
+    .maximumSize(1000L)
+    .build();
 
 // Basic operations
 cache.put("user123", new User("Alice", "alice@example.com"));
 User user = cache.get("user123");
 System.out.println("✅ Retrieved: " + user.getName());`;
 
-export const BASIC_USAGE_KOTLIN = `// Kotlin DSL version
-val cache = jcacheX<String, User> {
-    profile = Profile.READ_HEAVY
-    name = "users"
-    maximumSize = 10000
+export const BASIC_USAGE_KOTLIN = `// Kotlin DSL with convenience methods
+val cache = createReadHeavyCache<String, User> {
+    name("users")
+    maximumSize(1000L)
 }
 
 // Operator overloading
@@ -21,7 +23,7 @@ println("✅ Retrieved: \${user?.name}")`;
 
 export const SPRING_USAGE = `@Service
 public class UserService {
-    @JCacheXCacheable(value = "users", profile = "READ_HEAVY")
+    @JCacheXCacheable(cacheName = "users", profile = "READ_HEAVY")
     public User findUserById(String id) {
         return userRepository.findById(id);
     }
@@ -40,8 +42,9 @@ Cache<String, User> cache = Caffeine.newBuilder()
     .expireAfterWrite(Duration.ofMinutes(5))
     .build();
 
-// After: JCacheX
+// After: JCacheX (profile-based)
 Cache<String, User> cache = JCacheXBuilder.forReadHeavyWorkload()
+    .name("users")
     .maximumSize(10000L)
     .expireAfterWrite(Duration.ofMinutes(5))
     .build();`
@@ -55,8 +58,9 @@ RedisTemplate<String, User> redis = new RedisTemplate<>();
 redis.opsForValue().set("user123", user, Duration.ofMinutes(5));
 User user = redis.opsForValue().get("user123");
 
-// After: JCacheX
+// After: JCacheX (API caching profile)
 Cache<String, User> cache = JCacheXBuilder.forApiResponseCaching()
+    .name("api-cache")
     .expireAfterWrite(Duration.ofMinutes(5))
     .build();
 cache.put("user123", user);

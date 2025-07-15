@@ -12,34 +12,35 @@ data class User(
 
 class UserCacheService {
 
-    // DSL-style cache configuration (TinyWindowLFU is now default)
-    private val userCache = cache<String, User> {
-        maxSize = 1000
-        expireAfterWrite = 2.hours
-        expireAfterAccess = 30.minutes
-        frequencySketchType = FrequencySketchType.BASIC
-        recordStats = true
+    // Modern DSL-style cache configuration with convenience methods
+    private val userCache = createReadHeavyCache<String, User> {
+        name("users")
+        maximumSize(1000L)
+        expireAfterWrite(java.time.Duration.ofHours(2))
+        expireAfterAccess(java.time.Duration.ofMinutes(30))
+        recordStats(true)
     }
 
     // Alternative: Use specialized cache types for specific workloads
-    private val readHeavyCache = createReadOnlyOptimizedCache<String, User> {
-        maxSize = 5000
-        expireAfterWrite = 4.hours
-        recordStats = true
+    private val readHeavyCache = createReadHeavyCache<String, User> {
+        name("read-heavy-users")
+        maximumSize(5000L)
+        expireAfterWrite(java.time.Duration.ofHours(4))
+        recordStats(true)
     }
 
-    private val writeHeavyCache = createWriteHeavyOptimizedCache<String, UserSession> {
-        maxSize = 10000
-        expireAfterAccess = 30.minutes
-        recordStats = true
+    private val writeHeavyCache = createWriteHeavyCache<String, UserSession> {
+        name("write-heavy-sessions")
+        maximumSize(10000L)
+        expireAfterAccess(java.time.Duration.ofMinutes(30))
+        recordStats(true)
     }
 
-    private val performanceCache = createJITOptimizedCache<String, User> {
-        maxSize = 1000
-        expireAfterWrite = 1.hours
-        evictionStrategy = EvictionStrategy.ENHANCED_LRU
-        frequencySketchType = FrequencySketchType.OPTIMIZED
-        recordStats = true
+    private val performanceCache = createHighPerformanceCache<String, User> {
+        name("high-performance-users")
+        maximumSize(1000L)
+        expireAfterWrite(java.time.Duration.ofHours(1))
+        recordStats(true)
     }
 
     // Operator overloading for intuitive access

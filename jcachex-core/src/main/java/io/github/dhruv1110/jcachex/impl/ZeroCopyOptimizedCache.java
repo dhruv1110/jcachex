@@ -244,6 +244,24 @@ public final class ZeroCopyOptimizedCache<K, V> implements Cache<K, V> {
     private final DirectEntry<V> createEntryZeroCopy(V value, DirectBuffer buffer) {
         // Serialize directly to buffer without intermediate allocation
         int serializedSize = serializer.serializeZeroCopy(value, buffer);
+
+        // If serialization failed due to buffer size, try with a larger buffer
+        if (serializedSize < 0) {
+            // Return small buffer to pool
+            bufferPool.release(buffer);
+
+            // Create a larger buffer for oversized values
+            byte[] valueBytes = value.toString().getBytes();
+            int requiredSize = valueBytes.length;
+            DirectBuffer largeBuffer = new DirectBuffer(requiredSize);
+
+            // Serialize to the larger buffer
+            ByteBuffer byteBuffer = largeBuffer.getBuffer();
+            byteBuffer.put(valueBytes);
+
+            return new DirectEntry<>(largeBuffer, requiredSize);
+        }
+
         return new DirectEntry<>(buffer, serializedSize);
     }
 
@@ -492,6 +510,14 @@ public final class ZeroCopyOptimizedCache<K, V> implements Cache<K, V> {
 
             ByteBuffer byteBuffer = buffer.getBuffer();
             byte[] valueBytes = value.toString().getBytes();
+
+            // Check if buffer has enough capacity
+            if (byteBuffer.remaining() < valueBytes.length) {
+                // Value is too large for zero-copy optimization
+                // Return -1 to indicate fallback to regular serialization
+                return -1;
+            }
+
             byteBuffer.put(valueBytes);
             return valueBytes.length;
         }
