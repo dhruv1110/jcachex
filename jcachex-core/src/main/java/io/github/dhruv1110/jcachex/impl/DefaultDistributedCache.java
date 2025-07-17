@@ -4,6 +4,9 @@ import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheStats;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
+import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery;
+import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery.DiscoveredNode;
+import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery.NodeDiscoveryListener;
 
 import java.time.Duration;
 import java.util.*;
@@ -11,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 
 /**
  * Default implementation of DistributedCache interface.
@@ -27,6 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @since 1.0.0
  */
 public class DefaultDistributedCache<K, V> implements DistributedCache<K, V> {
+    private static final Logger logger = Logger.getLogger(DefaultDistributedCache.class.getName());
 
     private final String clusterName;
     private final Set<String> nodeAddresses;
@@ -35,6 +40,7 @@ public class DefaultDistributedCache<K, V> implements DistributedCache<K, V> {
     private final int partitionCount;
     private final Duration networkTimeout;
     private volatile boolean readRepairEnabled;
+    private final NodeDiscovery nodeDiscovery;
 
     // Local cache for this node
     private final Cache<K, V> localCache;
@@ -59,6 +65,7 @@ public class DefaultDistributedCache<K, V> implements DistributedCache<K, V> {
         this.partitionCount = builder.partitionCount;
         this.networkTimeout = builder.networkTimeout;
         this.readRepairEnabled = builder.readRepairEnabled;
+        this.nodeDiscovery = builder.nodeDiscovery;
 
         // Create local cache with provided configuration
         this.localCache = new DefaultCache<>(
@@ -69,18 +76,117 @@ public class DefaultDistributedCache<K, V> implements DistributedCache<K, V> {
     }
 
     private void initializeCluster() {
-        // Initialize cluster topology
-        for (String address : nodeAddresses) {
-            String nodeId = generateNodeId(address);
-            clusterNodes.put(nodeId, new NodeInfo(nodeId, address, NodeStatus.HEALTHY,
-                    System.currentTimeMillis(), new HashSet<>()));
-            healthyNodes.add(nodeId);
+        if (nodeDiscovery != null) {
+            // Use automatic node discovery
+            logger.info("Initializing cluster with automatic node discovery: " + nodeDiscovery.getDiscoveryType());
+
+            // Set up discovery listener
+            nodeDiscovery.addNodeDiscoveryListener(new NodeDiscoveryListener() {
+                @Override
+                public void onNodeDiscovered(DiscoveredNode node) {
+                    logger.info("Discovered new node: " + node.getNodeId());
+                    addDiscoveredNode(node);
+                }
+
+                @Override
+                public void onNodeLost(String nodeId) {
+                    logger.info("Lost node: " + nodeId);
+                    removeDiscoveredNode(nodeId);
+                }
+
+                @Override
+                public void onNodeHealthChanged(String nodeId, NodeDiscovery.NodeHealth oldHealth,
+                        NodeDiscovery.NodeHealth newHealth) {
+                    logger.info("Node health changed: " + nodeId + " " + oldHealth + " -> " + newHealth);
+                    updateNodeHealth(nodeId, newHealth);
+                }
+            });
+
+            // Start node discovery
+            nodeDiscovery.start().thenRun(() -> {
+                logger.info("Node discovery started successfully");
+                // Initial discovery
+                nodeDiscovery.discoverNodes().thenAccept(nodes -> {
+                    logger.info("Initial discovery found " + nodes.size() + " nodes");
+                    for (DiscoveredNode node : nodes) {
+                        addDiscoveredNode(node);
+                    }
+                });
+            }).exceptionally(throwable -> {
+                logger.severe("Failed to start node discovery: " + throwable.getMessage());
+                return null;
+            });
+        } else {
+            // Use manual node configuration
+            logger.info("Initializing cluster with manual node configuration");
+            for (String address : nodeAddresses) {
+                String nodeId = generateNodeId(address);
+                clusterNodes.put(nodeId, new NodeInfo(nodeId, address, NodeStatus.HEALTHY,
+                        System.currentTimeMillis(), new HashSet<>()));
+                healthyNodes.add(nodeId);
+            }
         }
         topologyVersion.incrementAndGet();
     }
 
     private String generateNodeId(String address) {
         return "node-" + address.hashCode();
+    }
+
+    private void addDiscoveredNode(DiscoveredNode node) {
+        String nodeId = node.getNodeId();
+        String address = node.getFullAddress();
+
+        NodeStatus status = convertToNodeStatus(node.getHealth());
+        NodeInfo nodeInfo = new NodeInfo(nodeId, address, status,
+                System.currentTimeMillis(), new HashSet<>());
+
+        clusterNodes.put(nodeId, nodeInfo);
+        if (status == NodeStatus.HEALTHY) {
+            healthyNodes.add(nodeId);
+        }
+        topologyVersion.incrementAndGet();
+
+        logger.info("Added discovered node: " + nodeId + " at " + address);
+    }
+
+    private void removeDiscoveredNode(String nodeId) {
+        clusterNodes.remove(nodeId);
+        healthyNodes.remove(nodeId);
+        topologyVersion.incrementAndGet();
+
+        logger.info("Removed discovered node: " + nodeId);
+    }
+
+    private void updateNodeHealth(String nodeId, NodeDiscovery.NodeHealth health) {
+        NodeInfo existingNode = clusterNodes.get(nodeId);
+        if (existingNode != null) {
+            NodeStatus newStatus = convertToNodeStatus(health);
+            NodeInfo updatedNode = new NodeInfo(nodeId, existingNode.getAddress(), newStatus,
+                    System.currentTimeMillis(), existingNode.getPartitions());
+
+            clusterNodes.put(nodeId, updatedNode);
+
+            if (newStatus == NodeStatus.HEALTHY) {
+                healthyNodes.add(nodeId);
+            } else {
+                healthyNodes.remove(nodeId);
+            }
+
+            logger.info("Updated node health: " + nodeId + " -> " + newStatus);
+        }
+    }
+
+    private NodeStatus convertToNodeStatus(NodeDiscovery.NodeHealth health) {
+        switch (health) {
+            case HEALTHY:
+                return NodeStatus.HEALTHY;
+            case UNHEALTHY:
+                return NodeStatus.FAILED;
+            case UNKNOWN:
+            default:
+                return NodeStatus.UNREACHABLE;
+        }
     }
 
     // ============= Cache Interface Implementation =============
@@ -446,6 +552,7 @@ public class DefaultDistributedCache<K, V> implements DistributedCache<K, V> {
         private boolean compressionEnabled = false;
         private boolean encryptionEnabled = false;
         private CacheConfig<K, V> cacheConfig;
+        private NodeDiscovery nodeDiscovery;
 
         @Override
         public Builder<K, V> clusterName(String clusterName) {
@@ -527,6 +634,11 @@ public class DefaultDistributedCache<K, V> implements DistributedCache<K, V> {
 
         public Builder<K, V> cacheConfig(CacheConfig<K, V> cacheConfig) {
             this.cacheConfig = cacheConfig;
+            return this;
+        }
+
+        public Builder<K, V> nodeDiscovery(NodeDiscovery nodeDiscovery) {
+            this.nodeDiscovery = nodeDiscovery;
             return this;
         }
 

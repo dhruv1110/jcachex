@@ -1,6 +1,7 @@
 package io.github.dhruv1110.jcachex;
 
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
+import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery;
 import io.github.dhruv1110.jcachex.observability.MetricsRegistry;
 import io.github.dhruv1110.jcachex.resilience.CircuitBreaker;
 import io.github.dhruv1110.jcachex.warming.CacheWarmingStrategy;
@@ -51,7 +52,7 @@ public class CacheFactory {
     }
 
     /**
-     * Builder for distributed caches with all advanced features.
+     * Builder for distributed caches.
      */
     public static class DistributedCacheBuilder<K, V> {
         private String name = "default-distributed-cache";
@@ -70,6 +71,7 @@ public class CacheFactory {
         private CacheWarmingStrategy<K, V> warmingStrategy;
         private MetricsRegistry metricsRegistry;
         private CircuitBreaker circuitBreaker;
+        private NodeDiscovery nodeDiscovery;
 
         public DistributedCacheBuilder<K, V> name(String name) {
             this.name = name;
@@ -121,29 +123,29 @@ public class CacheFactory {
             return this;
         }
 
-        public DistributedCacheBuilder<K, V> enableStats(boolean enable) {
-            this.enableStats = enable;
-            return this;
-        }
-
-        public DistributedCacheBuilder<K, V> enableWarming(boolean enable) {
-            this.enableWarming = enable;
-            return this;
-        }
-
-        public DistributedCacheBuilder<K, V> enableObservability(boolean enable) {
-            this.enableObservability = enable;
-            return this;
-        }
-
-        public DistributedCacheBuilder<K, V> enableResilience(boolean enable) {
-            this.enableResilience = enable;
-            return this;
-        }
-
-        public DistributedCacheBuilder<K, V> warmingStrategy(CacheWarmingStrategy<K, V> strategy) {
-            this.warmingStrategy = strategy;
+        public DistributedCacheBuilder<K, V> warmingStrategy(CacheWarmingStrategy<K, V> warmingStrategy) {
+            this.warmingStrategy = warmingStrategy;
             this.enableWarming = true;
+            return this;
+        }
+
+        public DistributedCacheBuilder<K, V> enableStats(boolean enableStats) {
+            this.enableStats = enableStats;
+            return this;
+        }
+
+        public DistributedCacheBuilder<K, V> enableWarming(boolean enableWarming) {
+            this.enableWarming = enableWarming;
+            return this;
+        }
+
+        public DistributedCacheBuilder<K, V> enableObservability(boolean enableObservability) {
+            this.enableObservability = enableObservability;
+            return this;
+        }
+
+        public DistributedCacheBuilder<K, V> enableResilience(boolean enableResilience) {
+            this.enableResilience = enableResilience;
             return this;
         }
 
@@ -157,6 +159,15 @@ public class CacheFactory {
             this.circuitBreaker = circuitBreaker;
             this.enableResilience = true;
             return this;
+        }
+
+        public DistributedCacheBuilder<K, V> nodeDiscovery(NodeDiscovery nodeDiscovery) {
+            this.nodeDiscovery = nodeDiscovery;
+            return this;
+        }
+
+        public String getName() {
+            return name;
         }
 
         public DistributedCache<K, V> create() {
@@ -178,12 +189,20 @@ public class CacheFactory {
             }
 
             // Build distributed cache
-            DistributedCache<K, V> cache = DistributedCache.<K, V>builder()
+            DistributedCache.Builder<K, V> distributedBuilder = DistributedCache.<K, V>builder()
                     .clusterName(clusterName)
-                    .nodes(nodes)
                     .replicationFactor(replicationFactor)
-                    .consistencyLevel(consistencyLevel)
-                    .build();
+                    .consistencyLevel(consistencyLevel);
+
+            if (nodes != null) {
+                distributedBuilder.nodes(nodes);
+            }
+
+            if (nodeDiscovery != null) {
+                distributedBuilder.nodeDiscovery(nodeDiscovery);
+            }
+
+            DistributedCache<K, V> cache = distributedBuilder.build();
 
             // Apply additional features
             if (enableObservability && metricsRegistry != null) {

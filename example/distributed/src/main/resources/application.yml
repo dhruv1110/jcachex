@@ -1,0 +1,33 @@
+jcachex:
+  enabled: true
+  distributed:
+    enabled: true
+    cluster-name: kubernetes-cluster
+    replication-factor: 2
+    consistency-level: EVENTUAL
+    nodes:
+      - simulated-pod-1:8080
+      - simulated-pod-2:8080
+      - simulated-pod-3:8080
+    node-discovery:
+      type: KUBERNETES
+      discovery-interval-seconds: 30
+      health-check-interval-seconds: 10
+      kubernetes:
+        namespace: ${K8S_NAMESPACE:jcachex-demo}
+        service-name: ${K8S_SERVICE_NAME:jcachex-service}
+        label-selector: ${K8S_LABEL_SELECTOR:app=jcachex,component=distributed-cache}
+        use-service-account: true
+  default-config:
+    distributed:
+      cluster-name: kubernetes-cluster
+      replication-factor: 2
+      consistency-level: EVENTUAL
+
+logging:
+  level:
+    io.github.dhruv1110.jcachex: DEBUG
+    org.springframework: INFO
+
+server:
+  port: 8080

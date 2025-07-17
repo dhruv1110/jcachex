@@ -7,7 +7,8 @@ include(
     "benchmarks",
     "example:java",
     "example:kotlin",
-    "example:springboot"
+    "example:springboot",
+    "example:distributed"
 )
 
 dependencyResolutionManagement {

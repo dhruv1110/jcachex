@@ -2,6 +2,7 @@ package io.github.dhruv1110.jcachex.example.distributed;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheFactory;
+import io.github.dhruv1110.jcachex.JCacheXBuilder;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache.ConsistencyLevel;
 import io.github.dhruv1110.jcachex.observability.MetricsRegistry;
@@ -56,11 +57,11 @@ public class DistributedCacheExample {
         System.out.println("   Same API, different scale!");
 
         // Start with local cache
-        Cache<String, User> localCache = CacheFactory.local()
+        Cache<String, User> localCache = JCacheXBuilder.<String, User>create()
                 .name("users")
                 .maximumSize(1000L)
                 .expireAfterWrite(Duration.ofMinutes(30))
-                .create();
+                .build();
 
         // Use the cache
         localCache.put("user1", new User("John", "john@example.com"));
@@ -68,12 +69,12 @@ public class DistributedCacheExample {
         System.out.println("   📦 Local cache: " + user.name + " (" + user.email + ")");
 
         // Scale to distributed with ZERO code changes
-        Cache<String, User> distributedCache = CacheFactory.distributed()
+        DistributedCache<String, User> distributedCache = CacheFactory.<String, User>distributed()
                 .name("users")
                 .clusterName("user-service")
                 .nodes("cache-1:8080", "cache-2:8080", "cache-3:8080")
                 .replicationFactor(2)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
+                .consistencyLevel(DistributedCache.ConsistencyLevel.EVENTUAL)
                 .maximumSize(10000L)
                 .expireAfterWrite(Duration.ofMinutes(30))
                 .create();
@@ -84,11 +85,8 @@ public class DistributedCacheExample {
         System.out.println("   🌐 Distributed cache: " + distributedUser.name + " (" + distributedUser.email + ")");
 
         // Show cluster information
-        if (distributedCache instanceof DistributedCache) {
-            DistributedCache<String, User> dc = (DistributedCache<String, User>) distributedCache;
-            System.out.println("   🏢 Cluster: " + dc.getClusterTopology().getClusterName());
-            System.out.println("   💚 Healthy nodes: " + dc.getClusterTopology().getHealthyNodeCount());
-        }
+        System.out.println("   🏢 Cluster: " + distributedCache.getClusterTopology().getClusterName());
+        System.out.println("   💚 Healthy nodes: " + distributedCache.getClusterTopology().getHealthyNodeCount());
     }
 
     /**
@@ -98,32 +96,32 @@ public class DistributedCacheExample {
         System.out.println("\n2. ⚖️ Multiple Consistency Models");
         System.out.println("   Choose the right consistency for your use case!");
 
-        DistributedCache<String, Object> cache = CacheFactory.distributed()
+        DistributedCache<String, Object> cache = CacheFactory.<String, Object>distributed()
                 .name("multi-consistency")
                 .clusterName("consistency-demo")
                 .nodes("node-1:8080", "node-2:8080", "node-3:8080")
                 .replicationFactor(2)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL) // Default
+                .consistencyLevel(DistributedCache.ConsistencyLevel.EVENTUAL) // Default
                 .create();
 
         // Strong consistency for financial data
         Account account = new Account("123456", 1000.0);
-        cache.putWithConsistency("account-123", account, ConsistencyLevel.STRONG);
+        cache.putWithConsistency("account-123", account, DistributedCache.ConsistencyLevel.STRONG);
         System.out.println("   💰 Strong consistency: Account balance = $" + account.balance);
 
         // Eventual consistency for user preferences
         UserPreferences prefs = new UserPreferences("dark-mode", "metric");
-        cache.putWithConsistency("prefs-456", prefs, ConsistencyLevel.EVENTUAL);
+        cache.putWithConsistency("prefs-456", prefs, DistributedCache.ConsistencyLevel.EVENTUAL);
         System.out.println("   ⚙️ Eventual consistency: Theme = " + prefs.theme);
 
         // Session consistency for shopping carts
         ShoppingCart cart = new ShoppingCart("user-789", 3);
-        cache.putWithConsistency("cart-789", cart, ConsistencyLevel.SESSION);
+        cache.putWithConsistency("cart-789", cart, DistributedCache.ConsistencyLevel.SESSION);
         System.out.println("   🛒 Session consistency: Cart items = " + cart.itemCount);
 
         // Demonstrate async operations with consistency
         CompletableFuture<Void> asyncOperation = cache.putWithConsistency("async-key", "async-value",
-                ConsistencyLevel.EVENTUAL);
+                DistributedCache.ConsistencyLevel.EVENTUAL);
         asyncOperation.thenRun(() -> System.out.println("   🔄 Async operation completed"));
     }
 
@@ -144,14 +142,11 @@ public class DistributedCacheExample {
         // Set environment variable (normally done by deployment)
         System.setProperty("ENVIRONMENT", environment);
 
-        Cache<String, String> adaptiveCache = CacheFactory.adaptive()
+        Cache<String, String> adaptiveCache = JCacheXBuilder.<String, String>withSmartDefaults()
                 .name("adaptive-cache")
                 .maximumSize(1000L)
                 .expireAfterWrite(Duration.ofMinutes(30))
-                .distributedWhen(env -> "production".equals(env.get("ENVIRONMENT")))
-                .clusterName("adaptive-cluster")
-                .nodes("cache-1:8080", "cache-2:8080")
-                .create();
+                .build();
 
         adaptiveCache.put("env-test", "value-" + environment);
         String value = adaptiveCache.get("env-test");
@@ -168,12 +163,12 @@ public class DistributedCacheExample {
         System.out.println("   All features working together!");
 
         // Create production-ready cache with all features
-        Cache<String, User> productionCache = CacheFactory.distributed()
+        DistributedCache<String, User> productionCache = CacheFactory.<String, User>distributed()
                 .name("production-users")
                 .clusterName("production-cluster")
                 .nodes("prod-cache-1:8080", "prod-cache-2:8080", "prod-cache-3:8080")
                 .replicationFactor(2)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
+                .consistencyLevel(DistributedCache.ConsistencyLevel.EVENTUAL)
                 .maximumSize(100000L)
                 .expireAfterWrite(Duration.ofHours(1))
                 .enableWarming(true)
@@ -223,12 +218,12 @@ public class DistributedCacheExample {
         System.out.println("   Warming, Observability, and Resilience!");
 
         // Create cache with custom warming strategy
-        DistributedCache<String, String> advancedCache = CacheFactory.distributed()
+        DistributedCache<String, String> advancedCache = CacheFactory.<String, String>distributed()
                 .name("advanced-cache")
                 .clusterName("advanced-cluster")
                 .nodes("adv-1:8080", "adv-2:8080")
                 .replicationFactor(2)
-                .consistencyLevel(ConsistencyLevel.EVENTUAL)
+                .consistencyLevel(DistributedCache.ConsistencyLevel.EVENTUAL)
                 .maximumSize(10000L)
                 .expireAfterWrite(Duration.ofMinutes(30))
                 .enableWarming(true)

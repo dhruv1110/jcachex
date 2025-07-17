@@ -1,302 +1,346 @@
-# JCacheX Distributed Caching Examples
+# JCacheX Distributed Cache Examples
 
-This directory demonstrates JCacheX's **game-changing distributed caching** capabilities that set it apart from competitors like Caffeine, Ehcache, and Redis.
+This directory contains comprehensive examples demonstrating JCacheX's distributed caching capabilities, including auto-discovery mechanisms for various environments.
 
-## 🚀 Key Differentiators
+## Overview
 
-### 1. **Seamless Local-to-Distributed Migration**
-Unlike other libraries that force you to choose between local OR distributed caching, JCacheX provides a **unified API** that scales seamlessly:
+JCacheX provides seamless scaling from local to distributed caching with multiple discovery strategies:
 
-```java
-// Start with local cache (same API)
-Cache<String, User> cache = CacheFactory.local()
-    .name("users")
-    .maximumSize(1000L)
-    .expireAfterWrite(Duration.ofMinutes(30))
-    .create();
+- **Kubernetes Discovery**: Service-based discovery for containerized environments
+- **Consul Discovery**: HashiCorp Consul integration for microservices
+- **Gossip Protocol**: Peer-to-peer discovery without central coordination
+- **Static Configuration**: Manual node configuration
 
-// Scale to distributed with ZERO code changes
-Cache<String, User> cache = CacheFactory.distributed()
-    .name("users")
-    .clusterName("user-service")
-    .nodes("cache-1:8080", "cache-2:8080", "cache-3:8080")
-    .replicationFactor(2)
-    .consistencyLevel(ConsistencyLevel.EVENTUAL)
-    .maximumSize(10000L)
-    .expireAfterWrite(Duration.ofMinutes(30))
-    .create();
+## Discovery Examples
+
+### 1. Kubernetes Discovery Example
+
+**File**: `KubernetesDiscoveryExample.java`
+
+Demonstrates automatic node discovery in Kubernetes environments using service accounts and label selectors.
+
+```bash
+# Prerequisites
+kubectl apply -f k8s-resources.yaml
+
+# Run the example
+java -jar kubernetes-discovery-example.jar
 ```
 
-### 2. **Environment-Aware Adaptive Caching**
-Automatically choose the best caching strategy based on environment:
+**Key Features**:
+- Service account-based authentication
+- Label selector filtering
+- Pod endpoint discovery
+- Health check integration
+- Auto-scaling support
 
-```java
-Cache<String, User> adaptiveCache = CacheFactory.adaptive()
-    .name("users")
-    .maximumSize(1000L)
-    .expireAfterWrite(Duration.ofMinutes(30))
-    .distributedWhen(env -> "production".equals(env.get("ENVIRONMENT")))
-    .nodes("cache-1:8080", "cache-2:8080")
-    .create();
+### 2. Consul Discovery Example
+
+**File**: `ConsulDiscoveryExample.java`
+
+Shows integration with HashiCorp Consul for service discovery in microservices architectures.
+
+```bash
+# Start Consul
+docker run -d -p 8500:8500 consul:latest agent -dev -client=0.0.0.0
+
+# Run the example
+java -jar consul-discovery-example.jar
 ```
 
-### 3. **Multiple Consistency Models**
-Choose the right consistency model for your use case:
+**Key Features**:
+- Service registration and discovery
+- Health check integration
+- Multi-datacenter support
+- ACL token support
+- TTL-based health updates
 
-```java
-// Strong consistency for financial data
-cache.putWithConsistency("account-123", account, ConsistencyLevel.STRONG);
+### 3. Gossip Protocol Example
 
-// Eventual consistency for user sessions
-cache.putWithConsistency("session-456", session, ConsistencyLevel.EVENTUAL);
+**File**: `GossipDiscoveryExample.java`
 
-// Session consistency for shopping carts
-cache.putWithConsistency("cart-789", cart, ConsistencyLevel.SESSION);
+Demonstrates peer-to-peer discovery using gossip protocol for environments without central service registries.
+
+```bash
+# Start multiple nodes
+java -jar gossip-discovery-example.jar --server.port=8080 --node.id=node1 &
+java -jar gossip-discovery-example.jar --server.port=8081 --node.id=node2 &
+java -jar gossip-discovery-example.jar --server.port=8082 --node.id=node3 &
 ```
 
-### 4. **Integrated Production Features**
-All advanced features work together seamlessly:
+**Key Features**:
+- Decentralized discovery
+- Network partition tolerance
+- Self-healing clusters
+- Seed node bootstrapping
+- Eventual consistency
 
-```java
-Cache<String, User> productionCache = CacheFactory.distributed()
-    .name("users")
-    .clusterName("user-service")
-    .nodes("cache-1:8080", "cache-2:8080", "cache-3:8080")
-    .replicationFactor(2)
-    .consistencyLevel(ConsistencyLevel.EVENTUAL)
-    .maximumSize(10000L)
-    .expireAfterWrite(Duration.ofHours(1))
-    .enableWarming(true)        // Intelligent cache warming
-    .enableObservability(true)  // Comprehensive metrics
-    .enableResilience(true)     // Circuit breaker integration
-    .warmingStrategy(WarmingStrategy.predictive())
-    .metricsRegistry(MetricsRegistry.prometheus())
-    .circuitBreaker(CircuitBreaker.defaultConfig())
-    .create();
+## Configuration Reference
+
+### Kubernetes Discovery
+
+```yaml
+jcachex:
+  distributed:
+    nodeDiscovery:
+      type: KUBERNETES
+      discoveryIntervalSeconds: 30
+      healthCheckIntervalSeconds: 10
+      kubernetes:
+        namespace: jcachex
+        serviceName: jcachex-cluster
+        labelSelector: app=jcachex,component=cache
+        useServiceAccount: true
+        kubeConfigPath: /path/to/kubeconfig  # Optional
 ```
 
-## 🏆 Competitive Comparison
+### Consul Discovery
 
-| Feature | JCacheX | Caffeine | Ehcache | Redis |
-|---------|---------|----------|---------|-------|
-| **Unified API** | ✅ Local + Distributed | ❌ Local only | ❌ Separate APIs | ❌ Distributed only |
-| **Seamless Scaling** | ✅ Zero code changes | ❌ Requires rewrite | ❌ Requires rewrite | ❌ Always distributed |
-| **Environment Awareness** | ✅ Adaptive switching | ❌ Manual choice | ❌ Manual choice | ❌ Manual choice |
-| **Consistency Models** | ✅ 4 models | ❌ N/A | ❌ Limited | ❌ Limited |
-| **Built-in Observability** | ✅ Multiple platforms | ❌ Basic stats | ❌ Basic stats | ❌ Basic stats |
-| **Circuit Breaker** | ✅ Integrated | ❌ None | ❌ None | ❌ None |
-| **Cache Warming** | ✅ Intelligent | ❌ None | ❌ None | ❌ Manual |
-| **Network Protocols** | ✅ TCP/UDP/HTTP/WebSocket | ❌ N/A | ❌ Limited | ❌ Redis protocol |
-| **Compression** | ✅ Multiple algorithms | ❌ N/A | ❌ Limited | ❌ Limited |
-| **Encryption** | ✅ Built-in TLS | ❌ N/A | ❌ Limited | ❌ Optional |
-
-## 📊 Performance Characteristics
-
-### Local Performance
-- **Caffeine-level performance** for local operations
-- **Sub-microsecond latency** for cache hits
-- **Zero-copy operations** where possible
-
-### Distributed Performance
-- **Microsecond-level latency** for distributed operations with eventual consistency
-- **Millisecond-level latency** for strong consistency
-- **Automatic load balancing** across nodes
-- **Intelligent routing** based on key hashing
-
-### Fault Tolerance
-- **Automatic failover** when nodes go down
-- **Self-healing** cluster topology
-- **Partition tolerance** during network splits
-- **Circuit breaker** protection for external systems
-
-## 🎯 Use Cases
-
-### 1. **Microservices Architecture**
-Perfect for services that need to scale from single instance to cluster:
-
-```java
-// Service cache that grows with your application
-Cache<String, ServiceResponse> serviceCache = CacheFactory.adaptive()
-    .name("service-responses")
-    .maximumSize(5000L)
-    .expireAfterWrite(Duration.ofMinutes(10))
-    .distributedWhen(env -> env.get("REPLICAS") != null &&
-                           Integer.parseInt(env.get("REPLICAS")) > 1)
-    .nodes(getServiceNodes())
-    .create();
+```yaml
+jcachex:
+  distributed:
+    nodeDiscovery:
+      type: CONSUL
+      discoveryIntervalSeconds: 30
+      healthCheckIntervalSeconds: 10
+      consul:
+        consulHost: localhost:8500
+        serviceName: jcachex-cluster
+        datacenter: dc1
+        enableAcl: false
+        token: your-consul-token  # Optional
 ```
 
-### 2. **Session Management**
-Distributed session store with session consistency:
+### Gossip Protocol
 
-```java
-Cache<String, UserSession> sessionCache = CacheFactory.distributed()
-    .name("user-sessions")
-    .clusterName("session-cluster")
-    .nodes("session-1:8080", "session-2:8080", "session-3:8080")
-    .replicationFactor(2)
-    .consistencyLevel(ConsistencyLevel.SESSION)
-    .expireAfterAccess(Duration.ofHours(2))
-    .create();
+```yaml
+jcachex:
+  distributed:
+    nodeDiscovery:
+      type: GOSSIP
+      discoveryIntervalSeconds: 30
+      healthCheckIntervalSeconds: 10
+      gossip:
+        seedNodes:
+          - node1:8080
+          - node2:8080
+          - node3:8080
+        gossipIntervalSeconds: 5
+        gossipFanout: 3
+        nodeTimeoutSeconds: 60
 ```
 
-### 3. **High-Performance Applications**
-Financial services requiring strong consistency:
+## Deployment Scenarios
 
-```java
-Cache<String, Account> accountCache = CacheFactory.distributed()
-    .name("accounts")
-    .clusterName("trading-cluster")
-    .nodes("cache-1:8080", "cache-2:8080", "cache-3:8080")
-    .replicationFactor(3)
-    .consistencyLevel(ConsistencyLevel.STRONG)
-    .maximumSize(100000L)
-    .expireAfterWrite(Duration.ofMinutes(5))
-    .enableObservability(true)
-    .metricsRegistry(MetricsRegistry.datadog())
-    .create();
+### Docker Compose
+
+```yaml
+version: '3.8'
+services:
+  consul:
+    image: consul:latest
+    ports:
+      - "8500:8500"
+    command: agent -dev -client=0.0.0.0
+
+  jcachex-node1:
+    image: jcachex:latest
+    depends_on:
+      - consul
+    environment:
+      - CONSUL_HOST=consul:8500
+      - NODE_ID=node1
+    ports:
+      - "8080:8080"
+
+  jcachex-node2:
+    image: jcachex:latest
+    depends_on:
+      - consul
+    environment:
+      - CONSUL_HOST=consul:8500
+      - NODE_ID=node2
+    ports:
+      - "8081:8080"
 ```
 
-### 4. **Content Delivery**
-CDN-like caching with intelligent warming:
+### Kubernetes
 
-```java
-Cache<String, Content> contentCache = CacheFactory.distributed()
-    .name("content")
-    .clusterName("cdn-cluster")
-    .nodes("edge-1:8080", "edge-2:8080", "edge-3:8080")
-    .replicationFactor(2)
-    .consistencyLevel(ConsistencyLevel.EVENTUAL)
-    .maximumSize(1000000L)
-    .expireAfterWrite(Duration.ofHours(24))
-    .enableWarming(true)
-    .warmingStrategy(WarmingStrategy.predictive()
-        .priority(WarmingPriority.HIGH)
-        .batchSize(1000)
-        .maxConcurrency(10))
-    .create();
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jcachex-cluster
+  namespace: jcachex
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: jcachex
+      component: cache
+  template:
+    metadata:
+      labels:
+        app: jcachex
+        component: cache
+    spec:
+      serviceAccountName: jcachex-service-account
+      containers:
+      - name: jcachex
+        image: jcachex:latest
+        ports:
+        - containerPort: 8080
+          name: cache
+        env:
+        - name: DISCOVERY_TYPE
+          value: "KUBERNETES"
+        - name: KUBERNETES_NAMESPACE
+          value: "jcachex"
+        - name: SERVICE_NAME
+          value: "jcachex-cluster"
 ```
 
-## 🌟 Advanced Features
+## Running the Examples
 
-### Network Protocol Selection
-Choose the best protocol for your use case:
+### Prerequisites
 
-```java
-// High-performance TCP for internal clusters
-NetworkProtocol tcpProtocol = NetworkProtocol.tcp()
-    .serialization(SerializationType.KRYO)
-    .compression(CompressionType.LZ4)
-    .encryption(true)
-    .build();
+1. **Java 11+**: Required for running the examples
+2. **Maven/Gradle**: For building the examples
+3. **Docker**: For running infrastructure components
+4. **Kubernetes**: For Kubernetes discovery example
 
-// HTTP for cross-platform compatibility
-NetworkProtocol httpProtocol = NetworkProtocol.http()
-    .serialization(SerializationType.JSON)
-    .compression(CompressionType.GZIP)
-    .build();
+### Building
+
+```bash
+# Build all examples
+./gradlew :example:distributed:build
+
+# Build specific example
+./gradlew :example:distributed:compileJava
 ```
 
-### Custom Consistency Models
-Define your own consistency requirements:
+### Running
 
-```java
-// Custom consistency for specific business logic
-cache.putWithConsistency("critical-data", data, ConsistencyLevel.STRONG);
-cache.putWithConsistency("user-preferences", prefs, ConsistencyLevel.SESSION);
-cache.putWithConsistency("analytics-data", analytics, ConsistencyLevel.EVENTUAL);
+#### Docker Compose Setup (Recommended for Testing)
+
+For easy testing with a complete Kubernetes environment:
+
+```bash
+# One-command setup with k3s
+./start-k8s-demo.sh
+
+# With log following
+./start-k8s-demo.sh --logs
+
+# Cleanup
+./start-k8s-demo.sh --cleanup
 ```
 
-### Cluster Management
-Dynamic cluster topology:
+This setup includes:
+- Complete k3s Kubernetes cluster
+- JCacheX applications with real discovery
+- Automatic resource deployment
+- Health checks and monitoring
 
-```java
-DistributedCache<String, Object> cluster = // ... create cache
+See `DOCKER_COMPOSE_SETUP.md` for detailed documentation.
 
-// Add nodes dynamically
-cluster.addNode("new-node:8080").thenRun(() ->
-    System.out.println("Node added successfully"));
+#### Manual Execution
 
-// Monitor cluster health
-ClusterTopology topology = cluster.getClusterTopology();
-System.out.println("Healthy nodes: " + topology.getHealthyNodeCount());
+```bash
+# Kubernetes example
+java -cp target/classes io.github.dhruv1110.jcachex.example.distributed.KubernetesDiscoveryExample
 
-// Rebalance data across nodes
-cluster.rebalance().thenRun(() ->
-    System.out.println("Rebalancing completed"));
+# Consul example
+java -cp target/classes io.github.dhruv1110.jcachex.example.distributed.ConsulDiscoveryExample
+
+# Gossip example
+java -cp target/classes io.github.dhruv1110.jcachex.example.distributed.GossipDiscoveryExample
 ```
 
-## 🚦 Getting Started
+## Architecture Overview
 
-1. **Add Dependencies**:
-   ```xml
-   <dependency>
-       <groupId>io.github.dhruv1110</groupId>
-       <artifactId>jcachex-core</artifactId>
-       <version>1.0.0</version>
-   </dependency>
-   ```
+### Discovery Flow
 
-2. **Start Simple**:
-   ```java
-   Cache<String, String> cache = CacheFactory.local()
-       .name("my-cache")
-       .maximumSize(1000L)
-       .create();
-   ```
+1. **Initialization**: Cache factory creates discovery service based on configuration
+2. **Bootstrap**: Initial nodes are discovered through configured mechanism
+3. **Registration**: Local node registers with discovery service
+4. **Monitoring**: Continuous health checks and node status updates
+5. **Adaptation**: Dynamic cluster membership changes handled automatically
 
-3. **Scale Up**:
-   ```java
-   Cache<String, String> cache = CacheFactory.distributed()
-       .name("my-cache")
-       .clusterName("my-cluster")
-       .nodes("node-1:8080", "node-2:8080")
-       .create();
-   ```
+### Integration Points
 
-4. **Go Production**:
-   ```java
-   Cache<String, String> cache = CacheFactory.distributed()
-       .name("my-cache")
-       .clusterName("my-cluster")
-       .nodes("node-1:8080", "node-2:8080", "node-3:8080")
-       .replicationFactor(2)
-       .consistencyLevel(ConsistencyLevel.EVENTUAL)
-       .enableWarming(true)
-       .enableObservability(true)
-       .enableResilience(true)
-       .create();
-   ```
+- **Spring Boot**: Auto-configuration and property binding
+- **Kubernetes**: Service account authentication and pod discovery
+- **Consul**: Service registration and health checks
+- **Gossip**: Peer-to-peer message exchange
 
-## 🎯 Why Choose JCacheX?
+## Monitoring and Observability
 
-### **For Caffeine Users**
-- Keep all the performance benefits of Caffeine
-- Add distributed capabilities without changing code
-- Get production-ready features out of the box
+### Health Checks
 
-### **For Ehcache Users**
-- Modern, fluent API design
-- Better performance and lower memory footprint
-- Integrated advanced features (warming, observability, resilience)
+Each discovery mechanism provides health check endpoints:
 
-### **For Redis Users**
-- Eliminate network round-trips with local caching
-- Maintain distributed benefits with better consistency models
-- Reduce infrastructure complexity
+```bash
+# Kubernetes
+curl http://localhost:8080/actuator/health/kubernetes-discovery
 
-### **For New Projects**
-- Start simple, scale seamlessly
-- Production-ready from day one
-- Future-proof architecture
+# Consul
+curl http://localhost:8080/actuator/health/consul-discovery
 
-## 🏗️ Architecture Benefits
+# Gossip
+curl http://localhost:8080/actuator/health/gossip-discovery
+```
 
-1. **Hybrid Architecture**: Best of both local and distributed caching
-2. **Consistency Choice**: Pick the right consistency model per use case
-3. **Fault Tolerance**: Built-in resilience and self-healing
-4. **Observability**: Comprehensive metrics and monitoring
-5. **Performance**: Caffeine-level local performance + distributed availability
-6. **Simplicity**: One API for all caching needs
+### Metrics
 
-**JCacheX distributed caching isn't just another caching library – it's a complete caching platform that grows with your application from prototype to planet-scale.**
+Discovery metrics are exposed through:
+
+```bash
+# Prometheus metrics
+curl http://localhost:8080/actuator/prometheus
+
+# JMX beans
+jconsole localhost:8080
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Service Account Permissions**: Ensure Kubernetes service account has proper RBAC
+2. **Network Connectivity**: Verify nodes can communicate on configured ports
+3. **Consul Connectivity**: Check Consul agent availability and ACL tokens
+4. **Gossip Seed Nodes**: Ensure at least one seed node is reachable
+
+### Debug Logging
+
+```yaml
+logging:
+  level:
+    io.github.dhruv1110.jcachex.distributed.discovery: DEBUG
+```
+
+## Best Practices
+
+1. **Production Readiness**: Use appropriate discovery mechanism for your environment
+2. **Health Checks**: Configure meaningful health check intervals
+3. **Security**: Use TLS and authentication where available
+4. **Monitoring**: Set up alerting for cluster health
+5. **Scaling**: Design for dynamic cluster membership changes
+
+## Contributing
+
+To add new discovery examples:
+
+1. Create a new example class in the `distributed` package
+2. Follow the existing pattern with comprehensive documentation
+3. Include configuration examples and deployment scenarios
+4. Add integration tests
+5. Update this README with your example
+
+## Related Documentation
+
+- [JCacheX Core Documentation](../../docs/ARCHITECTURE.md)
+- [Spring Integration Guide](../../jcachex-spring/README.md)
+- [Kubernetes Deployment Guide](../../docs/KUBERNETES.md)
+- [Consul Integration Guide](../../docs/CONSUL.md)

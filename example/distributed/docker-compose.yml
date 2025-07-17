@@ -1,0 +1,112 @@
+version: '3.8'
+
+services:
+  # K3s Kubernetes cluster
+  k3s-server:
+    image: rancher/k3s:v1.28.4-k3s1
+    container_name: k3s-server
+    command: server --disable=traefik --disable=servicelb --disable=metrics-server --kube-apiserver-arg=service-node-port-range=30000-32767
+    environment:
+      - K3S_CLUSTER_SECRET=jcachex-cluster
+      - K3S_KUBECONFIG_OUTPUT=/output/kubeconfig.yaml
+      - K3S_KUBECONFIG_MODE=666
+    volumes:
+      - k3s-server:/var/lib/rancher/k3s
+      - ./k3s-config:/output
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "6443:6443" # Kubernetes API server
+      - "30080:30080" # NodePort for JCacheX service
+      - "30081:30081" # NodePort for JCacheX service
+      - "30082:30082" # NodePort for JCacheX service
+    privileged: true
+    restart: unless-stopped
+    networks:
+      - k3s-network
+
+  # Wait for k3s to be ready
+  k3s-wait:
+    image: rancher/k3s:v1.28.4-k3s1
+    container_name: k3s-wait
+    depends_on:
+      - k3s-server
+    command: >
+      sh -c "
+        while ! kubectl --kubeconfig=/output/kubeconfig.yaml get nodes 2>/dev/null; do
+          echo 'Waiting for k3s to be ready...'
+          sleep 2
+        done
+        echo 'K3s is ready!'
+      "
+    volumes:
+      - ./k3s-config:/output
+    networks:
+      - k3s-network
+
+  # JCacheX Application Builder
+  jcachex-app-builder:
+    build:
+      context: ../../
+      dockerfile: example/distributed/Dockerfile
+    image: jcachex-k8s-example:latest
+    container_name: jcachex-builder
+    depends_on:
+      - k3s-wait
+    command: "true" # Just build the image
+    networks:
+      - k3s-network
+
+  # Deploy JCacheX resources to k3s
+  k3s-deploy:
+    image: rancher/k3s:v1.28.4-k3s1
+    container_name: k3s-deploy
+    depends_on:
+      - jcachex-app-builder
+    command: >
+      sh -c "
+        export KUBECONFIG=/output/kubeconfig.yaml
+        echo 'Deploying JCacheX resources...'
+        kubectl apply -f /manifests/namespace.yaml
+        kubectl apply -f /manifests/rbac.yaml
+        kubectl apply -f /manifests/deployment.yaml
+        kubectl apply -f /manifests/service.yaml
+        echo 'Waiting for deployments to be ready...'
+        kubectl wait --for=condition=available --timeout=300s deployment/jcachex-app -n jcachex-demo
+        echo 'JCacheX deployment is ready!'
+        kubectl get pods -n jcachex-demo
+      "
+    volumes:
+      - ./k3s-config:/output
+      - ./k8s-manifests:/manifests
+    networks:
+      - k3s-network
+
+  # JCacheX Test Client
+  jcachex-client:
+    image: jcachex-k8s-example:latest
+    container_name: jcachex-client
+    depends_on:
+      - k3s-deploy
+    environment:
+      - KUBECONFIG=/config/kubeconfig.yaml
+      - K8S_NAMESPACE=jcachex-demo
+      - K8S_SERVICE_NAME=jcachex-service
+      - SIMULATION_MODE=false
+    volumes:
+      - ./k3s-config:/config
+    networks:
+      - k3s-network
+    command: >
+      sh -c "
+        echo 'Starting JCacheX Kubernetes Discovery Test Client...'
+        sleep 10
+        java -cp /app/jcachex-examples.jar io.github.dhruv1110.jcachex.example.distributed.KubernetesDiscoveryExample
+      "
+
+volumes:
+  k3s-server:
+
+
+networks:
+  k3s-network:
+    driver: bridge

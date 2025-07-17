@@ -3,6 +3,7 @@ package io.github.dhruv1110.jcachex.distributed;
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheStats;
 import io.github.dhruv1110.jcachex.impl.DefaultDistributedCache;
+import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -284,6 +285,14 @@ public interface DistributedCache<K, V> extends Cache<K, V> {
         Builder<K, V> compressionEnabled(boolean enabled);
 
         Builder<K, V> encryptionEnabled(boolean enabled);
+
+        /**
+         * Configures node discovery for automatic cluster formation.
+         *
+         * @param nodeDiscovery the node discovery implementation
+         * @return this builder
+         */
+        Builder<K, V> nodeDiscovery(NodeDiscovery nodeDiscovery);
 
         DistributedCache<K, V> build();
     }
