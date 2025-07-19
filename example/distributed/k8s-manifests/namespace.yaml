@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: jcachex-demo
-  labels:
-    name: jcachex-demo
-    app: jcachex
-    purpose: distributed-cache-demo

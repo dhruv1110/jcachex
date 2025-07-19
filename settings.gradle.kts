@@ -8,7 +8,7 @@ include(
     "example:java",
     "example:kotlin",
     "example:springboot",
-    "example:distributed"
+    "example:distributed:staticnode"
 )
 
 dependencyResolutionManagement {
