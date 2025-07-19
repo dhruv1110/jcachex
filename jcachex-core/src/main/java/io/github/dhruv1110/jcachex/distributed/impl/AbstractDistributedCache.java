@@ -1,7 +1,8 @@
-package io.github.dhruv1110.jcachex.distributed;
+package io.github.dhruv1110.jcachex.distributed.impl;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
+import io.github.dhruv1110.jcachex.distributed.DistributedCache;
 import io.github.dhruv1110.jcachex.distributed.communication.CommunicationProtocol;
 import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery;
 import io.github.dhruv1110.jcachex.impl.DefaultCache;
@@ -420,16 +421,13 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
 
     protected V getFromRemoteNode(String nodeAddress, K key) {
         try {
-            CommunicationProtocol.CommunicationResult result = communicationProtocol.sendGet(nodeAddress, key).get(
+            CommunicationProtocol.CommunicationResult<V> result = communicationProtocol.sendGet(nodeAddress, key).get(
                     networkTimeout.toMillis(),
                     TimeUnit.MILLISECONDS);
             networkRequests.incrementAndGet();
 
             if (result.isSuccess()) {
-                String response = result.getResponse();
-                if (response.startsWith("OK|")) {
-                    return parseValue(response.substring(3));
-                }
+                return result.getResult();
             } else {
                 networkFailures.incrementAndGet();
             }
@@ -441,9 +439,10 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
     }
 
     protected void putToRemoteNode(String nodeAddress, K key, V value) throws Exception {
-        CommunicationProtocol.CommunicationResult result = communicationProtocol.sendPut(nodeAddress, key, value).get(
-                networkTimeout.toMillis(),
-                TimeUnit.MILLISECONDS);
+        CommunicationProtocol.CommunicationResult<Void> result = communicationProtocol.sendPut(nodeAddress, key, value)
+                .get(
+                        networkTimeout.toMillis(),
+                        TimeUnit.MILLISECONDS);
         networkRequests.incrementAndGet();
 
         if (!result.isSuccess()) {
@@ -454,16 +453,14 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
 
     protected V removeFromRemoteNode(String nodeAddress, K key) {
         try {
-            CommunicationProtocol.CommunicationResult result = communicationProtocol.sendRemove(nodeAddress, key).get(
-                    networkTimeout.toMillis(),
-                    TimeUnit.MILLISECONDS);
+            CommunicationProtocol.CommunicationResult<V> result = communicationProtocol.sendRemove(nodeAddress, key)
+                    .get(
+                            networkTimeout.toMillis(),
+                            TimeUnit.MILLISECONDS);
             networkRequests.incrementAndGet();
 
             if (result.isSuccess()) {
-                String response = result.getResponse();
-                if (response.startsWith("OK|")) {
-                    return parseValue(response.substring(3));
-                }
+                return result.getResult();
             } else {
                 networkFailures.incrementAndGet();
             }

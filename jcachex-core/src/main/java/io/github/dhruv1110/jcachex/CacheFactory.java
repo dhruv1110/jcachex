@@ -1,8 +1,8 @@
 package io.github.dhruv1110.jcachex;
 
-import io.github.dhruv1110.jcachex.distributed.AbstractDistributedCache;
+import io.github.dhruv1110.jcachex.distributed.impl.AbstractDistributedCache;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
-import io.github.dhruv1110.jcachex.distributed.KubernetesDistributedCache;
+import io.github.dhruv1110.jcachex.distributed.impl.KubernetesDistributedCache;
 import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery;
 import io.github.dhruv1110.jcachex.observability.MetricsRegistry;
 import io.github.dhruv1110.jcachex.resilience.CircuitBreaker;

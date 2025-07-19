@@ -1,4 +1,4 @@
-package io.github.dhruv1110.jcachex.distributed;
+package io.github.dhruv1110.jcachex.distributed.impl;
 
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheStats;
@@ -8,7 +8,6 @@ import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery.Discovere
 import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery.NodeDiscoveryListener;
 
 import java.net.InetAddress;
-import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
@@ -120,7 +119,7 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
         String nodeId = node.getNodeId();
 
         // Update cluster state
-        clusterNodes.put(nodeId, new DistributedCache.NodeInfo(nodeId, node.getAddress() + ":" + node.getPort(),
+        clusterNodes.put(nodeId, new NodeInfo(nodeId, node.getAddress() + ":" + node.getPort(),
                 NodeStatus.HEALTHY, System.currentTimeMillis(), java.util.Collections.emptySet()));
         healthyNodes.add(nodeId);
 
@@ -150,7 +149,7 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             return null;
         }
 
-        DistributedCache.NodeInfo nodeInfo = clusterNodes.get(nodeId);
+        NodeInfo nodeInfo = clusterNodes.get(nodeId);
         if (nodeInfo == null) {
             logger.warning("Node not found in cluster: " + nodeId);
             return null;
@@ -160,11 +159,11 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             networkRequests.incrementAndGet();
             long startTime = System.currentTimeMillis();
 
-            CompletableFuture<CommunicationProtocol.CommunicationResult> future = communicationProtocol.sendGet(
+            CompletableFuture<CommunicationProtocol.CommunicationResult<V>> future = communicationProtocol.sendGet(
                     nodeInfo.getAddress(),
                     key);
 
-            CommunicationProtocol.CommunicationResult result = future.get(networkTimeout.toMillis(),
+            CommunicationProtocol.CommunicationResult<V> result = future.get(networkTimeout.toMillis(),
                     java.util.concurrent.TimeUnit.MILLISECONDS);
 
             // Record latency
@@ -172,10 +171,8 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             perNodeLatencies.computeIfAbsent(nodeId, k -> new java.util.concurrent.atomic.AtomicLong())
                     .addAndGet(latency);
 
-            if (result.isSuccess() && result.getResponse() != null) {
-                @SuppressWarnings("unchecked")
-                V value = (V) result.getResponse();
-                return value;
+            if (result.isSuccess() && result.getResult() != null) {
+                return result.getResult();
             }
             return null;
         } catch (Exception e) {
@@ -192,7 +189,7 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             return;
         }
 
-        DistributedCache.NodeInfo nodeInfo = clusterNodes.get(nodeId);
+        NodeInfo nodeInfo = clusterNodes.get(nodeId);
         if (nodeInfo == null) {
             logger.warning("Node not found in cluster: " + nodeId);
             return;
@@ -202,12 +199,12 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             networkRequests.incrementAndGet();
             long startTime = System.currentTimeMillis();
 
-            CompletableFuture<CommunicationProtocol.CommunicationResult> future = communicationProtocol.sendPut(
+            CompletableFuture<CommunicationProtocol.CommunicationResult<Void>> future = communicationProtocol.sendPut(
                     nodeInfo.getAddress(),
                     key,
                     value);
 
-            CommunicationProtocol.CommunicationResult result = future.get(networkTimeout.toMillis(),
+            CommunicationProtocol.CommunicationResult<Void> result = future.get(networkTimeout.toMillis(),
                     java.util.concurrent.TimeUnit.MILLISECONDS);
 
             // Record latency
@@ -234,7 +231,7 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             return null;
         }
 
-        DistributedCache.NodeInfo nodeInfo = clusterNodes.get(nodeId);
+        NodeInfo nodeInfo = clusterNodes.get(nodeId);
         if (nodeInfo == null) {
             logger.warning("Node not found in cluster: " + nodeId);
             return null;
@@ -244,11 +241,11 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             networkRequests.incrementAndGet();
             long startTime = System.currentTimeMillis();
 
-            CompletableFuture<CommunicationProtocol.CommunicationResult> future = communicationProtocol.sendRemove(
+            CompletableFuture<CommunicationProtocol.CommunicationResult<V>> future = communicationProtocol.sendRemove(
                     nodeInfo.getAddress(),
                     key);
 
-            CommunicationProtocol.CommunicationResult result = future.get(networkTimeout.toMillis(),
+            CommunicationProtocol.CommunicationResult<V> result = future.get(networkTimeout.toMillis(),
                     java.util.concurrent.TimeUnit.MILLISECONDS);
 
             // Record latency
@@ -256,10 +253,8 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             perNodeLatencies.computeIfAbsent(nodeId, k -> new java.util.concurrent.atomic.AtomicLong())
                     .addAndGet(latency);
 
-            if (result.isSuccess() && result.getResponse() != null) {
-                @SuppressWarnings("unchecked")
-                V value = (V) result.getResponse();
-                return value;
+            if (result.isSuccess() && result.getResult() != null) {
+                return result.getResult();
             }
             return null;
         } catch (Exception e) {
@@ -428,8 +423,8 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
                 return;
             }
 
-            DistributedCache.NodeInfo fromNodeInfo = clusterNodes.get(fromNode);
-            DistributedCache.NodeInfo toNodeInfo = clusterNodes.get(toNode);
+            NodeInfo fromNodeInfo = clusterNodes.get(fromNode);
+            NodeInfo toNodeInfo = clusterNodes.get(toNode);
 
             if (fromNodeInfo == null) {
                 logger.warning("Source node not found for migration: " + fromNode);
@@ -451,26 +446,27 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
                     K key = (K) keyStr;
 
                     // Get value from source node
-                    CompletableFuture<CommunicationProtocol.CommunicationResult> getFuture = communicationProtocol
+                    CompletableFuture<CommunicationProtocol.CommunicationResult<V>> getFuture = communicationProtocol
                             .sendGet(fromNodeInfo.getAddress(), key);
 
                     CommunicationProtocol.CommunicationResult getResult = getFuture.get(networkTimeout.toMillis(),
                             java.util.concurrent.TimeUnit.MILLISECONDS);
 
-                    if (getResult.isSuccess() && getResult.getResponse() != null) {
+                    if (getResult.isSuccess() && getResult.getResult() != null) {
                         @SuppressWarnings("unchecked")
-                        V value = (V) getResult.getResponse();
+                        V value = (V) getResult.getResult();
 
                         // Put value to target node
-                        CompletableFuture<CommunicationProtocol.CommunicationResult> putFuture = communicationProtocol
+                        CompletableFuture<CommunicationProtocol.CommunicationResult<Void>> putFuture = communicationProtocol
                                 .sendPut(toNodeInfo.getAddress(), key, value);
 
-                        CommunicationProtocol.CommunicationResult putResult = putFuture.get(networkTimeout.toMillis(),
+                        CommunicationProtocol.CommunicationResult<Void> putResult = putFuture.get(
+                                networkTimeout.toMillis(),
                                 java.util.concurrent.TimeUnit.MILLISECONDS);
 
                         if (putResult.isSuccess()) {
                             // Remove from source node after successful put
-                            CompletableFuture<CommunicationProtocol.CommunicationResult> removeFuture = communicationProtocol
+                            CompletableFuture<CommunicationProtocol.CommunicationResult<V>> removeFuture = communicationProtocol
                                     .sendRemove(fromNodeInfo.getAddress(), key);
 
                             removeFuture.get(networkTimeout.toMillis(), java.util.concurrent.TimeUnit.MILLISECONDS);
@@ -510,7 +506,7 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             String address = parts[0];
             int port = parts.length > 1 ? Integer.parseInt(parts[1]) : 8080;
 
-            clusterNodes.put(nodeId, new DistributedCache.NodeInfo(nodeId, address + ":" + port, NodeStatus.HEALTHY,
+            clusterNodes.put(nodeId, new NodeInfo(nodeId, address + ":" + port, NodeStatus.HEALTHY,
                     System.currentTimeMillis(), java.util.Collections.emptySet()));
             healthyNodes.add(nodeId);
             hashRing.addNode(nodeId);
@@ -534,8 +530,8 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
 
     @Override
     public ClusterTopology getClusterTopology() {
-        java.util.Set<DistributedCache.NodeInfo> nodeInfos = new java.util.HashSet<>();
-        for (DistributedCache.NodeInfo node : clusterNodes.values()) {
+        java.util.Set<NodeInfo> nodeInfos = new java.util.HashSet<>();
+        for (NodeInfo node : clusterNodes.values()) {
             nodeInfos.add(node);
         }
         return new ClusterTopology(clusterName, nodeInfos, partitionCount, topologyVersion.get());
@@ -589,7 +585,7 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             return null;
         }
 
-        DistributedCache.NodeInfo nodeInfo = clusterNodes.get(nodeId);
+        NodeInfo nodeInfo = clusterNodes.get(nodeId);
         if (nodeInfo == null) {
             logger.warning("Node not found for stats collection: " + nodeId);
             return null;
@@ -599,14 +595,14 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             // Use a special health check to get basic stats
             // In a more sophisticated implementation, you could extend the protocol for
             // detailed stats
-            CompletableFuture<CommunicationProtocol.CommunicationResult> future = communicationProtocol
+            CompletableFuture<CommunicationProtocol.CommunicationResult<String>> future = communicationProtocol
                     .sendHealthCheck(nodeInfo.getAddress());
 
-            CommunicationProtocol.CommunicationResult result = future.get(networkTimeout.toMillis(),
+            CommunicationProtocol.CommunicationResult<String> result = future.get(networkTimeout.toMillis(),
                     java.util.concurrent.TimeUnit.MILLISECONDS);
 
-            if (result.isSuccess() && result.getResponse() != null) {
-                return parseStatsFromHealthResponse(result.getResponse());
+            if (result.isSuccess() && result.getResult() != null) {
+                return parseStatsFromHealthResponse(result.getResult());
             } else {
                 logger.warning("Failed to get stats from node " + nodeId);
                 return createEmptyStats();
@@ -739,7 +735,7 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             return;
         }
 
-        DistributedCache.NodeInfo nodeInfo = clusterNodes.get(nodeId);
+        NodeInfo nodeInfo = clusterNodes.get(nodeId);
         if (nodeInfo == null) {
             logger.warning("Node not found for invalidation: " + nodeId);
             return;
@@ -749,11 +745,11 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             networkRequests.incrementAndGet();
 
             // Use remove operation to invalidate the key on remote node
-            CompletableFuture<CommunicationProtocol.CommunicationResult> future = communicationProtocol.sendRemove(
+            CompletableFuture<CommunicationProtocol.CommunicationResult<V>> future = communicationProtocol.sendRemove(
                     nodeInfo.getAddress(),
                     key);
 
-            CommunicationProtocol.CommunicationResult result = future.get(networkTimeout.toMillis(),
+            CommunicationProtocol.CommunicationResult<V> result = future.get(networkTimeout.toMillis(),
                     java.util.concurrent.TimeUnit.MILLISECONDS);
 
             if (!result.isSuccess()) {
@@ -794,7 +790,7 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             return;
         }
 
-        DistributedCache.NodeInfo nodeInfo = clusterNodes.get(nodeId);
+        NodeInfo nodeInfo = clusterNodes.get(nodeId);
         if (nodeInfo == null) {
             logger.warning("Node not found for clear: " + nodeId);
             return;
@@ -805,12 +801,12 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
 
             // Use a special key to signal a clear operation
             // This is a simplified approach; in production you might extend the protocol
-            CompletableFuture<CommunicationProtocol.CommunicationResult> future = communicationProtocol.sendPut(
+            CompletableFuture<CommunicationProtocol.CommunicationResult<Void>> future = communicationProtocol.sendPut(
                     nodeInfo.getAddress(),
                     (K) "__CLEAR_CACHE__", // Special sentinel key
                     (V) "true");
 
-            CommunicationProtocol.CommunicationResult result = future.get(networkTimeout.toMillis(),
+            CommunicationProtocol.CommunicationResult<Void> result = future.get(networkTimeout.toMillis(),
                     java.util.concurrent.TimeUnit.MILLISECONDS);
 
             if (!result.isSuccess()) {

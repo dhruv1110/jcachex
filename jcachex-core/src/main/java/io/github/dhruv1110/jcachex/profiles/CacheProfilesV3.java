@@ -3,7 +3,7 @@ package io.github.dhruv1110.jcachex.profiles;
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.impl.*;
 import io.github.dhruv1110.jcachex.impl.UltraFastCache;
-import io.github.dhruv1110.jcachex.distributed.KubernetesDistributedCache;
+import io.github.dhruv1110.jcachex.distributed.impl.KubernetesDistributedCache;
 
 /**
  * Simplified and standardized cache profiles using the new ProfileRegistry
@@ -265,8 +265,9 @@ public final class CacheProfilesV3 {
                                 .register();
 
                 // KUBERNETES_DISTRIBUTED - Kubernetes cluster environments with network-aware
-                // caching
+                // caching using TCP communication protocol (port 8080, 5s timeout)
                 CacheProfileBuilder.create(ProfileName.KUBERNETES_DISTRIBUTED)
+                                .description("Kubernetes-native distributed cache with TCP communication protocol")
                                 .implementation(KubernetesDistributedCache.class)
                                 .evictionStrategy(EvictionStrategy.ENHANCED_LRU())
                                 .defaultMaximumSize(ProfileConstants.SIZE_XLARGE / 10) // 5000 entries
@@ -294,11 +295,26 @@ public final class CacheProfilesV3 {
          * <li><strong>Testable</strong>: Easy to test individual components</li>
          * </ul>
          *
+         * <p>
+         * <strong>Note:</strong> This profile uses TCP communication protocol by
+         * default.
+         * When instantiating KubernetesDistributedCache, configure the communication
+         * protocol:
+         * </p>
+         *
+         * <pre>{@code
+         * TcpCommunicationProtocol<String, Object> protocol = TcpCommunicationProtocol.<String, Object>builder()
+         *                 .port(8080)
+         *                 .timeout(5000)
+         *                 .maxConnections(100)
+         *                 .build();
+         * }</pre>
+         *
          * @return example custom profile for Redis-like workloads
          */
         public static CacheProfile<Object, Object> createRedisLikeProfile() {
                 return CacheProfileBuilder.create(ProfileName.KUBERNETES_DISTRIBUTED)
-                                .description("Redis-like distributed cache with persistence")
+                                .description("Redis-like distributed cache with persistence and TCP communication")
                                 .implementation(KubernetesDistributedCache.class)
                                 .evictionStrategy(EvictionStrategy.ENHANCED_LRU())
                                 .defaultMaximumSize(ProfileConstants.SIZE_XLARGE)

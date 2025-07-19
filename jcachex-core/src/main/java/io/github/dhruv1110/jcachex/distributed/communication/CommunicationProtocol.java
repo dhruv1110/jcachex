@@ -1,14 +1,19 @@
 package io.github.dhruv1110.jcachex.distributed.communication;
 
+import java.io.Serializable;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.Map;
 
 /**
- * Interface for inter-node communication protocols in distributed cache.
+ * Simple interface for inter-node communication protocols in distributed cache.
  * <p>
- * This abstraction allows different communication mechanisms (TCP, HTTP, gRPC,
- * etc.)
- * to be plugged into the distributed cache system based on user requirements.
+ * This interface provides a clean, focused API for distributed cache
+ * communication
+ * without unnecessary complexity. Currently supports TCP-based communication
+ * with plans for additional protocols as needed.
  * </p>
  *
  * <h3>Supported Operations:</h3>
@@ -17,22 +22,28 @@ import java.util.Map;
  * <li><strong>GET:</strong> Retrieve value for key from remote node</li>
  * <li><strong>REMOVE:</strong> Delete key from remote node</li>
  * <li><strong>HEALTH_CHECK:</strong> Check if remote node is healthy</li>
- * <li><strong>MIGRATE_KEYS:</strong> Request key migration during
- * rebalancing</li>
+ * <li><strong>INVALIDATION:</strong> Broadcast invalidation to multiple
+ * nodes</li>
+ * <li><strong>MIGRATION:</strong> Request key migration during rebalancing</li>
  * <li><strong>CLUSTER_INFO:</strong> Get cluster topology information</li>
  * </ul>
  *
- * <h3>Implementation Examples:</h3>
- * 
+ * <h3>Usage Examples:</h3>
+ *
  * <pre>{@code
- * // TCP-based communication
- * CommunicationProtocol tcpProtocol = new TcpCommunicationProtocol(8080);
+ * // Create TCP communication protocol
+ * CommunicationProtocol<String, User> protocol = TcpCommunicationProtocol.<String, User>builder()
+ *         .port(8080)
+ *         .timeout(5000)
+ *         .maxConnections(100)
+ *         .build();
  *
- * // HTTP-based communication
- * CommunicationProtocol httpProtocol = new HttpCommunicationProtocol(8080);
+ * // Cache operations
+ * protocol.sendPut("node-2:8080", "user123", user);
+ * User retrieved = protocol.sendGet("node-2:8080", "user123").get().getResult();
  *
- * // gRPC-based communication
- * CommunicationProtocol grpcProtocol = new GrpcCommunicationProtocol(9090);
+ * // Broadcasting
+ * protocol.broadcastInvalidation(Arrays.asList("node-1:8080", "node-2:8080"), "user123");
  * }</pre>
  *
  * @param <K> the type of keys
@@ -45,63 +56,88 @@ public interface CommunicationProtocol<K, V> {
      * Communication protocol types supported by the system.
      */
     enum ProtocolType {
-        TCP,
-        HTTP,
-        GRPC,
-        WEBSOCKET,
-        KAFKA,
-        RABBITMQ
+        TCP // Currently only TCP is implemented
     }
 
     /**
-     * Result of a communication operation.
+     * Result of a communication operation with type safety.
      */
-    class CommunicationResult {
+    class CommunicationResult<T> implements Serializable {
+        private static final long serialVersionUID = 1L;
+
         private final boolean success;
-        private final String response;
+        private final T result;
+        private final String errorMessage;
         private final Exception error;
+        private final Instant timestamp;
+        private final Duration latency;
 
-        public CommunicationResult(boolean success, String response, Exception error) {
+        public CommunicationResult(boolean success, T result, String errorMessage, Exception error, Duration latency) {
             this.success = success;
-            this.response = response;
+            this.result = result;
+            this.errorMessage = errorMessage;
             this.error = error;
+            this.timestamp = Instant.now();
+            this.latency = latency;
         }
 
-        public static CommunicationResult success(String response) {
-            return new CommunicationResult(true, response, null);
+        public static <T> CommunicationResult<T> success(T result, Duration latency) {
+            return new CommunicationResult<>(true, result, null, null, latency);
         }
 
-        public static CommunicationResult failure(Exception error) {
-            return new CommunicationResult(false, null, error);
+        public static <T> CommunicationResult<T> failure(String errorMessage, Exception error) {
+            return new CommunicationResult<>(false, null, errorMessage, error, Duration.ZERO);
         }
 
         public boolean isSuccess() {
             return success;
         }
 
-        public String getResponse() {
-            return response;
+        public T getResult() {
+            return result;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
         }
 
         public Exception getError() {
             return error;
         }
+
+        public Instant getTimestamp() {
+            return timestamp;
+        }
+
+        public Duration getLatency() {
+            return latency;
+        }
     }
 
     /**
-     * Configuration for the communication protocol.
+     * Simple configuration for the communication protocol.
      */
     class ProtocolConfig {
+        private final ProtocolType protocolType;
         private final int port;
         private final long timeoutMs;
         private final int maxConnections;
+        private final int bufferSize;
         private final Map<String, Object> additionalProperties;
 
-        public ProtocolConfig(int port, long timeoutMs, int maxConnections, Map<String, Object> additionalProperties) {
+        public ProtocolConfig(ProtocolType protocolType, int port, long timeoutMs,
+                int maxConnections, int bufferSize, Map<String, Object> additionalProperties) {
+            this.protocolType = protocolType;
             this.port = port;
             this.timeoutMs = timeoutMs;
             this.maxConnections = maxConnections;
+            this.bufferSize = bufferSize;
             this.additionalProperties = additionalProperties;
+        }
+
+        // Getters
+        public ProtocolType getProtocolType() {
+            return protocolType;
         }
 
         public int getPort() {
@@ -116,102 +152,101 @@ public interface CommunicationProtocol<K, V> {
             return maxConnections;
         }
 
+        public int getBufferSize() {
+            return bufferSize;
+        }
+
         public Map<String, Object> getAdditionalProperties() {
             return additionalProperties;
         }
     }
 
+    // ============= Lifecycle Methods =============
+
     /**
      * Start the communication protocol server to listen for incoming requests.
-     *
-     * @return CompletableFuture that completes when server is started
      */
     CompletableFuture<Void> startServer();
 
     /**
      * Stop the communication protocol server.
-     *
-     * @return CompletableFuture that completes when server is stopped
      */
     CompletableFuture<Void> stopServer();
 
+    // ============= Single Node Operations =============
+
     /**
      * Send a PUT request to store a key-value pair on a remote node.
-     *
-     * @param nodeAddress the target node address
-     * @param key         the key to store
-     * @param value       the value to store
-     * @return CompletableFuture with the operation result
      */
-    CompletableFuture<CommunicationResult> sendPut(String nodeAddress, K key, V value);
+    CompletableFuture<CommunicationResult<Void>> sendPut(String nodeAddress, K key, V value);
 
     /**
      * Send a GET request to retrieve a value from a remote node.
-     *
-     * @param nodeAddress the target node address
-     * @param key         the key to retrieve
-     * @return CompletableFuture with the operation result
      */
-    CompletableFuture<CommunicationResult> sendGet(String nodeAddress, K key);
+    CompletableFuture<CommunicationResult<V>> sendGet(String nodeAddress, K key);
 
     /**
      * Send a REMOVE request to delete a key from a remote node.
-     *
-     * @param nodeAddress the target node address
-     * @param key         the key to remove
-     * @return CompletableFuture with the operation result
      */
-    CompletableFuture<CommunicationResult> sendRemove(String nodeAddress, K key);
+    CompletableFuture<CommunicationResult<V>> sendRemove(String nodeAddress, K key);
 
     /**
      * Send a health check request to a remote node.
-     *
-     * @param nodeAddress the target node address
-     * @return CompletableFuture with the health check result
      */
-    CompletableFuture<CommunicationResult> sendHealthCheck(String nodeAddress);
+    CompletableFuture<CommunicationResult<String>> sendHealthCheck(String nodeAddress);
+
+    // ============= Multi-Node Broadcasting =============
+
+    /**
+     * Broadcast invalidation for a single key to multiple nodes.
+     */
+    CompletableFuture<Map<String, CommunicationResult<Void>>> broadcastInvalidation(
+            Collection<String> nodeAddresses, K key);
+
+    /**
+     * Broadcast invalidation for multiple keys to multiple nodes.
+     */
+    CompletableFuture<Map<String, CommunicationResult<Void>>> broadcastBatchInvalidation(
+            Collection<String> nodeAddresses, Collection<K> keys);
+
+    /**
+     * Broadcast cache clear to multiple nodes.
+     */
+    CompletableFuture<Map<String, CommunicationResult<Void>>> broadcastClear(
+            Collection<String> nodeAddresses);
+
+    // ============= Cluster Management =============
 
     /**
      * Request key migration from a remote node during cluster rebalancing.
-     *
-     * @param nodeAddress the target node address
-     * @return CompletableFuture with the migration data
      */
-    CompletableFuture<CommunicationResult> requestKeyMigration(String nodeAddress);
+    CompletableFuture<CommunicationResult<Map<K, V>>> requestKeyMigration(
+            String nodeAddress, Collection<K> keys);
 
     /**
      * Request cluster information from a remote node.
-     *
-     * @param nodeAddress the target node address
-     * @return CompletableFuture with the cluster information
      */
-    CompletableFuture<CommunicationResult> requestClusterInfo(String nodeAddress);
+    CompletableFuture<CommunicationResult<String>> requestClusterInfo(String nodeAddress);
+
+    // ============= Protocol Information =============
 
     /**
      * Get the protocol type.
-     *
-     * @return the protocol type
      */
     ProtocolType getProtocolType();
 
     /**
      * Get the protocol configuration.
-     *
-     * @return the protocol configuration
      */
     ProtocolConfig getConfig();
 
     /**
      * Check if the protocol is currently running.
-     *
-     * @return true if running, false otherwise
      */
     boolean isRunning();
 
     /**
      * Get protocol-specific metrics.
-     *
-     * @return map of metric names to values
      */
     Map<String, Object> getMetrics();
 }
