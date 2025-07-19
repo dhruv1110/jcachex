@@ -1,6 +1,8 @@
 package io.github.dhruv1110.jcachex;
 
+import io.github.dhruv1110.jcachex.distributed.AbstractDistributedCache;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
+import io.github.dhruv1110.jcachex.distributed.KubernetesDistributedCache;
 import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery;
 import io.github.dhruv1110.jcachex.observability.MetricsRegistry;
 import io.github.dhruv1110.jcachex.resilience.CircuitBreaker;
@@ -189,14 +191,9 @@ public class CacheFactory {
             }
 
             // Build distributed cache
-            DistributedCache.Builder<K, V> distributedBuilder = DistributedCache.<K, V>builder()
+            AbstractDistributedCache.Builder<K, V> distributedBuilder = KubernetesDistributedCache.<K, V>builder()
                     .clusterName(clusterName)
-                    .replicationFactor(replicationFactor)
                     .consistencyLevel(consistencyLevel);
-
-            if (nodes != null) {
-                distributedBuilder.nodes(nodes);
-            }
 
             if (nodeDiscovery != null) {
                 distributedBuilder.nodeDiscovery(nodeDiscovery);

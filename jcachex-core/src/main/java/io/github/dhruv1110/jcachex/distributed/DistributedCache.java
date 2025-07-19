@@ -246,17 +246,6 @@ public interface DistributedCache<K, V> extends Cache<K, V> {
     boolean isReadRepairEnabled();
 
     /**
-     * Creates a new distributed cache builder.
-     *
-     * @param <K> the key type
-     * @param <V> the value type
-     * @return new builder instance
-     */
-    static <K, V> Builder<K, V> builder() {
-        return new KubernetesDistributedCache.Builder<>();
-    }
-
-    /**
      * Builder interface for creating distributed caches.
      */
     interface Builder<K, V> {
