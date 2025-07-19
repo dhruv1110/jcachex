@@ -13,8 +13,6 @@ import java.util.logging.Logger;
  * <p>
  * This factory supports creating various types of node discovery mechanisms:
  * - Kubernetes service discovery
- * - Consul service discovery
- * - Gossip protocol
  * - Static node configuration
  * </p>
  *
@@ -31,26 +29,11 @@ import java.util.logging.Logger;
  *         serviceName: jcachex-cluster
  *         labelSelector: app=jcachex
  *
- * # Consul discovery
+ * # Static discovery (no automatic discovery)
  * jcachex:
  *   distributed:
  *     nodeDiscovery:
- *       type: CONSUL
- *       consul:
- *         consulHost: localhost:8500
- *         serviceName: jcachex-cluster
- *         datacenter: dc1
- *
- * # Gossip protocol
- * jcachex:
- *   distributed:
- *     nodeDiscovery:
- *       type: GOSSIP
- *       gossip:
- *         seedNodes:
- *           - node1:8080
- *           - node2:8080
- *         gossipIntervalSeconds: 5
+ *       type: STATIC
  * }</pre>
  *
  * @since 1.0.0
@@ -82,14 +65,11 @@ public class NodeDiscoveryFactory {
         switch (type.toUpperCase()) {
             case "KUBERNETES":
                 return createKubernetesDiscovery(config);
-            case "CONSUL":
-                return createConsulDiscovery(config);
-            case "GOSSIP":
-                return createGossipDiscovery(config);
             case "STATIC":
                 return null; // Static discovery doesn't need a NodeDiscovery instance
             default:
-                throw new IllegalArgumentException("Unsupported node discovery type: " + type);
+                throw new IllegalArgumentException(
+                        "Unsupported node discovery type: " + type + ". Only KUBERNETES and STATIC are supported.");
         }
     }
 
@@ -125,58 +105,6 @@ public class NodeDiscoveryFactory {
     }
 
     /**
-     * Creates a Consul-based node discovery instance.
-     *
-     * @param config the node discovery configuration
-     * @return configured Consul node discovery
-     */
-    private NodeDiscovery createConsulDiscovery(JCacheXProperties.NodeDiscoveryConfig config) {
-        JCacheXProperties.ConsulDiscoveryConfig consulConfig = config.getConsul();
-
-        NodeDiscovery.ConsulDiscoveryBuilder builder = NodeDiscovery.consul()
-                .serviceName(consulConfig.getServiceName())
-                .consulHost(consulConfig.getConsulHost())
-                .datacenter(consulConfig.getDatacenter())
-                .enableAcl(consulConfig.getEnableAcl())
-                .discoveryInterval(Duration.ofSeconds(config.getDiscoveryIntervalSeconds()))
-                .healthCheckInterval(Duration.ofSeconds(config.getHealthCheckIntervalSeconds()))
-                .maxRetries(config.getMaxRetries())
-                .connectionTimeout(Duration.ofSeconds(config.getConnectionTimeoutSeconds()));
-
-        if (consulConfig.getToken() != null) {
-            builder.token(consulConfig.getToken());
-        }
-
-        NodeDiscovery discovery = builder.build();
-        logger.info("Created Consul node discovery for service: " + consulConfig.getServiceName());
-        return discovery;
-    }
-
-    /**
-     * Creates a Gossip protocol-based node discovery instance.
-     *
-     * @param config the node discovery configuration
-     * @return configured Gossip node discovery
-     */
-    private NodeDiscovery createGossipDiscovery(JCacheXProperties.NodeDiscoveryConfig config) {
-        JCacheXProperties.GossipDiscoveryConfig gossipConfig = config.getGossip();
-
-        NodeDiscovery.GossipDiscoveryBuilder builder = NodeDiscovery.gossip()
-                .seedNodes(gossipConfig.getSeedNodes())
-                .gossipInterval(Duration.ofSeconds(gossipConfig.getGossipIntervalSeconds()))
-                .gossipFanout(gossipConfig.getGossipFanout())
-                .nodeTimeout(Duration.ofSeconds(gossipConfig.getNodeTimeoutSeconds()))
-                .discoveryInterval(Duration.ofSeconds(config.getDiscoveryIntervalSeconds()))
-                .healthCheckInterval(Duration.ofSeconds(config.getHealthCheckIntervalSeconds()))
-                .maxRetries(config.getMaxRetries())
-                .connectionTimeout(Duration.ofSeconds(config.getConnectionTimeoutSeconds()));
-
-        NodeDiscovery discovery = builder.build();
-        logger.info("Created Gossip node discovery with " + gossipConfig.getSeedNodes().size() + " seed nodes");
-        return discovery;
-    }
-
-    /**
      * Checks if the given discovery type is supported.
      *
      * @param type the discovery type to check
@@ -189,8 +117,6 @@ public class NodeDiscoveryFactory {
 
         switch (type.toUpperCase()) {
             case "KUBERNETES":
-            case "CONSUL":
-            case "GOSSIP":
             case "STATIC":
                 return true;
             default:

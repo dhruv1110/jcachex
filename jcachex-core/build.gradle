@@ -10,6 +10,9 @@ repositories {
 }
 
 dependencies {
+    // Kubernetes Java Client - simple direct declaration
+    implementation 'io.kubernetes:client-java:16.0.0'
+
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation(platform("org.mockito:mockito-bom:5.8.0"))

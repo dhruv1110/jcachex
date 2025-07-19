@@ -3,6 +3,7 @@ package io.github.dhruv1110.jcachex.profiles;
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.impl.*;
 import io.github.dhruv1110.jcachex.impl.UltraFastCache;
+import io.github.dhruv1110.jcachex.distributed.KubernetesDistributedCache;
 
 /**
  * Simplified and standardized cache profiles using the new ProfileRegistry
@@ -263,9 +264,10 @@ public final class CacheProfilesV3 {
                                                 workload.getConcurrencyLevel() == WorkloadCharacteristics.ConcurrencyLevel.VERY_HIGH)
                                 .register();
 
-                // DISTRIBUTED - Cluster environments with network-aware caching
-                CacheProfileBuilder.create(ProfileName.DISTRIBUTED)
-                                .implementation(DefaultDistributedCache.class)
+                // KUBERNETES_DISTRIBUTED - Kubernetes cluster environments with network-aware
+                // caching
+                CacheProfileBuilder.create(ProfileName.KUBERNETES_DISTRIBUTED)
+                                .implementation(KubernetesDistributedCache.class)
                                 .evictionStrategy(EvictionStrategy.ENHANCED_LRU())
                                 .defaultMaximumSize(ProfileConstants.SIZE_XLARGE / 10) // 5000 entries
                                 .defaultExpireAfterWrite(ProfileConstants.EXPIRATION_LONG)
@@ -295,9 +297,9 @@ public final class CacheProfilesV3 {
          * @return example custom profile for Redis-like workloads
          */
         public static CacheProfile<Object, Object> createRedisLikeProfile() {
-                return CacheProfileBuilder.create(ProfileName.DISTRIBUTED)
+                return CacheProfileBuilder.create(ProfileName.KUBERNETES_DISTRIBUTED)
                                 .description("Redis-like distributed cache with persistence")
-                                .implementation(DefaultDistributedCache.class)
+                                .implementation(KubernetesDistributedCache.class)
                                 .evictionStrategy(EvictionStrategy.ENHANCED_LRU())
                                 .defaultMaximumSize(ProfileConstants.SIZE_XLARGE)
                                 .defaultExpireAfterWrite(ProfileConstants.EXPIRATION_LONG)

@@ -31,7 +31,8 @@ public enum ProfileName {
     ZERO_COPY("ZERO_COPY", "Zero-copy optimized cache for minimal memory allocation", ProfileCategory.ADVANCED),
     HARDWARE_OPTIMIZED("HARDWARE_OPTIMIZED", "Hardware-optimized cache leveraging CPU-specific features",
             ProfileCategory.ADVANCED),
-    DISTRIBUTED("DISTRIBUTED", "Distributed cache optimized for cluster environments", ProfileCategory.ADVANCED);
+    KUBERNETES_DISTRIBUTED("KUBERNETES_DISTRIBUTED", "Kubernetes distributed cache optimized for cluster environments",
+            ProfileCategory.ADVANCED);
 
     private final String value;
     private final String description;
@@ -132,7 +133,7 @@ public enum ProfileName {
      * @return array of advanced profiles
      */
     public static ProfileName[] getAdvancedProfiles() {
-        return new ProfileName[] { ML_OPTIMIZED, ZERO_COPY, HARDWARE_OPTIMIZED, DISTRIBUTED };
+        return new ProfileName[] { ML_OPTIMIZED, ZERO_COPY, HARDWARE_OPTIMIZED, KUBERNETES_DISTRIBUTED };
     }
 
     @Override

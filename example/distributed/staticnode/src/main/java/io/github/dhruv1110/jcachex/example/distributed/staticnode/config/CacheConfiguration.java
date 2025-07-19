@@ -2,7 +2,7 @@ package io.github.dhruv1110.jcachex.example.distributed.staticnode.config;
 
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
-import io.github.dhruv1110.jcachex.impl.DefaultDistributedCache;
+import io.github.dhruv1110.jcachex.distributed.KubernetesDistributedCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -53,11 +53,10 @@ public class CacheConfiguration {
                 .build();
 
         // Build distributed cache with static node discovery
-        DistributedCache<String, Object> cache = new DefaultDistributedCache.Builder<String, Object>()
+        DistributedCache<String, Object> cache = new KubernetesDistributedCache.Builder<String, Object>()
                 .clusterName(clusterName)
-                .nodes(nodeAddresses)
-                .replicationPort(replicationPort)
-                .replicationFactor(replicationFactor)
+                .maxMemoryMB(512) // 512 MB memory limit
+                .tcpPort(replicationPort)
                 .consistencyLevel(DistributedCache.ConsistencyLevel.EVENTUAL)
                 .networkTimeout(Duration.ofSeconds(5))
                 .enableReadRepair(true)

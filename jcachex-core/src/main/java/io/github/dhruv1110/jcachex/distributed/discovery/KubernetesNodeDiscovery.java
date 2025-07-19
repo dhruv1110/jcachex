@@ -1,13 +1,13 @@
 package io.github.dhruv1110.jcachex.distributed.discovery;
 
-import java.io.BufferedReader;
+import io.kubernetes.client.openapi.ApiClient;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.Configuration;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.models.*;
+import io.kubernetes.client.util.Config;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -15,20 +15,21 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 /**
- * Kubernetes-based node discovery implementation.
+ * Kubernetes-based node discovery implementation using the official Kubernetes
+ * Java client.
  * <p>
- * This implementation uses the Kubernetes API to discover cache nodes running
- * in the same cluster.
- * It can work with both service account tokens (for in-cluster usage) and
- * kubeconfig files
- * (for external usage).
+ * This implementation uses the official Kubernetes Java client library to
+ * discover cache nodes running
+ * in the same cluster. It supports both in-cluster service account
+ * authentication and external kubeconfig.
  * </p>
  *
  * <h3>Key Features:</h3>
  * <ul>
+ * <li><strong>Official Client:</strong> Uses the official Kubernetes Java
+ * client library</li>
  * <li><strong>Service Account Support:</strong> Automatically uses in-cluster
  * service account</li>
  * <li><strong>Kubeconfig Support:</strong> Can use external kubeconfig for
@@ -62,11 +63,6 @@ import java.util.regex.Pattern;
  */
 public class KubernetesNodeDiscovery implements NodeDiscovery {
     private static final Logger logger = Logger.getLogger(KubernetesNodeDiscovery.class.getName());
-
-    private static final String SERVICE_ACCOUNT_TOKEN_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/token";
-    private static final String SERVICE_ACCOUNT_NAMESPACE_PATH = "/var/run/secrets/kubernetes.io/serviceaccount/namespace";
-    private static final String KUBERNETES_SERVICE_HOST = "KUBERNETES_SERVICE_HOST";
-    private static final String KUBERNETES_SERVICE_PORT = "KUBERNETES_SERVICE_PORT";
     private static final int DEFAULT_CACHE_PORT = 8080;
 
     private final KubernetesDiscoveryBuilder config;
@@ -81,8 +77,9 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
     private final AtomicLong failedDiscoveries = new AtomicLong(0);
     private final AtomicLong totalDiscoveryTime = new AtomicLong(0);
 
-    private String apiServerUrl;
-    private String bearerToken;
+    // Kubernetes Java client components
+    private ApiClient apiClient;
+    private CoreV1Api coreV1Api;
     private String actualNamespace;
 
     public KubernetesNodeDiscovery(KubernetesDiscoveryBuilder config) {
@@ -93,83 +90,39 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
             return t;
         });
 
-        initializeKubernetesConnection();
+        initializeKubernetesClient();
     }
 
-    private void initializeKubernetesConnection() {
+    private void initializeKubernetesClient() {
         try {
-            if (config.useServiceAccount && isRunningInCluster()) {
+            if (config.useServiceAccount) {
                 // Use in-cluster service account
-                this.bearerToken = readServiceAccountToken();
-                this.actualNamespace = readServiceAccountNamespace();
-                this.apiServerUrl = buildApiServerUrl();
+                this.apiClient = Config.defaultClient();
                 logger.info("Using in-cluster service account for Kubernetes discovery");
             } else if (config.kubeConfigPath != null) {
                 // Use kubeconfig file
-                parseKubeConfig();
-                this.actualNamespace = config.namespace;
+                this.apiClient = Config.fromConfig(config.kubeConfigPath);
                 logger.info("Using kubeconfig file for Kubernetes discovery: " + config.kubeConfigPath);
             } else {
-                throw new IllegalStateException("No valid Kubernetes configuration found");
+                // Try to load from default locations
+                this.apiClient = Config.defaultClient();
+                logger.info("Using default Kubernetes client configuration");
             }
-        } catch (Exception e) {
-            logger.severe("Failed to initialize Kubernetes connection: " + e.getMessage());
+
+            // Set the global configuration
+            Configuration.setDefaultApiClient(apiClient);
+
+            // Initialize the Core V1 API
+            this.coreV1Api = new CoreV1Api(apiClient);
+
+            // Set the actual namespace
+            this.actualNamespace = config.namespace != null ? config.namespace : "default";
+
+            logger.info("Kubernetes client initialized successfully for namespace: " + actualNamespace);
+
+        } catch (IOException e) {
+            logger.severe("Failed to initialize Kubernetes client: " + e.getMessage());
             throw new RuntimeException("Kubernetes discovery initialization failed", e);
-        }
-    }
-
-    private boolean isRunningInCluster() {
-        return Files.exists(Paths.get(SERVICE_ACCOUNT_TOKEN_PATH)) &&
-                System.getenv(KUBERNETES_SERVICE_HOST) != null &&
-                System.getenv(KUBERNETES_SERVICE_PORT) != null;
-    }
-
-    private String readServiceAccountToken() throws IOException {
-        return readFileContent(SERVICE_ACCOUNT_TOKEN_PATH).trim();
-    }
-
-    private String readServiceAccountNamespace() throws IOException {
-        if (Files.exists(Paths.get(SERVICE_ACCOUNT_NAMESPACE_PATH))) {
-            return readFileContent(SERVICE_ACCOUNT_NAMESPACE_PATH).trim();
-        }
-        return config.namespace; // fallback to configured namespace
-    }
-
-    private String readFileContent(String filePath) throws IOException {
-        StringBuilder content = new StringBuilder();
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                content.append(line).append(System.lineSeparator());
-            }
-        }
-        return content.toString().trim();
-    }
-
-    private String buildApiServerUrl() {
-        String host = System.getenv(KUBERNETES_SERVICE_HOST);
-        String port = System.getenv(KUBERNETES_SERVICE_PORT);
-        return "https://" + host + ":" + port;
-    }
-
-    private void parseKubeConfig() {
-        // Simplified kubeconfig parsing
-        // In a real implementation, you'd use a proper YAML parser
-        try {
-            Path kubeConfigPath = Paths.get(config.kubeConfigPath);
-            if (!Files.exists(kubeConfigPath)) {
-                throw new IllegalStateException("Kubeconfig file not found: " + config.kubeConfigPath);
-            }
-
-            // For this implementation, we'll assume standard kubeconfig format
-            // In production, use a proper Kubernetes client library
-            this.apiServerUrl = "https://kubernetes.default.svc"; // placeholder
-            this.bearerToken = "placeholder-token"; // placeholder
-
-            logger.warning("Kubeconfig parsing is simplified in this implementation. " +
-                    "Consider using official Kubernetes client libraries for production.");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to parse kubeconfig", e);
         }
     }
 
@@ -266,16 +219,51 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
         Set<DiscoveredNode> nodes = new HashSet<>();
 
         try {
-            String apiPath = "/api/v1/namespaces/" + actualNamespace + "/pods";
+            V1PodList podList;
+
             if (config.labelSelector != null) {
-                apiPath += "?labelSelector=" + config.labelSelector;
+                // List pods with label selector
+                podList = coreV1Api.listNamespacedPod(
+                        actualNamespace,
+                        null, // pretty
+                        null, // allowWatchBookmarks
+                        null, // _continue
+                        null, // fieldSelector
+                        config.labelSelector, // labelSelector
+                        null, // limit
+                        null, // resourceVersion
+                        null, // resourceVersionMatch
+                        null, // timeoutSeconds
+                        null // watch
+                );
+            } else {
+                // List all pods in namespace
+                podList = coreV1Api.listNamespacedPod(
+                        actualNamespace,
+                        null, // pretty
+                        null, // allowWatchBookmarks
+                        null, // _continue
+                        null, // fieldSelector
+                        null, // labelSelector
+                        null, // limit
+                        null, // resourceVersion
+                        null, // resourceVersionMatch
+                        null, // timeoutSeconds
+                        null // watch
+                );
             }
 
-            String response = makeKubernetesApiCall(apiPath);
-            nodes.addAll(parsePodsResponse(response));
+            if (podList.getItems() != null) {
+                for (V1Pod pod : podList.getItems()) {
+                    DiscoveredNode node = createNodeFromPod(pod);
+                    if (node != null) {
+                        nodes.add(node);
+                    }
+                }
+            }
 
-        } catch (Exception e) {
-            logger.severe("Failed to discover pods: " + e.getMessage());
+        } catch (ApiException e) {
+            logger.severe("Failed to discover pods: " + e.getResponseBody());
         }
 
         return nodes;
@@ -285,126 +273,64 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
         Set<DiscoveredNode> nodes = new HashSet<>();
 
         try {
-            String apiPath = "/api/v1/namespaces/" + actualNamespace + "/endpoints/" + config.serviceName;
-            String response = makeKubernetesApiCall(apiPath);
-            nodes.addAll(parseEndpointsResponse(response));
+            V1Endpoints endpoints = coreV1Api.readNamespacedEndpoints(
+                    config.serviceName,
+                    actualNamespace,
+                    null // pretty
+            );
 
-        } catch (Exception e) {
-            logger.severe("Failed to discover service endpoints: " + e.getMessage());
-        }
-
-        return nodes;
-    }
-
-    private String makeKubernetesApiCall(String apiPath) throws Exception {
-        URL url = new URL(apiServerUrl + apiPath);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-        try {
-            connection.setRequestMethod("GET");
-            connection.setRequestProperty("Authorization", "Bearer " + bearerToken);
-            connection.setRequestProperty("Accept", "application/json");
-            connection.setConnectTimeout((int) config.connectionTimeout.toMillis());
-            connection.setReadTimeout((int) config.connectionTimeout.toMillis());
-
-            int responseCode = connection.getResponseCode();
-            if (responseCode != 200) {
-                throw new RuntimeException("Kubernetes API call failed with status: " + responseCode);
-            }
-
-            StringBuilder response = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(connection.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-            }
-
-            return response.toString();
-        } finally {
-            connection.disconnect();
-        }
-    }
-
-    private Set<DiscoveredNode> parsePodsResponse(String jsonResponse) {
-        Set<DiscoveredNode> nodes = new HashSet<>();
-
-        // Simplified JSON parsing - in production, use a proper JSON library
-        try {
-            // This is a very basic implementation
-            // In production, use Jackson, Gson, or similar
-            if (jsonResponse.contains("\"items\"")) {
-                // Extract pod information
-                String[] pods = extractJsonArrayItems(jsonResponse, "items");
-
-                for (String pod : pods) {
-                    try {
-                        DiscoveredNode node = parsePodToNode(pod);
-                        if (node != null) {
-                            nodes.add(node);
-                        }
-                    } catch (Exception e) {
-                        logger.warning("Failed to parse pod: " + e.getMessage());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.severe("Failed to parse pods response: " + e.getMessage());
-        }
-
-        return nodes;
-    }
-
-    private Set<DiscoveredNode> parseEndpointsResponse(String jsonResponse) {
-        Set<DiscoveredNode> nodes = new HashSet<>();
-
-        try {
-            // Parse endpoints JSON response
-            if (jsonResponse.contains("\"subsets\"")) {
-                String[] subsets = extractJsonArrayItems(jsonResponse, "subsets");
-
-                for (String subset : subsets) {
-                    if (subset.contains("\"addresses\"")) {
-                        String[] addresses = extractJsonArrayItems(subset, "addresses");
-
-                        for (String address : addresses) {
-                            try {
-                                DiscoveredNode node = parseAddressToNode(address);
-                                if (node != null) {
-                                    nodes.add(node);
-                                }
-                            } catch (Exception e) {
-                                logger.warning("Failed to parse address: " + e.getMessage());
+            if (endpoints.getSubsets() != null) {
+                for (V1EndpointSubset subset : endpoints.getSubsets()) {
+                    if (subset.getAddresses() != null) {
+                        for (V1EndpointAddress address : subset.getAddresses()) {
+                            DiscoveredNode node = createNodeFromEndpointAddress(address);
+                            if (node != null) {
+                                nodes.add(node);
                             }
                         }
                     }
                 }
             }
-        } catch (Exception e) {
-            logger.severe("Failed to parse endpoints response: " + e.getMessage());
+
+        } catch (ApiException e) {
+            logger.warning(
+                    "Failed to discover service endpoints for " + config.serviceName + ": " + e.getResponseBody());
         }
 
         return nodes;
     }
 
-    private DiscoveredNode parsePodToNode(String podJson) {
+    private DiscoveredNode createNodeFromPod(V1Pod pod) {
         try {
-            // Extract pod information
-            String podName = extractJsonValue(podJson, "name");
-            String podIP = extractJsonValue(podJson, "podIP");
-            String phase = extractJsonValue(podJson, "phase");
+            V1ObjectMeta metadata = pod.getMetadata();
+            V1PodStatus status = pod.getStatus();
 
-            if (podIP == null || "null".equals(podIP) || podIP.isEmpty()) {
+            if (metadata == null || status == null) {
+                return null;
+            }
+
+            String podName = metadata.getName();
+            String podIP = status.getPodIP();
+            String phase = status.getPhase();
+
+            if (podIP == null || podIP.isEmpty()) {
                 return null; // Skip pods without IP
             }
 
-            NodeHealth health = "Running".equals(phase) ? NodeHealth.HEALTHY : NodeHealth.UNHEALTHY;
-            Map<String, String> metadata = new HashMap<>();
-            metadata.put("podName", podName);
-            metadata.put("namespace", actualNamespace);
-            metadata.put("phase", phase);
-            metadata.put("source", "kubernetes-pod");
+            // Determine health based on pod phase and conditions
+            NodeHealth health = determinePodHealth(pod);
+
+            Map<String, String> nodeMetadata = new HashMap<>();
+            nodeMetadata.put("podName", podName);
+            nodeMetadata.put("namespace", actualNamespace);
+            nodeMetadata.put("phase", phase);
+            nodeMetadata.put("source", "kubernetes-pod");
+
+            if (metadata.getLabels() != null) {
+                for (Map.Entry<String, String> entry : metadata.getLabels().entrySet()) {
+                    nodeMetadata.put("label." + entry.getKey(), entry.getValue());
+                }
+            }
 
             return new DiscoveredNode(
                     podName,
@@ -412,28 +338,51 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
                     DEFAULT_CACHE_PORT,
                     health,
                     Instant.now(),
-                    metadata);
+                    nodeMetadata);
 
         } catch (Exception e) {
-            logger.warning("Failed to parse pod to node: " + e.getMessage());
+            logger.warning("Failed to create node from pod: " + e.getMessage());
             return null;
         }
     }
 
-    private DiscoveredNode parseAddressToNode(String addressJson) {
-        try {
-            String ip = extractJsonValue(addressJson, "ip");
-            String hostname = extractJsonValue(addressJson, "hostname");
+    private NodeHealth determinePodHealth(V1Pod pod) {
+        V1PodStatus status = pod.getStatus();
+        if (status == null) {
+            return NodeHealth.UNKNOWN;
+        }
 
-            if (ip == null || "null".equals(ip) || ip.isEmpty()) {
+        String phase = status.getPhase();
+        if (!"Running".equals(phase)) {
+            return NodeHealth.UNHEALTHY;
+        }
+
+        // Check readiness conditions
+        if (status.getConditions() != null) {
+            for (V1PodCondition condition : status.getConditions()) {
+                if ("Ready".equals(condition.getType())) {
+                    return "True".equals(condition.getStatus()) ? NodeHealth.HEALTHY : NodeHealth.UNHEALTHY;
+                }
+            }
+        }
+
+        return NodeHealth.HEALTHY;
+    }
+
+    private DiscoveredNode createNodeFromEndpointAddress(V1EndpointAddress address) {
+        try {
+            String ip = address.getIp();
+            String hostname = address.getHostname();
+
+            if (ip == null || ip.isEmpty()) {
                 return null;
             }
 
             String nodeId = hostname != null ? hostname : ip;
-            Map<String, String> metadata = new HashMap<>();
-            metadata.put("namespace", actualNamespace);
-            metadata.put("serviceName", config.serviceName);
-            metadata.put("source", "kubernetes-endpoint");
+            Map<String, String> nodeMetadata = new HashMap<>();
+            nodeMetadata.put("namespace", actualNamespace);
+            nodeMetadata.put("serviceName", config.serviceName);
+            nodeMetadata.put("source", "kubernetes-endpoint");
 
             return new DiscoveredNode(
                     nodeId,
@@ -441,41 +390,12 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
                     DEFAULT_CACHE_PORT,
                     NodeHealth.HEALTHY,
                     Instant.now(),
-                    metadata);
+                    nodeMetadata);
 
         } catch (Exception e) {
-            logger.warning("Failed to parse address to node: " + e.getMessage());
+            logger.warning("Failed to create node from endpoint address: " + e.getMessage());
             return null;
         }
-    }
-
-    // Simplified JSON parsing utilities
-    private String[] extractJsonArrayItems(String json, String arrayName) {
-        // Very basic JSON array extraction
-        String pattern = "\"" + arrayName + "\":\\s*\\[([^\\]]+)\\]";
-        Pattern p = Pattern.compile(pattern);
-        java.util.regex.Matcher m = p.matcher(json);
-
-        if (m.find()) {
-            String arrayContent = m.group(1);
-            // Split by },{ to get individual items
-            return arrayContent.split("\\},\\s*\\{");
-        }
-
-        return new String[0];
-    }
-
-    private String extractJsonValue(String json, String key) {
-        // Very basic JSON value extraction
-        String pattern = "\"" + key + "\":\\s*\"([^\"]+)\"";
-        Pattern p = Pattern.compile(pattern);
-        java.util.regex.Matcher m = p.matcher(json);
-
-        if (m.find()) {
-            return m.group(1);
-        }
-
-        return null;
     }
 
     private void performDiscovery() {
@@ -523,22 +443,15 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
         if (!running.get())
             return;
 
-        // Re-check health of all current nodes
-        for (DiscoveredNode node : currentNodes.values()) {
-            checkNodeHealth(node.getNodeId()).thenAccept(health -> {
-                if (health != node.getHealth()) {
-                    DiscoveredNode updatedNode = new DiscoveredNode(
-                            node.getNodeId(),
-                            node.getAddress(),
-                            node.getPort(),
-                            health,
-                            Instant.now(),
-                            node.getMetadata());
-                    currentNodes.put(node.getNodeId(), updatedNode);
-                    notifyNodeHealthChanged(node.getNodeId(), node.getHealth(), health);
-                }
-            });
-        }
+        // Re-check health of all current nodes by performing a fresh discovery
+        CompletableFuture.runAsync(() -> {
+            try {
+                Set<DiscoveredNode> refreshedNodes = performKubernetesDiscovery();
+                updateCurrentNodes(refreshedNodes);
+            } catch (Exception e) {
+                logger.warning("Health check discovery failed: " + e.getMessage());
+            }
+        });
     }
 
     @Override
@@ -563,14 +476,13 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
                 return NodeHealth.UNKNOWN;
             }
 
-            // In a real implementation, you might check readiness probes
-            // For now, assume healthy if recently seen
+            // Check if node was recently seen
             Duration timeSinceLastSeen = Duration.between(node.getLastSeen(), Instant.now());
             if (timeSinceLastSeen.compareTo(config.healthCheckInterval.multipliedBy(2)) > 0) {
                 return NodeHealth.UNHEALTHY;
             }
 
-            return NodeHealth.HEALTHY;
+            return node.getHealth();
         });
     }
 

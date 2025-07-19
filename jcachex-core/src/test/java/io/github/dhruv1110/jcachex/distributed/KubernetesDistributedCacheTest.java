@@ -23,9 +23,9 @@ import java.util.concurrent.TimeoutException;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Comprehensive tests for DefaultDistributedCache implementation.
+ * Comprehensive tests for KubernetesDistributedCache implementation.
  */
-class DefaultDistributedCacheTest {
+class KubernetesDistributedCacheTest {
 
     private DistributedCache<String, String> distributedCache;
     private static final String TEST_CLUSTER = "test-cluster";
@@ -33,11 +33,15 @@ class DefaultDistributedCacheTest {
 
     @BeforeEach
     void setUp() {
-        distributedCache = DistributedCache.<String, String>builder()
+        // Use a random port for tests to avoid conflicts
+        int testPort = 8080 + (int) (Math.random() * 1000);
+        distributedCache = KubernetesDistributedCache.<String, String>builder()
                 .clusterName(TEST_CLUSTER)
-                .nodes(TEST_NODES)
-                .replicationFactor(2)
+                .maxMemoryMB(128) // 128 MB for tests
+                .tcpPort(testPort) // Random port for tests
+                .virtualNodesPerNode(50) // Fewer vnodes for tests
                 .consistencyLevel(ConsistencyLevel.EVENTUAL)
+                .nodeDiscovery(null) // No node discovery for tests
                 .build();
     }
 

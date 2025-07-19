@@ -2,7 +2,7 @@ package io.github.dhruv1110.jcachex.distributed;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheStats;
-import io.github.dhruv1110.jcachex.impl.DefaultDistributedCache;
+import io.github.dhruv1110.jcachex.distributed.KubernetesDistributedCache;
 import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery;
 
 import java.time.Duration;
@@ -253,7 +253,7 @@ public interface DistributedCache<K, V> extends Cache<K, V> {
      * @return new builder instance
      */
     static <K, V> Builder<K, V> builder() {
-        return new DefaultDistributedCache.Builder<>();
+        return new KubernetesDistributedCache.Builder<>();
     }
 
     /**

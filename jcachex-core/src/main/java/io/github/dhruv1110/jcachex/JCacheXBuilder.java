@@ -40,7 +40,7 @@ import java.util.function.Function;
  * <h2>Usage Examples:</h2>
  *
  * <h3>Profile-Based Creation (Recommended):</h3>
- * 
+ *
  * <pre>{@code
  * // Using ProfileName enum for type safety
  * Cache<String, User> userCache = JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
@@ -57,7 +57,7 @@ import java.util.function.Function;
  * }</pre>
  *
  * <h3>Smart Defaults (When unsure):</h3>
- * 
+ *
  * <pre>{@code
  * // Let JCacheX choose the best profile based on workload characteristics
  * Cache<String, Data> smartCache = JCacheXBuilder.withSmartDefaults()
@@ -71,7 +71,7 @@ import java.util.function.Function;
  * }</pre>
  *
  * <h3>Simple Cases:</h3>
- * 
+ *
  * <pre>{@code
  * // Minimal configuration - uses DEFAULT profile
  * Cache<String, String> simpleCache = JCacheXBuilder.create()
@@ -294,7 +294,7 @@ public final class JCacheXBuilder<K, V> {
      * @return a pre-configured builder
      */
     public static <K, V> JCacheXBuilder<K, V> forDistributedCaching() {
-        return fromProfile(ProfileName.DISTRIBUTED);
+        return fromProfile(ProfileName.KUBERNETES_DISTRIBUTED);
     }
 
     // ===== CONFIGURATION METHODS =====
