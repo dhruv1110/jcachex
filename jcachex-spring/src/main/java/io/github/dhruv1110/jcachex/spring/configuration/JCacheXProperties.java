@@ -2,6 +2,7 @@ package io.github.dhruv1110.jcachex.spring.configuration;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -456,6 +457,7 @@ public class JCacheXProperties {
         private Boolean autoDiscovery = true;
         private Integer heartbeatIntervalSeconds = 10;
         private Integer maxRetries = 3;
+        private NodeDiscoveryConfig nodeDiscovery = new NodeDiscoveryConfig();
 
         // Getters and setters
         public Boolean getEnabled() {
@@ -552,6 +554,14 @@ public class JCacheXProperties {
 
         public void setMaxRetries(Integer maxRetries) {
             this.maxRetries = maxRetries;
+        }
+
+        public NodeDiscoveryConfig getNodeDiscovery() {
+            return nodeDiscovery;
+        }
+
+        public void setNodeDiscovery(NodeDiscoveryConfig nodeDiscovery) {
+            this.nodeDiscovery = nodeDiscovery;
         }
     }
 
@@ -858,6 +868,232 @@ public class JCacheXProperties {
 
         public void setMetricsTags(List<String> metricsTags) {
             this.metricsTags = metricsTags;
+        }
+    }
+
+    /**
+     * Configuration for node discovery in distributed caches.
+     */
+    public static class NodeDiscoveryConfig {
+        private String type = "STATIC";
+        private KubernetesDiscoveryConfig kubernetes = new KubernetesDiscoveryConfig();
+        private ConsulDiscoveryConfig consul = new ConsulDiscoveryConfig();
+        private GossipDiscoveryConfig gossip = new GossipDiscoveryConfig();
+        private Integer discoveryIntervalSeconds = 30;
+        private Integer healthCheckIntervalSeconds = 10;
+        private Integer maxRetries = 3;
+        private Integer connectionTimeoutSeconds = 5;
+
+        // Getters and setters
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public KubernetesDiscoveryConfig getKubernetes() {
+            return kubernetes;
+        }
+
+        public void setKubernetes(KubernetesDiscoveryConfig kubernetes) {
+            this.kubernetes = kubernetes;
+        }
+
+        public ConsulDiscoveryConfig getConsul() {
+            return consul;
+        }
+
+        public void setConsul(ConsulDiscoveryConfig consul) {
+            this.consul = consul;
+        }
+
+        public GossipDiscoveryConfig getGossip() {
+            return gossip;
+        }
+
+        public void setGossip(GossipDiscoveryConfig gossip) {
+            this.gossip = gossip;
+        }
+
+        public Integer getDiscoveryIntervalSeconds() {
+            return discoveryIntervalSeconds;
+        }
+
+        public void setDiscoveryIntervalSeconds(Integer discoveryIntervalSeconds) {
+            this.discoveryIntervalSeconds = discoveryIntervalSeconds;
+        }
+
+        public Integer getHealthCheckIntervalSeconds() {
+            return healthCheckIntervalSeconds;
+        }
+
+        public void setHealthCheckIntervalSeconds(Integer healthCheckIntervalSeconds) {
+            this.healthCheckIntervalSeconds = healthCheckIntervalSeconds;
+        }
+
+        public Integer getMaxRetries() {
+            return maxRetries;
+        }
+
+        public void setMaxRetries(Integer maxRetries) {
+            this.maxRetries = maxRetries;
+        }
+
+        public Integer getConnectionTimeoutSeconds() {
+            return connectionTimeoutSeconds;
+        }
+
+        public void setConnectionTimeoutSeconds(Integer connectionTimeoutSeconds) {
+            this.connectionTimeoutSeconds = connectionTimeoutSeconds;
+        }
+    }
+
+    /**
+     * Configuration for Kubernetes node discovery.
+     */
+    public static class KubernetesDiscoveryConfig {
+        private String namespace = "default";
+        private String serviceName = "jcachex-cluster";
+        private String labelSelector;
+        private String kubeConfigPath;
+        private Boolean useServiceAccount = true;
+
+        // Getters and setters
+        public String getNamespace() {
+            return namespace;
+        }
+
+        public void setNamespace(String namespace) {
+            this.namespace = namespace;
+        }
+
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        public void setServiceName(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public String getLabelSelector() {
+            return labelSelector;
+        }
+
+        public void setLabelSelector(String labelSelector) {
+            this.labelSelector = labelSelector;
+        }
+
+        public String getKubeConfigPath() {
+            return kubeConfigPath;
+        }
+
+        public void setKubeConfigPath(String kubeConfigPath) {
+            this.kubeConfigPath = kubeConfigPath;
+        }
+
+        public Boolean getUseServiceAccount() {
+            return useServiceAccount;
+        }
+
+        public void setUseServiceAccount(Boolean useServiceAccount) {
+            this.useServiceAccount = useServiceAccount;
+        }
+    }
+
+    /**
+     * Configuration for Consul node discovery.
+     */
+    public static class ConsulDiscoveryConfig {
+        private String consulHost = "localhost:8500";
+        private String serviceName = "jcachex-cluster";
+        private String datacenter = "dc1";
+        private String token;
+        private Boolean enableAcl = false;
+
+        // Getters and setters
+        public String getConsulHost() {
+            return consulHost;
+        }
+
+        public void setConsulHost(String consulHost) {
+            this.consulHost = consulHost;
+        }
+
+        public String getServiceName() {
+            return serviceName;
+        }
+
+        public void setServiceName(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        public String getDatacenter() {
+            return datacenter;
+        }
+
+        public void setDatacenter(String datacenter) {
+            this.datacenter = datacenter;
+        }
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        public Boolean getEnableAcl() {
+            return enableAcl;
+        }
+
+        public void setEnableAcl(Boolean enableAcl) {
+            this.enableAcl = enableAcl;
+        }
+    }
+
+    /**
+     * Configuration for Gossip protocol node discovery.
+     */
+    public static class GossipDiscoveryConfig {
+        private List<String> seedNodes = new ArrayList<>();
+        private Integer gossipIntervalSeconds = 5;
+        private Integer gossipFanout = 3;
+        private Integer nodeTimeoutSeconds = 60;
+
+        // Getters and setters
+        public List<String> getSeedNodes() {
+            return seedNodes;
+        }
+
+        public void setSeedNodes(List<String> seedNodes) {
+            this.seedNodes = seedNodes;
+        }
+
+        public Integer getGossipIntervalSeconds() {
+            return gossipIntervalSeconds;
+        }
+
+        public void setGossipIntervalSeconds(Integer gossipIntervalSeconds) {
+            this.gossipIntervalSeconds = gossipIntervalSeconds;
+        }
+
+        public Integer getGossipFanout() {
+            return gossipFanout;
+        }
+
+        public void setGossipFanout(Integer gossipFanout) {
+            this.gossipFanout = gossipFanout;
+        }
+
+        public Integer getNodeTimeoutSeconds() {
+            return nodeTimeoutSeconds;
+        }
+
+        public void setNodeTimeoutSeconds(Integer nodeTimeoutSeconds) {
+            this.nodeTimeoutSeconds = nodeTimeoutSeconds;
         }
     }
 }

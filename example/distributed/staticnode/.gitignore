@@ -1,0 +1,23 @@
+# Build artifacts
+build/
+*.jar
+*.class
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+# Docker artifacts (if any local ones are generated)
+.docker/

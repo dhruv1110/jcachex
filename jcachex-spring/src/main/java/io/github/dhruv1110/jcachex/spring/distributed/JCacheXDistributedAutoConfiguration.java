@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import io.github.dhruv1110.jcachex.spring.distributed.NodeDiscoveryFactory;
 
 /**
  * Auto-configuration for JCacheX distributed cache integration.
@@ -169,14 +170,27 @@ public class JCacheXDistributedAutoConfiguration {
     }
 
     /**
+     * Creates node discovery factory for creating various node discovery
+     * strategies.
+     *
+     * @return configured node discovery factory
+     */
+    @Bean
+    @ConditionalOnMissingBean(NodeDiscoveryFactory.class)
+    public NodeDiscoveryFactory nodeDiscoveryFactory() {
+        return new NodeDiscoveryFactory();
+    }
+
+    /**
      * Creates distributed cache factory for programmatic cache creation.
      *
+     * @param nodeDiscoveryFactory the node discovery factory
      * @return configured distributed cache factory
      */
     @Bean
     @ConditionalOnMissingBean(JCacheXDistributedCacheFactory.class)
-    public JCacheXDistributedCacheFactory distributedCacheFactory() {
-        return new JCacheXDistributedCacheFactory(properties);
+    public JCacheXDistributedCacheFactory distributedCacheFactory(NodeDiscoveryFactory nodeDiscoveryFactory) {
+        return new JCacheXDistributedCacheFactory(properties, nodeDiscoveryFactory);
     }
 
     // TODO: Implement JCacheXClusterTopologyMonitor for cluster health monitoring

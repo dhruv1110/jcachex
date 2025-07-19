@@ -1,0 +1,111 @@
+services:
+  # Node 1 - Primary node
+  node1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jcachex-distributed-example:latest
+    container_name: jcachex-node1
+    hostname: node1
+    environment:
+      - SPRING_PROFILES_ACTIVE=node1
+      - NODE_NAME=node1
+      - SERVER_PORT=8080
+      - CACHE_REPLICATION_PORT=8081
+      - CACHE_CLUSTER_NAME=static-cluster
+      - CACHE_NODES=node1:8081,node2:8083,node3:8085
+      - CACHE_REPLICATION_FACTOR=2
+      - JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC
+    ports:
+      - "8080:8080" # HTTP API
+      - "8081:8081" # Cache replication
+    networks:
+      - jcachex-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    depends_on: []
+
+  # Node 2 - Secondary node
+  node2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jcachex-distributed-example:latest
+    container_name: jcachex-node2
+    hostname: node2
+    environment:
+      - SPRING_PROFILES_ACTIVE=node2
+      - NODE_NAME=node2
+      - SERVER_PORT=8082
+      - CACHE_REPLICATION_PORT=8083
+      - CACHE_CLUSTER_NAME=static-cluster
+      - CACHE_NODES=node1:8081,node2:8083,node3:8085
+      - CACHE_REPLICATION_FACTOR=2
+      - JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC
+    ports:
+      - "8082:8082" # HTTP API
+      - "8083:8083" # Cache replication
+    networks:
+      - jcachex-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8082/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    depends_on:
+      - node1
+
+  # Node 3 - Tertiary node
+  node3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: jcachex-distributed-example:latest
+    container_name: jcachex-node3
+    hostname: node3
+    environment:
+      - SPRING_PROFILES_ACTIVE=node3
+      - NODE_NAME=node3
+      - SERVER_PORT=8084
+      - CACHE_REPLICATION_PORT=8085
+      - CACHE_CLUSTER_NAME=static-cluster
+      - CACHE_NODES=node1:8081,node2:8083,node3:8085
+      - CACHE_REPLICATION_FACTOR=2
+      - JAVA_OPTS=-Xmx512m -Xms256m -XX:+UseG1GC
+    ports:
+      - "8084:8084" # HTTP API
+      - "8085:8085" # Cache replication
+    networks:
+      - jcachex-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8084/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    restart: unless-stopped
+    depends_on:
+      - node1
+      - node2
+
+networks:
+  jcachex-network:
+    driver: bridge
+    name: jcachex-cluster
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  # Optional: for persistent logging (if needed)
+  logs-node1:
+  logs-node2:
+  logs-node3:

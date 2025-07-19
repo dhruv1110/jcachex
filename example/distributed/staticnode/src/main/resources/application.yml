@@ -1,0 +1,87 @@
+spring:
+  application:
+    name: ${NODE_NAME:node1}
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Cache Configuration
+cache:
+  cluster:
+    name: ${CACHE_CLUSTER_NAME:static-cluster}
+  replication:
+    port: ${CACHE_REPLICATION_PORT:8081}
+    factor: ${CACHE_REPLICATION_FACTOR:2}
+  nodes: ${CACHE_NODES:node1:8081,node2:8083,node3:8085}
+
+# Logging Configuration
+logging:
+  level:
+    io.github.dhruv1110.jcachex: DEBUG
+    io.github.dhruv1110.jcachex.example.distributed.staticnode: INFO
+    io.github.dhruv1110.jcachex.impl.DefaultDistributedCache: DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+
+---
+# Node 1 Profile
+spring:
+  config:
+    activate:
+      on-profile: node1
+  application:
+    name: node1
+
+server:
+  port: 8080
+
+cache:
+  replication:
+    port: 8081
+  nodes: "node1:8081,node2:8083,node3:8085"
+
+---
+# Node 2 Profile
+spring:
+  config:
+    activate:
+      on-profile: node2
+  application:
+    name: node2
+
+server:
+  port: 8082
+
+cache:
+  replication:
+    port: 8083
+  nodes: "node1:8081,node2:8083,node3:8085"
+
+---
+# Node 3 Profile
+spring:
+  config:
+    activate:
+      on-profile: node3
+  application:
+    name: node3
+
+server:
+  port: 8084
+
+cache:
+  replication:
+    port: 8085
+  nodes: "node1:8081,node2:8083,node3:8085"

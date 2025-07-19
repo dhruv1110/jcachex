@@ -3,11 +3,15 @@ package io.github.dhruv1110.jcachex.spring.distributed;
 import io.github.dhruv1110.jcachex.CacheFactory;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache.ConsistencyLevel;
+import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery;
 import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.logging.Logger;
 
 /**
  * Factory for creating distributed caches with Spring configuration
@@ -18,13 +22,16 @@ import java.util.concurrent.ConcurrentMap;
  * respecting
  * the global configuration defaults defined in JCacheXProperties. It provides
  * seamless
- * scaling from local to distributed caching.
+ * scaling from local to distributed caching with support for auto-discovery
+ * of nodes.
  * </p>
  *
  * <h2>Key Features:</h2>
  * <ul>
  * <li><strong>Configuration Integration:</strong> Respects global distributed
  * properties</li>
+ * <li><strong>Auto-Discovery:</strong> Supports Kubernetes, Consul, and Gossip
+ * node discovery</li>
  * <li><strong>Cluster Management:</strong> Automatic cluster formation and node
  * discovery</li>
  * <li><strong>Consistency Control:</strong> Configurable consistency levels per
@@ -73,20 +80,28 @@ import java.util.concurrent.ConcurrentMap;
  * @see JCacheXProperties
  * @see JCacheXDistributedCacheManager
  * @see DistributedCache
+ * @see NodeDiscoveryFactory
  * @since 1.0.0
  */
+@Component
 public class JCacheXDistributedCacheFactory {
 
+    private static final Logger logger = Logger.getLogger(JCacheXDistributedCacheFactory.class.getName());
+
     private final JCacheXProperties properties;
+    private final NodeDiscoveryFactory nodeDiscoveryFactory;
     private final ConcurrentMap<String, DistributedCache<Object, Object>> cacheRegistry;
 
     /**
      * Creates a new distributed cache factory with the specified properties.
      *
-     * @param properties the JCacheX configuration properties
+     * @param properties           the JCacheX configuration properties
+     * @param nodeDiscoveryFactory the node discovery factory for auto-discovery
      */
-    public JCacheXDistributedCacheFactory(JCacheXProperties properties) {
+    @Autowired
+    public JCacheXDistributedCacheFactory(JCacheXProperties properties, NodeDiscoveryFactory nodeDiscoveryFactory) {
         this.properties = properties;
+        this.nodeDiscoveryFactory = nodeDiscoveryFactory;
         this.cacheRegistry = new ConcurrentHashMap<>();
     }
 
@@ -209,17 +224,68 @@ public class JCacheXDistributedCacheFactory {
                 .replicationFactor(distributedConfig.getReplicationFactor())
                 .consistencyLevel(ConsistencyLevel.valueOf(distributedConfig.getConsistencyLevel().toUpperCase()));
 
-        // Add nodes
-        if (distributedConfig.getNodes() != null && !distributedConfig.getNodes().isEmpty()) {
-            builder.nodes(distributedConfig.getNodes());
-        } else if (distributedConfig.getSeedNodes() != null && !distributedConfig.getSeedNodes().isEmpty()) {
-            builder.nodes(distributedConfig.getSeedNodes());
-        }
+        // Configure auto-discovery if enabled
+        configureNodeDiscovery(builder, distributedConfig);
 
         // Apply cache-specific configuration
         applyCacheConfig(builder, cacheConfig);
 
         return builder;
+    }
+
+    /**
+     * Configures node discovery for the distributed cache.
+     *
+     * @param builder           the cache builder
+     * @param distributedConfig the distributed configuration
+     */
+    private void configureNodeDiscovery(CacheFactory.DistributedCacheBuilder<Object, Object> builder,
+            JCacheXProperties.DistributedConfig distributedConfig) {
+
+        JCacheXProperties.NodeDiscoveryConfig nodeDiscoveryConfig = distributedConfig.getNodeDiscovery();
+
+        if (nodeDiscoveryConfig != null && !"STATIC".equals(nodeDiscoveryConfig.getType())) {
+            try {
+                NodeDiscovery nodeDiscovery = nodeDiscoveryFactory.createNodeDiscovery(nodeDiscoveryConfig);
+                if (nodeDiscovery != null) {
+                    builder.nodeDiscovery(nodeDiscovery);
+                    logger.info("Configured auto-discovery for cache: " + builder.getName() +
+                            " using discovery type: " + nodeDiscoveryConfig.getType());
+                }
+            } catch (Exception e) {
+                logger.severe("Failed to configure node discovery for cache: " + builder.getName() +
+                        ". Error: " + e.getMessage());
+                // Fall back to static node configuration
+                configureStaticNodes(builder, distributedConfig);
+            }
+        } else {
+            // Use static node configuration
+            configureStaticNodes(builder, distributedConfig);
+        }
+    }
+
+    /**
+     * Configures static nodes for the distributed cache.
+     *
+     * @param builder           the cache builder
+     * @param distributedConfig the distributed configuration
+     */
+    private void configureStaticNodes(CacheFactory.DistributedCacheBuilder<Object, Object> builder,
+            JCacheXProperties.DistributedConfig distributedConfig) {
+
+        // Add nodes
+        if (distributedConfig.getNodes() != null && !distributedConfig.getNodes().isEmpty()) {
+            builder.nodes(distributedConfig.getNodes());
+            logger.info("Configured static nodes for cache: " + builder.getName() +
+                    " with " + distributedConfig.getNodes().size() + " nodes");
+        } else if (distributedConfig.getSeedNodes() != null && !distributedConfig.getSeedNodes().isEmpty()) {
+            builder.nodes(distributedConfig.getSeedNodes());
+            logger.info("Configured seed nodes for cache: " + builder.getName() +
+                    " with " + distributedConfig.getSeedNodes().size() + " nodes");
+        } else {
+            logger.warning("No nodes configured for distributed cache: " + builder.getName() +
+                    ". Cache will run in single-node mode.");
+        }
     }
 
     /**
