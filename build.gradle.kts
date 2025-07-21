@@ -469,7 +469,7 @@ project(":jcachex-kotlin") {
                 strictly("4.11.0")
             }
         }
-        testImplementation("org.mockito.kotlin:mockito-kotlin:4.1.0")
+        testImplementation("org.mockito.kotlin:mockito-kotlin:6.0.0")
     }
 
     // Force Mockito version for Java 8 compatibility
