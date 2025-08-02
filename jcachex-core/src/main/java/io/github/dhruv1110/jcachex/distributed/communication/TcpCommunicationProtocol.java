@@ -3,6 +3,7 @@ package io.github.dhruv1110.jcachex.distributed.communication;
 import io.github.dhruv1110.jcachex.distributed.communication.CommunicationProtocol.ProtocolType;
 import io.github.dhruv1110.jcachex.distributed.communication.CommunicationProtocol.ProtocolConfig;
 import io.github.dhruv1110.jcachex.distributed.communication.CommunicationProtocol.CommunicationResult;
+import io.github.dhruv1110.jcachex.Cache;
 
 import java.io.*;
 import java.net.*;
@@ -20,13 +21,15 @@ import java.util.ArrayList;
  * TCP-based implementation of the CommunicationProtocol interface.
  * <p>
  * This implementation provides reliable TCP socket communication between
- * distributed cache nodes with simple string-based serialization.
+ * distributed cache nodes using byte-based serialization for any object types.
  * The protocol handles cache operations internally without requiring
  * users to provide request handlers.
  * </p>
  *
  * <h3>Features:</h3>
  * <ul>
+ * <li><strong>Type Agnostic:</strong> Handles any serializable cache value
+ * types via byte arrays</li>
  * <li><strong>Reliable Communication:</strong> TCP guarantees message
  * delivery</li>
  * <li><strong>Connection Pooling:</strong> Reuses connections for better
@@ -47,7 +50,7 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
     private static final Logger logger = Logger.getLogger(TcpCommunicationProtocol.class.getName());
 
     private final ProtocolConfig config;
-    private final DefaultRequestHandler<K, V> requestHandler;
+    private final InternalCacheHandler<K, V> cacheHandler;
 
     // Server components
     private final AtomicBoolean running = new AtomicBoolean(false);
@@ -60,19 +63,23 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
     private final AtomicLong messagesReceived = new AtomicLong(0);
     private final AtomicLong connectionFailures = new AtomicLong(0);
 
+    // Cache reference for actual operations
+    private volatile Cache<K, V> localCache;
+
     public TcpCommunicationProtocol(ProtocolConfig config) {
         this.config = config;
-        this.requestHandler = new DefaultRequestHandler<>();
+        this.cacheHandler = new InternalCacheHandler<>();
         this.serverExecutor = Executors.newFixedThreadPool(config.getMaxConnections());
         this.clientExecutor = Executors.newCachedThreadPool();
     }
 
-    // For advanced users who want custom request handling
-    public TcpCommunicationProtocol(ProtocolConfig config, RequestHandler<K, V> customHandler) {
-        this.config = config;
-        this.requestHandler = new DefaultRequestHandler<>(customHandler);
-        this.serverExecutor = Executors.newFixedThreadPool(config.getMaxConnections());
-        this.clientExecutor = Executors.newCachedThreadPool();
+    /**
+     * Sets the local cache instance for actual cache operations.
+     * This is called by the distributed cache implementation.
+     */
+    public void setLocalCache(Cache<K, V> cache) {
+        this.localCache = cache;
+        this.cacheHandler.setCache(cache);
     }
 
     @Override
@@ -118,18 +125,21 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
     }
 
     private void handleClient(Socket clientSocket) {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                PrintWriter writer = new PrintWriter(clientSocket.getOutputStream(), true)) {
+        try (ObjectInputStream input = new ObjectInputStream(clientSocket.getInputStream());
+                ObjectOutputStream output = new ObjectOutputStream(clientSocket.getOutputStream())) {
 
-            String request = reader.readLine();
+            // Read the operation request
+            CacheOperationRequest request = (CacheOperationRequest) input.readObject();
             messagesReceived.incrementAndGet();
 
-            if (request != null) {
-                String response = requestHandler.handleRequest(request);
-                writer.println(response);
-            }
+            // Process the request using the internal cache handler
+            CacheOperationResponse response = cacheHandler.handleOperation(request);
 
-        } catch (IOException e) {
+            // Send response
+            output.writeObject(response);
+            output.flush();
+
+        } catch (Exception e) {
             logger.warning("Error handling client request: " + e.getMessage());
         } finally {
             try {
@@ -142,46 +152,45 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
 
     @Override
     public CompletableFuture<CommunicationResult<Void>> sendPut(String nodeAddress, K key, V value) {
-        String request = "PUT|" + key + "|" + value;
-        return sendRequest(nodeAddress, request)
-                .thenApply(result -> result.isSuccess() ? CommunicationResult.<Void>success(null, result.getLatency())
-                        : CommunicationResult.<Void>failure(result.getErrorMessage(), result.getError()));
+        CacheOperationRequest request = new CacheOperationRequest(OperationType.PUT, serializeObject(key),
+                serializeObject(value));
+        return sendRequest(nodeAddress, request).thenApply(
+                response -> response.isSuccess() ? CommunicationResult.<Void>success(null, response.getLatency())
+                        : CommunicationResult.<Void>failure(response.getErrorMessage(), response.getError()));
     }
 
     @Override
     public CompletableFuture<CommunicationResult<V>> sendGet(String nodeAddress, K key) {
-        String request = "GET|" + key;
-        return sendRequest(nodeAddress, request).thenApply(result -> {
-            if (result.isSuccess()) {
-                @SuppressWarnings("unchecked")
-                V value = (V) result.getResult();
-                return CommunicationResult.<V>success(value, result.getLatency());
+        CacheOperationRequest request = new CacheOperationRequest(OperationType.GET, serializeObject(key), null);
+        return sendRequest(nodeAddress, request).thenApply(response -> {
+            if (response.isSuccess() && response.getResult() != null) {
+                V value = deserializeObject(response.getResult());
+                return CommunicationResult.<V>success(value, response.getLatency());
             } else {
-                return CommunicationResult.<V>failure(result.getErrorMessage(), result.getError());
+                return CommunicationResult.<V>failure(response.getErrorMessage(), response.getError());
             }
         });
     }
 
     @Override
     public CompletableFuture<CommunicationResult<V>> sendRemove(String nodeAddress, K key) {
-        String request = "REMOVE|" + key;
-        return sendRequest(nodeAddress, request).thenApply(result -> {
-            if (result.isSuccess()) {
-                @SuppressWarnings("unchecked")
-                V value = (V) result.getResult();
-                return CommunicationResult.<V>success(value, result.getLatency());
+        CacheOperationRequest request = new CacheOperationRequest(OperationType.REMOVE, serializeObject(key), null);
+        return sendRequest(nodeAddress, request).thenApply(response -> {
+            if (response.isSuccess() && response.getResult() != null) {
+                V value = deserializeObject(response.getResult());
+                return CommunicationResult.<V>success(value, response.getLatency());
             } else {
-                return CommunicationResult.<V>failure(result.getErrorMessage(), result.getError());
+                return CommunicationResult.<V>failure(response.getErrorMessage(), response.getError());
             }
         });
     }
 
     @Override
     public CompletableFuture<CommunicationResult<String>> sendHealthCheck(String nodeAddress) {
-        String request = "HEALTH_CHECK";
-        return sendRequest(nodeAddress, request).thenApply(result -> result.isSuccess()
-                ? CommunicationResult.<String>success((String) result.getResult(), result.getLatency())
-                : CommunicationResult.<String>failure(result.getErrorMessage(), result.getError()));
+        CacheOperationRequest request = new CacheOperationRequest(OperationType.HEALTH_CHECK, null, null);
+        return sendRequest(nodeAddress, request).thenApply(
+                response -> response.isSuccess() ? CommunicationResult.<String>success("OK", response.getLatency())
+                        : CommunicationResult.<String>failure(response.getErrorMessage(), response.getError()));
     }
 
     @Override
@@ -239,11 +248,11 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
         Map<String, CompletableFuture<CommunicationResult<String>>> futures = new HashMap<>();
 
         for (String nodeAddress : nodeAddresses) {
-            String request = "CLEAR";
+            CacheOperationRequest request = new CacheOperationRequest(OperationType.CLEAR, null, null);
             futures.put(nodeAddress,
-                    sendRequest(nodeAddress, request).thenApply(result -> result.isSuccess()
-                            ? CommunicationResult.<String>success((String) result.getResult(), result.getLatency())
-                            : CommunicationResult.<String>failure(result.getErrorMessage(), result.getError())));
+                    sendRequest(nodeAddress, request).thenApply(response -> response.isSuccess()
+                            ? CommunicationResult.<String>success("OK", response.getLatency())
+                            : CommunicationResult.<String>failure(response.getErrorMessage(), response.getError())));
         }
 
         return CompletableFuture.allOf(futures.values().toArray(new CompletableFuture[0]))
@@ -269,26 +278,27 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
     @Override
     public CompletableFuture<CommunicationResult<Map<K, V>>> requestKeyMigration(
             String nodeAddress, Collection<K> keys) {
-        String request = "MIGRATE_KEYS|" + String.join(",", keys.stream().map(Object::toString).toArray(String[]::new));
-        return sendRequest(nodeAddress, request).thenApply(result -> {
-            if (result.isSuccess()) {
-                Map<K, V> migratedData = new HashMap<>(); // Simplified - would parse actual data
-                return CommunicationResult.<Map<K, V>>success(migratedData, result.getLatency());
+        byte[] serializedKeys = serializeObject(keys);
+        CacheOperationRequest request = new CacheOperationRequest(OperationType.MIGRATE_KEYS, serializedKeys, null);
+        return sendRequest(nodeAddress, request).thenApply(response -> {
+            if (response.isSuccess() && response.getResult() != null) {
+                Map<K, V> migratedData = deserializeObject(response.getResult());
+                return CommunicationResult.<Map<K, V>>success(migratedData, response.getLatency());
             } else {
-                return CommunicationResult.<Map<K, V>>failure(result.getErrorMessage(), result.getError());
+                return CommunicationResult.<Map<K, V>>failure(response.getErrorMessage(), response.getError());
             }
         });
     }
 
     @Override
     public CompletableFuture<CommunicationResult<String>> requestClusterInfo(String nodeAddress) {
-        String request = "CLUSTER_INFO";
-        return sendRequest(nodeAddress, request).thenApply(result -> result.isSuccess()
-                ? CommunicationResult.<String>success((String) result.getResult(), result.getLatency())
-                : CommunicationResult.<String>failure(result.getErrorMessage(), result.getError()));
+        CacheOperationRequest request = new CacheOperationRequest(OperationType.CLUSTER_INFO, null, null);
+        return sendRequest(nodeAddress, request).thenApply(response -> response.isSuccess()
+                ? CommunicationResult.<String>success("Cluster Info", response.getLatency())
+                : CommunicationResult.<String>failure(response.getErrorMessage(), response.getError()));
     }
 
-    private CompletableFuture<CommunicationResult<String>> sendRequest(String nodeAddress, String request) {
+    private CompletableFuture<CacheOperationResponse> sendRequest(String nodeAddress, CacheOperationRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             long startTime = System.currentTimeMillis();
             messagesSent.incrementAndGet();
@@ -302,30 +312,285 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
                     socket.connect(new InetSocketAddress(host, port), (int) config.getTimeoutMs());
                     socket.setSoTimeout((int) config.getTimeoutMs());
 
-                    try (PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-                            BufferedReader reader = new BufferedReader(
-                                    new InputStreamReader(socket.getInputStream()))) {
+                    try (ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
+                            ObjectInputStream input = new ObjectInputStream(socket.getInputStream())) {
 
-                        writer.println(request);
-                        String response = reader.readLine();
+                        // Send request
+                        output.writeObject(request);
+                        output.flush();
+
+                        // Read response
+                        CacheOperationResponse response = (CacheOperationResponse) input.readObject();
 
                         long latency = System.currentTimeMillis() - startTime;
                         java.time.Duration duration = java.time.Duration.ofMillis(latency);
+                        response.setLatency(duration);
 
-                        if (response != null) {
-                            return CommunicationResult.<String>success(response, duration);
-                        } else {
-                            return CommunicationResult.<String>failure("No response received",
-                                    new IOException("No response received"));
-                        }
+                        return response;
                     }
                 }
             } catch (Exception e) {
                 connectionFailures.incrementAndGet();
                 logger.warning("Failed to send request to " + nodeAddress + ": " + e.getMessage());
-                return CommunicationResult.<String>failure("Connection failed: " + e.getMessage(), e);
+                return CacheOperationResponse.failure("Connection failed: " + e.getMessage(), e);
             }
         }, clientExecutor);
+    }
+
+    // ============= Serialization Helper Methods =============
+
+    private byte[] serializeObject(Object obj) {
+        if (obj == null)
+            return null;
+
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+            oos.writeObject(obj);
+            return baos.toByteArray();
+        } catch (IOException e) {
+            logger.warning("Failed to serialize object: " + e.getMessage());
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T deserializeObject(byte[] data) {
+        if (data == null)
+            return null;
+
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(data);
+                ObjectInputStream ois = new ObjectInputStream(bais)) {
+            return (T) ois.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            logger.warning("Failed to deserialize object: " + e.getMessage());
+            return null;
+        }
+    }
+
+    // ============= Internal Classes =============
+
+    /**
+     * Internal operation types for cache communication.
+     */
+    private enum OperationType {
+        PUT, GET, REMOVE, CLEAR, HEALTH_CHECK, MIGRATE_KEYS, CLUSTER_INFO
+    }
+
+    /**
+     * Internal request structure for cache operations.
+     */
+    private static class CacheOperationRequest implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        private final OperationType operation;
+        private final byte[] keyData;
+        private final byte[] valueData;
+
+        public CacheOperationRequest(OperationType operation, byte[] keyData, byte[] valueData) {
+            this.operation = operation;
+            this.keyData = keyData;
+            this.valueData = valueData;
+        }
+
+        public OperationType getOperation() {
+            return operation;
+        }
+
+        public byte[] getKeyData() {
+            return keyData;
+        }
+
+        public byte[] getValueData() {
+            return valueData;
+        }
+    }
+
+    /**
+     * Internal response structure for cache operations.
+     */
+    private static class CacheOperationResponse implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        private final boolean success;
+        private final byte[] result;
+        private final String errorMessage;
+        private final Exception error;
+        private java.time.Duration latency;
+
+        public CacheOperationResponse(boolean success, byte[] result, String errorMessage, Exception error) {
+            this.success = success;
+            this.result = result;
+            this.errorMessage = errorMessage;
+            this.error = error;
+        }
+
+        public static CacheOperationResponse success(byte[] result) {
+            return new CacheOperationResponse(true, result, null, null);
+        }
+
+        public static CacheOperationResponse failure(String errorMessage, Exception error) {
+            return new CacheOperationResponse(false, null, errorMessage, error);
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public byte[] getResult() {
+            return result;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+
+        public Exception getError() {
+            return error;
+        }
+
+        public java.time.Duration getLatency() {
+            return latency;
+        }
+
+        public void setLatency(java.time.Duration latency) {
+            this.latency = latency;
+        }
+    }
+
+    /**
+     * Internal handler for actual cache operations.
+     * This replaces the old RequestHandler interface and performs real cache
+     * operations.
+     */
+    private class InternalCacheHandler<K, V> {
+        private volatile Cache<K, V> cache;
+
+        public void setCache(Cache<K, V> cache) {
+            this.cache = cache;
+        }
+
+        public CacheOperationResponse handleOperation(CacheOperationRequest request) {
+            try {
+                switch (request.getOperation()) {
+                    case PUT:
+                        return handlePut(request);
+                    case GET:
+                        return handleGet(request);
+                    case REMOVE:
+                        return handleRemove(request);
+                    case CLEAR:
+                        return handleClear();
+                    case HEALTH_CHECK:
+                        return handleHealthCheck();
+                    case MIGRATE_KEYS:
+                        return handleMigrateKeys(request);
+                    case CLUSTER_INFO:
+                        return handleClusterInfo();
+                    default:
+                        return CacheOperationResponse.failure("Unknown operation: " + request.getOperation(),
+                                new IllegalArgumentException("Unknown operation"));
+                }
+            } catch (Exception e) {
+                logger.warning("Error handling cache operation: " + e.getMessage());
+                return CacheOperationResponse.failure("Operation failed: " + e.getMessage(), e);
+            }
+        }
+
+        private CacheOperationResponse handlePut(CacheOperationRequest request) {
+            if (cache == null) {
+                return CacheOperationResponse.failure("Cache not initialized", new IllegalStateException("No cache"));
+            }
+
+            K key = deserializeObject(request.getKeyData());
+            V value = deserializeObject(request.getValueData());
+
+            if (key != null && value != null) {
+                cache.put(key, value);
+                return CacheOperationResponse.success(null);
+            } else {
+                return CacheOperationResponse.failure("Invalid key or value",
+                        new IllegalArgumentException("Null key/value"));
+            }
+        }
+
+        private CacheOperationResponse handleGet(CacheOperationRequest request) {
+            if (cache == null) {
+                return CacheOperationResponse.failure("Cache not initialized", new IllegalStateException("No cache"));
+            }
+
+            K key = deserializeObject(request.getKeyData());
+            if (key != null) {
+                V value = cache.get(key);
+                return CacheOperationResponse.success(serializeObject(value));
+            } else {
+                return CacheOperationResponse.failure("Invalid key", new IllegalArgumentException("Null key"));
+            }
+        }
+
+        private CacheOperationResponse handleRemove(CacheOperationRequest request) {
+            if (cache == null) {
+                return CacheOperationResponse.failure("Cache not initialized", new IllegalStateException("No cache"));
+            }
+
+            K key = deserializeObject(request.getKeyData());
+            if (key != null) {
+                V removedValue = cache.remove(key);
+                return CacheOperationResponse.success(serializeObject(removedValue));
+            } else {
+                return CacheOperationResponse.failure("Invalid key", new IllegalArgumentException("Null key"));
+            }
+        }
+
+        private CacheOperationResponse handleClear() {
+            if (cache == null) {
+                return CacheOperationResponse.failure("Cache not initialized", new IllegalStateException("No cache"));
+            }
+
+            cache.clear();
+            return CacheOperationResponse.success(serializeObject("Cache cleared"));
+        }
+
+        private CacheOperationResponse handleHealthCheck() {
+            // Check if cache is available and responsive
+            if (cache != null) {
+                // Simple health check - try to get cache stats if available
+                try {
+                    long size = cache.size();
+                    String healthInfo = "OK|size=" + size;
+                    return CacheOperationResponse.success(serializeObject(healthInfo));
+                } catch (Exception e) {
+                    return CacheOperationResponse.failure("Cache health check failed", e);
+                }
+            } else {
+                return CacheOperationResponse.failure("Cache not available", new IllegalStateException("No cache"));
+            }
+        }
+
+        private CacheOperationResponse handleMigrateKeys(CacheOperationRequest request) {
+            if (cache == null) {
+                return CacheOperationResponse.failure("Cache not initialized", new IllegalStateException("No cache"));
+            }
+
+            Collection<K> keys = deserializeObject(request.getKeyData());
+            if (keys != null) {
+                Map<K, V> migratedData = new HashMap<>();
+                for (K key : keys) {
+                    V value = cache.get(key);
+                    if (value != null) {
+                        migratedData.put(key, value);
+                    }
+                }
+                return CacheOperationResponse.success(serializeObject(migratedData));
+            } else {
+                return CacheOperationResponse.failure("Invalid keys", new IllegalArgumentException("Null keys"));
+            }
+        }
+
+        private CacheOperationResponse handleClusterInfo() {
+            // Return basic cluster information
+            String clusterInfo = "Node: " + config.getPort() + "|Protocol: TCP|Status: Running";
+            return CacheOperationResponse.success(serializeObject(clusterInfo));
+        }
     }
 
     @Override
@@ -355,67 +620,6 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
     }
 
     /**
-     * Interface for handling incoming requests.
-     */
-    public interface RequestHandler<K, V> {
-        String handleRequest(String request);
-    }
-
-    /**
-     * Default implementation of RequestHandler for cache operations.
-     */
-    private static class DefaultRequestHandler<K, V> implements RequestHandler<K, V> {
-        private final RequestHandler<K, V> customHandler;
-
-        public DefaultRequestHandler() {
-            this(null);
-        }
-
-        public DefaultRequestHandler(RequestHandler<K, V> customHandler) {
-            this.customHandler = customHandler;
-        }
-
-        @Override
-        public String handleRequest(String request) {
-            String[] parts = request.split("\\|");
-            String operation = parts[0];
-
-            switch (operation) {
-                case "PUT":
-                    K key = (K) parts[1];
-                    V value = (V) parts[2];
-                    // Simulate cache put operation
-                    return CommunicationResult.<Void>success(null, java.time.Duration.ZERO).toString();
-                case "GET":
-                    K getKey = (K) parts[1];
-                    // Simulate cache get operation
-                    return CommunicationResult
-                            .<V>success((V) ("value_" + String.valueOf(getKey)), java.time.Duration.ZERO).toString();
-                case "REMOVE":
-                    K removeKey = (K) parts[1];
-                    // Simulate cache remove operation
-                    return CommunicationResult
-                            .<V>success((V) ("value_" + String.valueOf(removeKey)), java.time.Duration.ZERO).toString();
-                case "CLEAR":
-                    // Simulate cache clear operation
-                    return CommunicationResult.<String>success("Cleared", java.time.Duration.ZERO).toString();
-                case "MIGRATE_KEYS":
-                    // Simulate key migration operation
-                    return CommunicationResult.<Map<K, V>>success(new HashMap<>(), java.time.Duration.ZERO).toString();
-                case "HEALTH_CHECK":
-                    // Simulate health check operation
-                    return CommunicationResult.<String>success("OK", java.time.Duration.ZERO).toString();
-                case "CLUSTER_INFO":
-                    // Simulate cluster info operation
-                    return CommunicationResult.<String>success("Cluster Info", java.time.Duration.ZERO).toString();
-                default:
-                    return CommunicationResult.<String>failure("Unknown operation: " + operation,
-                            new IllegalArgumentException("Unknown operation: " + operation)).toString();
-            }
-        }
-    }
-
-    /**
      * Builder for TcpCommunicationProtocol.
      */
     public static class Builder<K, V> {
@@ -424,7 +628,6 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
         private int maxConnections = 100;
         private int bufferSize = 8192;
         private Map<String, Object> additionalProperties = new HashMap<>();
-        private RequestHandler<K, V> requestHandler; // Optional - will use default if not provided
 
         public Builder<K, V> port(int port) {
             this.port = port;
@@ -451,11 +654,6 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
             return this;
         }
 
-        public Builder<K, V> requestHandler(RequestHandler<K, V> requestHandler) {
-            this.requestHandler = requestHandler;
-            return this;
-        }
-
         public TcpCommunicationProtocol<K, V> build() {
             ProtocolConfig config = new ProtocolConfig(
                     ProtocolType.TCP,
@@ -465,11 +663,7 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
                     bufferSize,
                     additionalProperties);
 
-            if (requestHandler != null) {
-                return new TcpCommunicationProtocol<>(config, requestHandler);
-            } else {
-                return new TcpCommunicationProtocol<>(config);
-            }
+            return new TcpCommunicationProtocol<>(config);
         }
     }
 

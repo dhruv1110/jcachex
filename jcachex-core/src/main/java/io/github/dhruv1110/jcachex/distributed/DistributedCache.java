@@ -74,37 +74,7 @@ import java.util.concurrent.CompletableFuture;
  * @param <V> the type of mapped values
  * @since 1.0.0
  */
-public interface DistributedCache<K, V> extends Cache<K, V> {
-
-    /**
-     * Consistency levels for distributed operations.
-     */
-    enum ConsistencyLevel {
-        /**
-         * Strong consistency - all nodes must agree before operation completes.
-         * Provides linearizability but may have higher latency.
-         */
-        STRONG,
-
-        /**
-         * Eventual consistency - operation completes locally, replicates
-         * asynchronously.
-         * Provides better performance but temporary inconsistencies possible.
-         */
-        EVENTUAL,
-
-        /**
-         * Session consistency - guarantees consistency within the same session/thread.
-         * Good balance between performance and consistency for user sessions.
-         */
-        SESSION,
-
-        /**
-         * Monotonic read consistency - once a value is read, subsequent reads
-         * return the same or a newer value.
-         */
-        MONOTONIC_READ
-    }
+public interface DistributedCache<K, V> {
 
     /**
      * Node health status.
@@ -121,19 +91,21 @@ public interface DistributedCache<K, V> extends Cache<K, V> {
      *
      * @param key              the key
      * @param value            the value
-     * @param consistencyLevel the consistency level for this operation
      * @return CompletableFuture that completes when the operation is done
      */
-    CompletableFuture<Void> putWithConsistency(K key, V value, ConsistencyLevel consistencyLevel);
+    CompletableFuture<Void> putAsync(K key, V value);
 
     /**
      * Gets a value from the cache with the specified consistency level.
      *
      * @param key              the key
-     * @param consistencyLevel the consistency level for this operation
      * @return CompletableFuture containing the value or null if not found
      */
-    CompletableFuture<V> getWithConsistency(K key, ConsistencyLevel consistencyLevel);
+    CompletableFuture<V> getAsync(K key);
+
+    void put(K key, V value);
+
+    V get(K key);
 
     /**
      * Invalidates a key across all nodes in the cluster.
@@ -180,13 +152,6 @@ public interface DistributedCache<K, V> extends Cache<K, V> {
     Map<String, NodeStatus> getNodeStatuses();
 
     /**
-     * Returns the consistency level used by this cache.
-     *
-     * @return the default consistency level
-     */
-    ConsistencyLevel getConsistencyLevel();
-
-    /**
      * Returns the replication factor for this cache.
      *
      * @return number of replicas maintained for each entry
@@ -205,22 +170,6 @@ public interface DistributedCache<K, V> extends Cache<K, V> {
     CompletableFuture<Void> rebalance();
 
     /**
-     * Adds a new node to the cluster.
-     *
-     * @param nodeAddress the address of the new node
-     * @return CompletableFuture that completes when the node is added
-     */
-    CompletableFuture<Void> addNode(String nodeAddress);
-
-    /**
-     * Removes a node from the cluster.
-     *
-     * @param nodeId the ID of the node to remove
-     * @return CompletableFuture that completes when the node is removed
-     */
-    CompletableFuture<Void> removeNode(String nodeId);
-
-    /**
      * Returns detailed metrics about distributed operations.
      *
      * @return distributed cache metrics
@@ -228,59 +177,18 @@ public interface DistributedCache<K, V> extends Cache<K, V> {
     DistributedMetrics getDistributedMetrics();
 
     /**
-     * Enables or disables read repair for this cache.
-     * <p>
-     * Read repair detects and fixes inconsistencies during read operations.
-     * </p>
-     *
-     * @param enabled whether to enable read repair
-     */
-    void setReadRepairEnabled(boolean enabled);
-
-    /**
-     * Returns whether read repair is enabled.
-     *
-     * @return true if read repair is enabled
-     */
-    boolean isReadRepairEnabled();
-
-    /**
      * Builder interface for creating distributed caches.
      */
     interface Builder<K, V> {
         Builder<K, V> clusterName(String clusterName);
 
-        Builder<K, V> nodes(String... nodeAddresses);
-
-        Builder<K, V> nodes(Collection<String> nodeAddresses);
-
         Builder<K, V> replicationFactor(int replicationFactor);
-
-        Builder<K, V> consistencyLevel(ConsistencyLevel consistencyLevel);
 
         Builder<K, V> partitionCount(int partitionCount);
 
         Builder<K, V> networkTimeout(Duration networkTimeout);
 
-        Builder<K, V> enableReadRepair(boolean enabled);
-
-        Builder<K, V> enableAutoDiscovery(boolean enabled);
-
-        Builder<K, V> gossipInterval(Duration gossipInterval);
-
         Builder<K, V> maxReconnectAttempts(int maxAttempts);
-
-        Builder<K, V> compressionEnabled(boolean enabled);
-
-        Builder<K, V> encryptionEnabled(boolean enabled);
-
-        /**
-         * Configures node discovery for automatic cluster formation.
-         *
-         * @param nodeDiscovery the node discovery implementation
-         * @return this builder
-         */
-        Builder<K, V> nodeDiscovery(NodeDiscovery nodeDiscovery);
 
         DistributedCache<K, V> build();
     }

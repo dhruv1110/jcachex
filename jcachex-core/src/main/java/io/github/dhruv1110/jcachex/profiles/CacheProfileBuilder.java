@@ -2,12 +2,9 @@ package io.github.dhruv1110.jcachex.profiles;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.distributed.communication.TcpCommunicationProtocol;
-import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.FrequencySketchType;
+import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.impl.*;
-import io.github.dhruv1110.jcachex.impl.UltraFastCache;
-import io.github.dhruv1110.jcachex.distributed.impl.KubernetesDistributedCache;
 
 import java.time.Duration;
 import java.util.function.Function;
@@ -382,13 +379,6 @@ public final class CacheProfileBuilder {
                     return new MLOptimizedCache<>(config);
                 } else if (implementationClass == ProfiledOptimizedCache.class) {
                     return new ProfiledOptimizedCache<>(config);
-                } else if (implementationClass == KubernetesDistributedCache.class) {
-                    return new KubernetesDistributedCache.Builder<>()
-                        .communicationProtocol(TcpCommunicationProtocol.builder()
-                            .port(8080)
-                            .timeout(5000)
-                            .build())
-                        .cacheConfig((CacheConfig) config).build();
                 } else {
                     // Use constructor reflection as fallback
                     try {

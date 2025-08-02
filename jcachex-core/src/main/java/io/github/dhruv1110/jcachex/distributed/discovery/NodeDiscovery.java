@@ -298,17 +298,17 @@ public interface NodeDiscovery {
      * Base builder for node discovery implementations.
      */
     abstract class BaseDiscoveryBuilder<T extends BaseDiscoveryBuilder<T>> {
-        protected String serviceName = "jcachex-cluster";
+        // protected String serviceName = "jcachex-cluster";
         protected Duration discoveryInterval = Duration.ofSeconds(30);
         protected Duration healthCheckInterval = Duration.ofSeconds(10);
         protected int maxRetries = 3;
         protected Duration connectionTimeout = Duration.ofSeconds(5);
 
-        @SuppressWarnings("unchecked")
-        public T serviceName(String serviceName) {
-            this.serviceName = serviceName;
-            return (T) this;
-        }
+        // @SuppressWarnings("unchecked")
+        // public T serviceName(String serviceName) {
+        // this.serviceName = serviceName;
+        // return (T) this;
+        // }
 
         @SuppressWarnings("unchecked")
         public T discoveryInterval(Duration discoveryInterval) {

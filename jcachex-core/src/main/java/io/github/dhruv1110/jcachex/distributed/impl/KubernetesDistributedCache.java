@@ -142,277 +142,28 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
         logger.info("Node left cluster: " + nodeId);
     }
 
-    @Override
-    protected V getFromRemoteNode(String nodeId, K key) {
-        if (communicationProtocol == null) {
-            logger.warning("No communication protocol configured for remote get");
-            return null;
-        }
-
-        NodeInfo nodeInfo = clusterNodes.get(nodeId);
-        if (nodeInfo == null) {
-            logger.warning("Node not found in cluster: " + nodeId);
-            return null;
-        }
-
-        try {
-            networkRequests.incrementAndGet();
-            long startTime = System.currentTimeMillis();
-
-            CompletableFuture<CommunicationProtocol.CommunicationResult<V>> future = communicationProtocol.sendGet(
-                    nodeInfo.getAddress(),
-                    key);
-
-            CommunicationProtocol.CommunicationResult<V> result = future.get(networkTimeout.toMillis(),
-                    java.util.concurrent.TimeUnit.MILLISECONDS);
-
-            // Record latency
-            long latency = System.currentTimeMillis() - startTime;
-            perNodeLatencies.computeIfAbsent(nodeId, k -> new java.util.concurrent.atomic.AtomicLong())
-                    .addAndGet(latency);
-
-            if (result.isSuccess() && result.getResult() != null) {
-                return result.getResult();
-            }
-            return null;
-        } catch (Exception e) {
-            networkFailures.incrementAndGet();
-            logger.warning("Failed to get key " + key + " from node " + nodeId + ": " + e.getMessage());
-            return null;
-        }
-    }
-
-    @Override
-    protected void putToRemoteNode(String nodeId, K key, V value) {
-        if (communicationProtocol == null) {
-            logger.warning("No communication protocol configured for remote put");
-            return;
-        }
-
-        NodeInfo nodeInfo = clusterNodes.get(nodeId);
-        if (nodeInfo == null) {
-            logger.warning("Node not found in cluster: " + nodeId);
-            return;
-        }
-
-        try {
-            networkRequests.incrementAndGet();
-            long startTime = System.currentTimeMillis();
-
-            CompletableFuture<CommunicationProtocol.CommunicationResult<Void>> future = communicationProtocol.sendPut(
-                    nodeInfo.getAddress(),
-                    key,
-                    value);
-
-            CommunicationProtocol.CommunicationResult<Void> result = future.get(networkTimeout.toMillis(),
-                    java.util.concurrent.TimeUnit.MILLISECONDS);
-
-            // Record latency
-            long latency = System.currentTimeMillis() - startTime;
-            perNodeLatencies.computeIfAbsent(nodeId, k -> new java.util.concurrent.atomic.AtomicLong())
-                    .addAndGet(latency);
-
-            if (!result.isSuccess()) {
-                throw new RuntimeException("Remote put failed: "
-                        + (result.getError() != null ? result.getError().getMessage() : "Unknown error"));
-            }
-
-        } catch (Exception e) {
-            networkFailures.incrementAndGet();
-            logger.warning("Failed to put key " + key + " to node " + nodeId + ": " + e.getMessage());
-            throw new RuntimeException("Remote put failed", e);
-        }
-    }
-
-    @Override
-    protected V removeFromRemoteNode(String nodeId, K key) {
-        if (communicationProtocol == null) {
-            logger.warning("No communication protocol configured for remote remove");
-            return null;
-        }
-
-        NodeInfo nodeInfo = clusterNodes.get(nodeId);
-        if (nodeInfo == null) {
-            logger.warning("Node not found in cluster: " + nodeId);
-            return null;
-        }
-
-        try {
-            networkRequests.incrementAndGet();
-            long startTime = System.currentTimeMillis();
-
-            CompletableFuture<CommunicationProtocol.CommunicationResult<V>> future = communicationProtocol.sendRemove(
-                    nodeInfo.getAddress(),
-                    key);
-
-            CommunicationProtocol.CommunicationResult<V> result = future.get(networkTimeout.toMillis(),
-                    java.util.concurrent.TimeUnit.MILLISECONDS);
-
-            // Record latency
-            long latency = System.currentTimeMillis() - startTime;
-            perNodeLatencies.computeIfAbsent(nodeId, k -> new java.util.concurrent.atomic.AtomicLong())
-                    .addAndGet(latency);
-
-            if (result.isSuccess() && result.getResult() != null) {
-                return result.getResult();
-            }
-            return null;
-        } catch (Exception e) {
-            networkFailures.incrementAndGet();
-            logger.warning("Failed to remove key " + key + " from node " + nodeId + ": " + e.getMessage());
-            return null;
-        }
-    }
-
     // ============= Kubernetes-Specific Methods =============
-
-    /**
-     * Get the current Kubernetes pod name (if running in a pod).
-     */
-    public String getPodName() {
-        return System.getenv("HOSTNAME");
-    }
-
-    /**
-     * Get the current Kubernetes namespace (if available).
-     */
-    public String getNamespace() {
-        return System.getenv("POD_NAMESPACE");
-    }
-
-    /**
-     * Check if running inside a Kubernetes pod.
-     */
-    public boolean isRunningInKubernetes() {
-        return System.getenv("KUBERNETES_SERVICE_HOST") != null;
-    }
-
-    // ============= DistributedCache Implementation =============
-
-    @Override
-    public CompletableFuture<Void> putWithConsistency(K key, V value, ConsistencyLevel consistencyLevel) {
-        // Use the base class implementation which handles routing via consistent
-        // hashing
-        return CompletableFuture.runAsync(() -> put(key, value), distributionExecutor);
-    }
-
-    @Override
-    public CompletableFuture<V> getWithConsistency(K key, ConsistencyLevel consistencyLevel) {
-        // Use the base class implementation which handles routing via consistent
-        // hashing
-        return CompletableFuture.supplyAsync(() -> get(key), distributionExecutor);
-    }
-
-    @Override
-    public CompletableFuture<Void> invalidateGlobally(K key) {
-        return CompletableFuture.runAsync(() -> {
-            // First remove from local cache
-            remove(key);
-
-            // Broadcast invalidation to all healthy nodes in parallel
-            List<CompletableFuture<Void>> invalidationFutures = new ArrayList<>();
-
-            for (String nodeId : healthyNodes) {
-                if (!currentNodeId.equals(nodeId)) { // Skip self
-                    CompletableFuture<Void> invalidationFuture = CompletableFuture.runAsync(() -> {
-                        try {
-                            sendInvalidationToNode(nodeId, key);
-                        } catch (Exception e) {
-                            logger.warning(
-                                    "Failed to invalidate key " + key + " on node " + nodeId + ": " + e.getMessage());
-                        }
-                    }, distributionExecutor);
-                    invalidationFutures.add(invalidationFuture);
-                }
-            }
-
-            // Wait for all invalidations to complete
-            CompletableFuture.allOf(invalidationFutures.toArray(new CompletableFuture[0])).join();
-
-            logger.info("Global invalidation completed for key: " + key + " across " + healthyNodes.size() + " nodes");
-        }, distributionExecutor);
-    }
-
-    @Override
-    public CompletableFuture<Void> invalidateGlobally(java.util.Collection<K> keys) {
-        return CompletableFuture.runAsync(() -> {
-            // First remove from local cache
-            for (K key : keys) {
-                remove(key);
-            }
-
-            // Broadcast invalidation to all healthy nodes in parallel
-            List<CompletableFuture<Void>> invalidationFutures = new ArrayList<>();
-
-            for (String nodeId : healthyNodes) {
-                if (!currentNodeId.equals(nodeId)) { // Skip self
-                    CompletableFuture<Void> invalidationFuture = CompletableFuture.runAsync(() -> {
-                        try {
-                            sendBatchInvalidationToNode(nodeId, keys);
-                        } catch (Exception e) {
-                            logger.warning("Failed to invalidate " + keys.size() + " keys on node " + nodeId + ": "
-                                    + e.getMessage());
-                        }
-                    }, distributionExecutor);
-                    invalidationFutures.add(invalidationFuture);
-                }
-            }
-
-            // Wait for all invalidations to complete
-            CompletableFuture.allOf(invalidationFutures.toArray(new CompletableFuture[0])).join();
-
-            logger.info("Global invalidation completed for " + keys.size() + " keys across " + healthyNodes.size()
-                    + " nodes");
-        }, distributionExecutor);
-    }
-
-    @Override
-    public CompletableFuture<Void> clearGlobally() {
-        return CompletableFuture.runAsync(() -> {
-            // First clear local cache
-            clear();
-
-            // Broadcast clear to all healthy nodes in parallel
-            List<CompletableFuture<Void>> clearFutures = new ArrayList<>();
-
-            for (String nodeId : healthyNodes) {
-                if (!currentNodeId.equals(nodeId)) { // Skip self
-                    CompletableFuture<Void> clearFuture = CompletableFuture.runAsync(() -> {
-                        try {
-                            sendClearToNode(nodeId);
-                        } catch (Exception e) {
-                            logger.warning("Failed to clear cache on node " + nodeId + ": " + e.getMessage());
-                        }
-                    }, distributionExecutor);
-                    clearFutures.add(clearFuture);
-                }
-            }
-
-            // Wait for all clears to complete
-            CompletableFuture.allOf(clearFutures.toArray(new CompletableFuture[0])).join();
-
-            logger.info("Global clear operation completed across " + healthyNodes.size() + " nodes");
-        }, distributionExecutor);
-    }
-
-    public CompletableFuture<Void> rebalance() {
-        return rebalance(healthyNodes);
-    }
-
-    public CompletableFuture<Void> rebalance(Set<String> healthyNodes) {
-        return CompletableFuture.runAsync(() -> {
-            logger.info("Rebalancing Kubernetes cluster with nodes: " + healthyNodes);
-
-            // Update hash ring with current healthy nodes
-            NodeUpdateResult result = hashRing.rebalance(healthyNodes);
-
-            // Update topology version
-            topologyVersion.incrementAndGet();
-
-            logger.info("Kubernetes cluster rebalancing completed. Affected ranges: " +
-                    result.affectedRanges.size());
-        }, distributionExecutor);
-    }
+//
+//    /**
+//     * Get the current Kubernetes pod name (if running in a pod).
+//     */
+//    public String getPodName() {
+//        return System.getenv("HOSTNAME");
+//    }
+//
+//    /**
+//     * Get the current Kubernetes namespace (if available).
+//     */
+//    public String getNamespace() {
+//        return System.getenv("POD_NAMESPACE");
+//    }
+//
+//    /**
+//     * Check if running inside a Kubernetes pod.
+//     */
+//    public boolean isRunningInKubernetes() {
+//        return System.getenv("KUBERNETES_SERVICE_HOST") != null;
+//    }
 
     public CompletableFuture<Void> migrateData(String fromNode, String toNode, Set<String> keys) {
         return CompletableFuture.runAsync(() -> {
@@ -496,37 +247,7 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
         }, distributionExecutor);
     }
 
-    @Override
-    public CompletableFuture<Void> addNode(String nodeAddress) {
-        return CompletableFuture.runAsync(() -> {
-            String nodeId = "manual-" + nodeAddress.hashCode();
 
-            // Parse address and port
-            String[] parts = nodeAddress.split(":");
-            String address = parts[0];
-            int port = parts.length > 1 ? Integer.parseInt(parts[1]) : 8080;
-
-            clusterNodes.put(nodeId, new NodeInfo(nodeId, address + ":" + port, NodeStatus.HEALTHY,
-                    System.currentTimeMillis(), java.util.Collections.emptySet()));
-            healthyNodes.add(nodeId);
-            hashRing.addNode(nodeId);
-            topologyVersion.incrementAndGet();
-
-            logger.info("Manually added node: " + nodeId + " at " + nodeAddress);
-        }, distributionExecutor);
-    }
-
-    @Override
-    public CompletableFuture<Void> removeNode(String nodeId) {
-        return CompletableFuture.runAsync(() -> {
-            clusterNodes.remove(nodeId);
-            healthyNodes.remove(nodeId);
-            hashRing.removeNode(nodeId);
-            topologyVersion.incrementAndGet();
-
-            logger.info("Removed node: " + nodeId);
-        }, distributionExecutor);
-    }
 
     @Override
     public ClusterTopology getClusterTopology() {
@@ -689,33 +410,6 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
         return 1;
     }
 
-    @Override
-    public void setReadRepairEnabled(boolean enabled) {
-        // Inherited from base class
-    }
-
-    // ============= Async Cache Methods =============
-
-    @Override
-    public CompletableFuture<V> getAsync(K key) {
-        return CompletableFuture.supplyAsync(() -> get(key), distributionExecutor);
-    }
-
-    @Override
-    public CompletableFuture<Void> putAsync(K key, V value) {
-        return CompletableFuture.runAsync(() -> put(key, value), distributionExecutor);
-    }
-
-    @Override
-    public CompletableFuture<V> removeAsync(K key) {
-        return CompletableFuture.supplyAsync(() -> remove(key), distributionExecutor);
-    }
-
-    @Override
-    public CompletableFuture<Void> clearAsync() {
-        return CompletableFuture.runAsync(() -> clear(), distributionExecutor);
-    }
-
     // ============= Helper Methods =============
 
     private double calculateAverageNetworkLatency() {
@@ -726,110 +420,9 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
         return (double) total / perNodeLatencies.size();
     }
 
-    /**
-     * Send invalidation command for a single key to a remote node.
-     */
-    private void sendInvalidationToNode(String nodeId, K key) {
-        if (communicationProtocol == null) {
-            logger.warning("No communication protocol configured for invalidation");
-            return;
-        }
 
-        NodeInfo nodeInfo = clusterNodes.get(nodeId);
-        if (nodeInfo == null) {
-            logger.warning("Node not found for invalidation: " + nodeId);
-            return;
-        }
 
-        try {
-            networkRequests.incrementAndGet();
 
-            // Use remove operation to invalidate the key on remote node
-            CompletableFuture<CommunicationProtocol.CommunicationResult<V>> future = communicationProtocol.sendRemove(
-                    nodeInfo.getAddress(),
-                    key);
-
-            CommunicationProtocol.CommunicationResult<V> result = future.get(networkTimeout.toMillis(),
-                    java.util.concurrent.TimeUnit.MILLISECONDS);
-
-            if (!result.isSuccess()) {
-                networkFailures.incrementAndGet();
-                logger.warning("Invalidation failed on node " + nodeId + ": " +
-                        (result.getError() != null ? result.getError().getMessage() : "Unknown error"));
-            }
-
-        } catch (Exception e) {
-            networkFailures.incrementAndGet();
-            logger.warning("Failed to send invalidation to node " + nodeId + ": " + e.getMessage());
-        }
-    }
-
-    /**
-     * Send batch invalidation command for multiple keys to a remote node.
-     */
-    private void sendBatchInvalidationToNode(String nodeId, java.util.Collection<K> keys) {
-        if (communicationProtocol == null) {
-            logger.warning("No communication protocol configured for batch invalidation");
-            return;
-        }
-
-        // For batch operations, send individual remove commands
-        // In a more sophisticated implementation, you could extend the protocol to
-        // support batch operations
-        for (K key : keys) {
-            sendInvalidationToNode(nodeId, key);
-        }
-    }
-
-    /**
-     * Send clear command to a remote node.
-     */
-    private void sendClearToNode(String nodeId) {
-        if (communicationProtocol == null) {
-            logger.warning("No communication protocol configured for clear");
-            return;
-        }
-
-        NodeInfo nodeInfo = clusterNodes.get(nodeId);
-        if (nodeInfo == null) {
-            logger.warning("Node not found for clear: " + nodeId);
-            return;
-        }
-
-        try {
-            networkRequests.incrementAndGet();
-
-            // Use a special key to signal a clear operation
-            // This is a simplified approach; in production you might extend the protocol
-            CompletableFuture<CommunicationProtocol.CommunicationResult<Void>> future = communicationProtocol.sendPut(
-                    nodeInfo.getAddress(),
-                    (K) "__CLEAR_CACHE__", // Special sentinel key
-                    (V) "true");
-
-            CommunicationProtocol.CommunicationResult<Void> result = future.get(networkTimeout.toMillis(),
-                    java.util.concurrent.TimeUnit.MILLISECONDS);
-
-            if (!result.isSuccess()) {
-                networkFailures.incrementAndGet();
-                logger.warning("Clear failed on node " + nodeId + ": " +
-                        (result.getError() != null ? result.getError().getMessage() : "Unknown error"));
-            }
-
-        } catch (Exception e) {
-            networkFailures.incrementAndGet();
-            logger.warning("Failed to send clear to node " + nodeId + ": " + e.getMessage());
-        }
-    }
-
-    @Override
-    public CacheStats stats() {
-        return localCache.stats();
-    }
-
-    @Override
-    public CacheConfig<K, V> config() {
-        return localCache.config();
-    }
 
     // ============= Builder =============
 

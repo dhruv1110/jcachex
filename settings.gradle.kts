@@ -8,7 +8,8 @@ include(
     "example:java",
     "example:kotlin",
     "example:springboot",
-    "example:distributed:staticnode"
+    "example:distributed:staticnode",
+    "example:distributed:kubernetes"
 )
 
 dependencyResolutionManagement {

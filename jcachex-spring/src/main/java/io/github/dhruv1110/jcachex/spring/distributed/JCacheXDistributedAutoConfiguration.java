@@ -1,6 +1,5 @@
 package io.github.dhruv1110.jcachex.spring.distributed;
 
-import io.github.dhruv1110.jcachex.CacheFactory;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
 import io.github.dhruv1110.jcachex.distributed.NetworkProtocol;
 import io.github.dhruv1110.jcachex.spring.configuration.JCacheXAutoConfiguration;
@@ -12,10 +11,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import io.github.dhruv1110.jcachex.spring.distributed.NodeDiscoveryFactory;
 
 /**
  * Auto-configuration for JCacheX distributed cache integration.
