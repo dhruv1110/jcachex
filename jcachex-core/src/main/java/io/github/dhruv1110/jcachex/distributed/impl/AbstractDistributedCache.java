@@ -134,6 +134,9 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
      */
     private void initializeCommunication() {
         if (communicationProtocol != null) {
+            // Set the local cache instance for handling incoming requests
+            communicationProtocol.setLocalCache(this.localCache);
+
             communicationProtocol.startServer().thenRun(() -> {
                 logger.info("Communication protocol started: " + communicationProtocol.getProtocolType());
             }).exceptionally(throwable -> {
@@ -388,7 +391,7 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
             int port = parts.length > 1 ? Integer.parseInt(parts[1]) : 8080;
 
             clusterNodes.put(nodeId, new NodeInfo(nodeId, address + ":" + port, NodeStatus.HEALTHY,
-                System.currentTimeMillis(), java.util.Collections.emptySet()));
+                    System.currentTimeMillis(), java.util.Collections.emptySet()));
             healthyNodes.add(nodeId);
             hashRing.addNode(nodeId);
             topologyVersion.incrementAndGet();
@@ -429,17 +432,17 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
             // Use a special key to signal a clear operation
             // This is a simplified approach; in production you might extend the protocol
             CompletableFuture<CommunicationProtocol.CommunicationResult<Void>> future = communicationProtocol.sendPut(
-                nodeInfo.getAddress(),
-                (K) "__CLEAR_CACHE__", // Special sentinel key
-                (V) "true");
+                    nodeInfo.getAddress(),
+                    (K) "__CLEAR_CACHE__", // Special sentinel key
+                    (V) "true");
 
             CommunicationProtocol.CommunicationResult<Void> result = future.get(networkTimeout.toMillis(),
-                java.util.concurrent.TimeUnit.MILLISECONDS);
+                    java.util.concurrent.TimeUnit.MILLISECONDS);
 
             if (!result.isSuccess()) {
                 networkFailures.incrementAndGet();
                 logger.warning("Clear failed on node " + nodeId + ": " +
-                    (result.getError() != null ? result.getError().getMessage() : "Unknown error"));
+                        (result.getError() != null ? result.getError().getMessage() : "Unknown error"));
             }
 
         } catch (Exception e) {
@@ -466,7 +469,7 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
                             sendBatchInvalidationToNode(nodeId, keys);
                         } catch (Exception e) {
                             logger.warning("Failed to invalidate " + keys.size() + " keys on node " + nodeId + ": "
-                                + e.getMessage());
+                                    + e.getMessage());
                         }
                     }, distributionExecutor);
                     invalidationFutures.add(invalidationFuture);
@@ -477,7 +480,7 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
             CompletableFuture.allOf(invalidationFutures.toArray(new CompletableFuture[0])).join();
 
             logger.info("Global invalidation completed for " + keys.size() + " keys across " + healthyNodes.size()
-                + " nodes");
+                    + " nodes");
         }, distributionExecutor);
     }
 
@@ -518,16 +521,16 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
 
             // Use remove operation to invalidate the key on remote node
             CompletableFuture<CommunicationProtocol.CommunicationResult<V>> future = communicationProtocol.sendRemove(
-                nodeInfo.getAddress(),
-                key);
+                    nodeInfo.getAddress(),
+                    key);
 
             CommunicationProtocol.CommunicationResult<V> result = future.get(networkTimeout.toMillis(),
-                java.util.concurrent.TimeUnit.MILLISECONDS);
+                    java.util.concurrent.TimeUnit.MILLISECONDS);
 
             if (!result.isSuccess()) {
                 networkFailures.incrementAndGet();
                 logger.warning("Invalidation failed on node " + nodeId + ": " +
-                    (result.getError() != null ? result.getError().getMessage() : "Unknown error"));
+                        (result.getError() != null ? result.getError().getMessage() : "Unknown error"));
             }
 
         } catch (Exception e) {
@@ -551,7 +554,7 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
             topologyVersion.incrementAndGet();
 
             logger.info("Kubernetes cluster rebalancing completed. Affected ranges: " +
-                result.affectedRanges.size());
+                    result.affectedRanges.size());
         }, distributionExecutor);
     }
 
@@ -571,7 +574,7 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
                             sendInvalidationToNode(nodeId, key);
                         } catch (Exception e) {
                             logger.warning(
-                                "Failed to invalidate key " + key + " on node " + nodeId + ": " + e.getMessage());
+                                    "Failed to invalidate key " + key + " on node " + nodeId + ": " + e.getMessage());
                         }
                     }, distributionExecutor);
                     invalidationFutures.add(invalidationFuture);

@@ -77,7 +77,8 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
      * Sets the local cache instance for actual cache operations.
      * This is called by the distributed cache implementation.
      */
-    public void setLocalCache(Cache<K, V> cache) {
+    @Override
+    public void setLocalCache(io.github.dhruv1110.jcachex.Cache<K, V> cache) {
         this.localCache = cache;
         this.cacheHandler.setCache(cache);
     }
@@ -331,6 +332,7 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
                 }
             } catch (Exception e) {
                 connectionFailures.incrementAndGet();
+                e.printStackTrace();
                 logger.warning("Failed to send request to " + nodeAddress + ": " + e.getMessage());
                 return CacheOperationResponse.failure("Connection failed: " + e.getMessage(), e);
             }

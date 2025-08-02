@@ -249,4 +249,14 @@ public interface CommunicationProtocol<K, V> {
      * Get protocol-specific metrics.
      */
     Map<String, Object> getMetrics();
+
+    /**
+     * Set the local cache instance for handling incoming requests.
+     * This is called by the distributed cache implementation to provide
+     * the local cache instance that should be used when processing
+     * incoming requests from remote nodes.
+     *
+     * @param cache the local cache instance
+     */
+    void setLocalCache(io.github.dhruv1110.jcachex.Cache<K, V> cache);
 }

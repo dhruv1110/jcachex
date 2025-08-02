@@ -203,7 +203,7 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
 
             // logger.info("Discovered " + discoveredNodes.size() + " nodes in namespace " +
             // actualNamespace);
-//            logger.info("Discovered nodes: " + discoveredNodes);
+            // logger.info("Discovered nodes: " + discoveredNodes);
 
         } catch (Exception e) {
             logger.severe("Failed to perform Kubernetes discovery: " + e.getMessage());
@@ -332,7 +332,7 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
             }
 
             return new DiscoveredNode(
-                    podName,
+                    podIP, // Use IP as node ID for reliable TCP connections
                     podIP,
                     DEFAULT_CACHE_PORT,
                     health,
