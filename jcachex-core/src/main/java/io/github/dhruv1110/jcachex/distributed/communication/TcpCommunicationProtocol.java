@@ -508,6 +508,7 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
 
             if (key != null && value != null) {
                 cache.put(key, value);
+                logger.info("Put operation successful for key: " + key + ", received from remote node");
                 return CacheOperationResponse.success(null);
             } else {
                 return CacheOperationResponse.failure("Invalid key or value",
@@ -523,6 +524,7 @@ public class TcpCommunicationProtocol<K, V> implements CommunicationProtocol<K, 
             K key = deserializeObject(request.getKeyData());
             if (key != null) {
                 V value = cache.get(key);
+                logger.info("Get operation successful for key: " + key + ", received from remote node");
                 return CacheOperationResponse.success(serializeObject(value));
             } else {
                 return CacheOperationResponse.failure("Invalid key", new IllegalArgumentException("Null key"));

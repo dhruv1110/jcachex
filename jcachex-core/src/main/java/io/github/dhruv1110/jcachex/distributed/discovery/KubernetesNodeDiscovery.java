@@ -63,7 +63,7 @@ import java.util.logging.Logger;
  */
 public class KubernetesNodeDiscovery implements NodeDiscovery {
     private static final Logger logger = Logger.getLogger(KubernetesNodeDiscovery.class.getName());
-    private static final int DEFAULT_CACHE_PORT = 8080;
+    private static final int DEFAULT_CACHE_PORT = 8081;
 
     private final KubernetesDiscoveryBuilder config;
     private final ScheduledExecutorService scheduler;
