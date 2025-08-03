@@ -1,12 +1,8 @@
 package io.github.dhruv1110.jcachex.warming;
 
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.time.LocalTime;
-import java.util.HashMap;
 
 /**
  * Interface for cache warming strategies.

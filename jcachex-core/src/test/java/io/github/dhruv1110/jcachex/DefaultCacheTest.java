@@ -1,9 +1,9 @@
 package io.github.dhruv1110.jcachex;
 
-import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy;
 import io.github.dhruv1110.jcachex.exceptions.CacheConfigurationException;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

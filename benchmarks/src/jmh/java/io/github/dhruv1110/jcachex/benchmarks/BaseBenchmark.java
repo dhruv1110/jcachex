@@ -2,7 +2,6 @@ package io.github.dhruv1110.jcachex.benchmarks;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.github.dhruv1110.jcachex.Cache;
-import io.github.dhruv1110.jcachex.profiles.ProfileName;
 import org.cache2k.Cache2kBuilder;
 import org.ehcache.CacheManager;
 import org.ehcache.config.builders.CacheConfigurationBuilder;

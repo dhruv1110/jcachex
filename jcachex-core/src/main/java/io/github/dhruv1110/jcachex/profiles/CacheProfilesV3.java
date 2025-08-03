@@ -2,7 +2,6 @@ package io.github.dhruv1110.jcachex.profiles;
 
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.impl.*;
-import io.github.dhruv1110.jcachex.impl.UltraFastCache;
 
 /**
  * Simplified and standardized cache profiles using the new ProfileRegistry

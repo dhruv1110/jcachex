@@ -1,8 +1,6 @@
 package io.github.dhruv1110.jcachex.example.distributed.kubernetes.controller;
 
-import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;

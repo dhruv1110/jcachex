@@ -1,6 +1,6 @@
 package io.github.dhruv1110.jcachex;
 
-import io.github.dhruv1110.jcachex.impl.*;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import io.github.dhruv1110.jcachex.profiles.CacheProfile;
 import io.github.dhruv1110.jcachex.profiles.ProfileName;
 import io.github.dhruv1110.jcachex.profiles.ProfileRegistry;

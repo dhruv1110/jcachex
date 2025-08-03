@@ -2,10 +2,10 @@ package io.github.dhruv1110.jcachex.warming;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Result of a cache warming operation.

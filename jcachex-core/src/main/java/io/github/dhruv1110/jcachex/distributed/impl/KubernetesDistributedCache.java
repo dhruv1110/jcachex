@@ -1,6 +1,5 @@
 package io.github.dhruv1110.jcachex.distributed.impl;
 
-import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheStats;
 import io.github.dhruv1110.jcachex.distributed.communication.CommunicationProtocol;
 import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery;
@@ -8,11 +7,11 @@ import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery.Discovere
 import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery.NodeDiscoveryListener;
 
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Kubernetes-specific distributed cache implementation.

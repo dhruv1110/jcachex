@@ -3,8 +3,7 @@ package io.github.dhruv1110.jcachex.spring.core;
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.JCacheXBuilder;
-// CacheBuilder removed - using JCacheXBuilder for all local caches
-import io.github.dhruv1110.jcachex.impl.*;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import io.github.dhruv1110.jcachex.profiles.CacheProfile;
 import io.github.dhruv1110.jcachex.profiles.ProfileRegistry;
 import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;

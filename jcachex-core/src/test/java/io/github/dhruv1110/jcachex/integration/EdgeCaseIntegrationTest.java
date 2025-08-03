@@ -1,21 +1,27 @@
 package io.github.dhruv1110.jcachex.integration;
 
 import io.github.dhruv1110.jcachex.*;
-import io.github.dhruv1110.jcachex.eviction.*;
+import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
+import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy;
 import io.github.dhruv1110.jcachex.impl.DefaultCache;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 /**
  * Integration tests focusing on edge cases and error conditions.

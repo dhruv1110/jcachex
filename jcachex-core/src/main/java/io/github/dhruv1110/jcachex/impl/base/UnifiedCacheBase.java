@@ -1,11 +1,6 @@
 package io.github.dhruv1110.jcachex.impl.base;
 
-import io.github.dhruv1110.jcachex.Cache;
-import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.CacheEntry;
-import io.github.dhruv1110.jcachex.CacheEventListener;
-import io.github.dhruv1110.jcachex.CacheStats;
-import io.github.dhruv1110.jcachex.EvictionReason;
+import io.github.dhruv1110.jcachex.*;
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy;
 
@@ -13,16 +8,10 @@ import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.time.Instant;
 
 /**
  * Unified base class for all cache implementations providing comprehensive

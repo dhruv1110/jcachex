@@ -4,19 +4,15 @@ import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheStats;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.StampedLock;
-import java.util.function.Function;
-import java.util.Set;
+import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Map;
-import java.util.AbstractMap;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.time.Instant;
-import java.time.Duration;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.StampedLock;
 
 /**
  * Specialized read-only cache implementation optimized for read-heavy

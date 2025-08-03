@@ -1,9 +1,8 @@
 package io.github.dhruv1110.jcachex.spring;
 
-import io.github.dhruv1110.jcachex.spring.utilities.EvictionStrategyFactory;
-import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
-
 import io.github.dhruv1110.jcachex.eviction.*;
+import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
+import io.github.dhruv1110.jcachex.spring.utilities.EvictionStrategyFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

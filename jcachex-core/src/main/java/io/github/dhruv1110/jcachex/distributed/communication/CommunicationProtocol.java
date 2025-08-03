@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.concurrent.CompletableFuture;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Simple interface for inter-node communication protocols in distributed cache.

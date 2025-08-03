@@ -6,18 +6,12 @@ import io.github.dhruv1110.jcachex.CacheStats;
 import io.github.dhruv1110.jcachex.internal.util.CacheCommonOperations;
 import io.github.dhruv1110.jcachex.internal.util.StatisticsProvider;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.Set;
 import java.util.Collection;
 import java.util.Map;
-import java.util.AbstractMap;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadLocalRandom;
-import java.time.Instant;
-import java.time.Duration;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Hardware-optimized cache implementation that leverages CPU-specific features.

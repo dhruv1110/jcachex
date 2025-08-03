@@ -2,25 +2,23 @@ package io.github.dhruv1110.jcachex.spring.configuration;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.CacheStats;
 import io.github.dhruv1110.jcachex.impl.DefaultCache;
-import io.github.dhruv1110.jcachex.spring.core.JCacheXCacheManager;
 import io.github.dhruv1110.jcachex.spring.core.JCacheXCacheFactory;
+import io.github.dhruv1110.jcachex.spring.core.JCacheXCacheManager;
 import io.github.dhruv1110.jcachex.spring.utilities.EvictionStrategyFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.lang.Nullable;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Spring Boot auto-configuration for JCacheX.

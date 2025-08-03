@@ -1,13 +1,15 @@
 package io.github.dhruv1110.jcachex.spring;
 
 import io.github.dhruv1110.jcachex.Cache;
-import io.github.dhruv1110.jcachex.impl.*;
+import io.github.dhruv1110.jcachex.impl.AllocationOptimizedCache;
+import io.github.dhruv1110.jcachex.impl.ReadOnlyOptimizedCache;
+import io.github.dhruv1110.jcachex.impl.WriteHeavyOptimizedCache;
 import io.github.dhruv1110.jcachex.profiles.ProfileRegistry;
+import io.github.dhruv1110.jcachex.spring.annotations.JCacheXCacheable;
 import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
 import io.github.dhruv1110.jcachex.spring.core.JCacheXCacheFactory;
 import io.github.dhruv1110.jcachex.spring.core.JCacheXCacheManager;
 import io.github.dhruv1110.jcachex.spring.core.JCacheXSpringCache;
-import io.github.dhruv1110.jcachex.spring.annotations.JCacheXCacheable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,13 +17,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 

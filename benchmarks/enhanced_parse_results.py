@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 import json
-import sys
 import os
 import re
-from collections import defaultdict, OrderedDict
-from typing import Dict, List, Tuple, Optional, Any
+import sys
+from collections import defaultdict
+from typing import Dict, Optional
+
 
 class BenchmarkResult:
     """Represents a single benchmark result with enhanced metadata"""

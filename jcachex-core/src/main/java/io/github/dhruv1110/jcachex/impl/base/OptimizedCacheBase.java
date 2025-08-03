@@ -7,7 +7,6 @@ import io.github.dhruv1110.jcachex.concurrent.AccessBuffer;
 import io.github.dhruv1110.jcachex.concurrent.AccessBuffer.AccessRecord;
 import io.github.dhruv1110.jcachex.concurrent.AccessBuffer.AccessType;
 import io.github.dhruv1110.jcachex.eviction.WindowTinyLFUEvictionStrategy;
-import io.github.dhruv1110.jcachex.impl.base.ConcurrentCacheBase;
 
 import java.util.HashMap;
 import java.util.Map;

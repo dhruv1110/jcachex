@@ -6,8 +6,6 @@ import io.github.dhruv1110.jcachex.JCacheXBuilder;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
 import io.github.dhruv1110.jcachex.distributed.communication.CommunicationProtocol;
 import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery;
-import io.github.dhruv1110.jcachex.impl.DefaultCache;
-import io.github.dhruv1110.jcachex.impl.OptimizedCache;
 
 import java.time.Duration;
 import java.util.*;

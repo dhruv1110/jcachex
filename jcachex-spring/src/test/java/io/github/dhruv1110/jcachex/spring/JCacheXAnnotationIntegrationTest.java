@@ -1,7 +1,6 @@
 package io.github.dhruv1110.jcachex.spring;
 
 import io.github.dhruv1110.jcachex.spring.core.JCacheXSpringCache;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -11,12 +10,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.context.annotation.ComponentScan;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
