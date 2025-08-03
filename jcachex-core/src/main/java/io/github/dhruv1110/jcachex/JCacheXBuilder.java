@@ -285,17 +285,6 @@ public final class JCacheXBuilder<K, V> {
         return fromProfile(ProfileName.HARDWARE_OPTIMIZED);
     }
 
-    /**
-     * Creates a builder optimized for distributed caching environments.
-     * Uses DISTRIBUTED profile with cluster-aware optimizations.
-     *
-     * @param <K> the key type
-     * @param <V> the value type
-     * @return a pre-configured builder
-     */
-    public static <K, V> JCacheXBuilder<K, V> forDistributedCaching() {
-        return fromProfile(ProfileName.KUBERNETES_DISTRIBUTED);
-    }
 
     // ===== CONFIGURATION METHODS =====
 

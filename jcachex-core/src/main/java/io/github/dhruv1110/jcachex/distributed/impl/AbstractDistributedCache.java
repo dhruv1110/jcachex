@@ -2,10 +2,12 @@ package io.github.dhruv1110.jcachex.distributed.impl;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
+import io.github.dhruv1110.jcachex.JCacheXBuilder;
 import io.github.dhruv1110.jcachex.distributed.DistributedCache;
 import io.github.dhruv1110.jcachex.distributed.communication.CommunicationProtocol;
 import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery;
 import io.github.dhruv1110.jcachex.impl.DefaultCache;
+import io.github.dhruv1110.jcachex.impl.OptimizedCache;
 
 import java.time.Duration;
 import java.util.*;
@@ -89,7 +91,7 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
         this.currentNodeId = generateNodeId();
 
         // Initialize local cache
-        this.localCache = new DefaultCache<>(builder.cacheConfig);
+        this.localCache = JCacheXBuilder.<K, V>forHighPerformance().build();
 
         // Initialize consistent hash ring with virtual nodes
         this.hashRing = new ConsistentHashRing(builder.virtualNodesPerNode);

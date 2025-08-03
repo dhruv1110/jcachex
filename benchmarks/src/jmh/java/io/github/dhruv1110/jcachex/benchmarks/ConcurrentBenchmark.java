@@ -40,7 +40,6 @@ public class ConcurrentBenchmark extends BaseBenchmark {
             jcacheXMlOptimized.put(key, value);
             jcacheXZeroCopy.put(key, value);
             jcacheXHardwareOptimized.put(key, value);
-            jcacheXDistributed.put(key, value);
             caffeineCache.put(key, value);
             cache2kCache.put(key, value);
             ehcacheCache.put(key, value);

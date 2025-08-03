@@ -172,16 +172,6 @@ inline fun <K, V> createHardwareOptimizedCache(configure: JCacheXBuilderScope<K,
     return builder.build()
 }
 
-/**
- * Creates a cache optimized for distributed caching environments.
- */
-inline fun <K, V> createDistributedCache(configure: JCacheXBuilderScope<K, V>.() -> Unit = {}): Cache<K, V> {
-    val builder = JCacheXBuilder.forDistributedCaching<K, V>()
-    val scope = JCacheXBuilderScope(builder)
-    scope.configure()
-    return builder.build()
-}
-
 // ===== LEGACY SUPPORT =====
 
 /**
