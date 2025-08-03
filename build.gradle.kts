@@ -186,33 +186,6 @@ subprojects {
                 )
             }
         }))
-        finalizedBy(tasks.jacocoTestCoverageVerification)
-    }
-
-    tasks.jacocoTestCoverageVerification {
-        dependsOn(tasks.test)
-        // Exclude example packages from coverage requirements
-        executionData.setFrom(fileTree(layout.buildDirectory.dir("jacoco")).include("**/*.exec"))
-        classDirectories.setFrom(files(classDirectories.files.map {
-            fileTree(it) {
-                exclude(
-                    "**/io/github/dhruv1110/jcachex/example/**",
-                    "**/example/**",
-                    "**/io/github/dhruv1110/jcachex/benchmarks/**",
-                )
-            }
-        }))
-        violationRules {
-            rule {
-                limit {
-                    minimum = "0.0".toBigDecimal()
-                }
-            }
-        }
-    }
-
-    tasks.check {
-        dependsOn(tasks.jacocoTestCoverageVerification)
     }
 
     afterEvaluate {
