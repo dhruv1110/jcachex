@@ -126,7 +126,6 @@ inline fun <K, V, R> Cache<K, V>.measureTime(block: Cache<K, V>.() -> R): Pair<R
     return result to (endTime - startTime)
 }
 
-
 /**
  * Returns a summary of the cache contents.
  */
