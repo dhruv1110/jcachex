@@ -1,3 +1,5 @@
+@file:Suppress("WildcardImport", "ktlint:standard:no-wildcard-imports")
+
 package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.Cache

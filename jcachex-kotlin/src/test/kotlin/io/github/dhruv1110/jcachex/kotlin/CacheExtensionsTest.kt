@@ -1,4 +1,4 @@
-@file:Suppress("ktlint:standard:function-naming")
+@file:Suppress("ktlint:standard:function-naming", "WildcardImport", "ktlint:standard:no-wildcard-imports")
 
 package io.github.dhruv1110.jcachex.kotlin
 

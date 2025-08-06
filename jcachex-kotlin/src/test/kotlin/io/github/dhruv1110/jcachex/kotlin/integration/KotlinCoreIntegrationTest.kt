@@ -100,13 +100,11 @@ class KotlinCoreIntegrationTest {
                 }
 
             val cache =
-                createTestCache(
-                    fun JCacheXBuilder<String, String>.() {
-                        maximumSize(100L)
-                        expireAfterWrite(Duration.ofMinutes(10))
-                        recordStats(true)
-                    },
-                )
+                createTestCache<String, String> {
+                    maximumSize(100L)
+                    expireAfterWrite(Duration.ofMinutes(10))
+                    recordStats(true)
+                }
 
             // Test DSL-configured cache works with core features
             cache.put("key1", "value1")

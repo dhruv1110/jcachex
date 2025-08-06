@@ -1,8 +1,7 @@
-@file:Suppress("ktlint:standard:function-naming")
+@file:Suppress("ktlint:standard:function-naming", "WildcardImport", "ktlint:standard:no-wildcard-imports")
 
 package io.github.dhruv1110.jcachex.kotlin
 
-import io.github.dhruv1110.jcachex.JCacheXBuilder
 import io.github.dhruv1110.jcachex.profiles.ProfileName
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -496,12 +495,10 @@ class DSLExtensionsTest {
     @Test
     fun `test legacy createUnifiedCache`() {
         val cache =
-            createCache(
-                fun JCacheXBuilder<String, String>.() {
-                    maximumSize(100)
-                    recordStats(true)
-                },
-            )
+            createCache<String, String> {
+                maximumSize(100)
+                recordStats(true)
+            }
 
         assertNotNull(cache)
         assertEquals(0, cache.size())
