@@ -2,6 +2,7 @@ package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.Cache
 import io.github.dhruv1110.jcachex.CacheStats
+import io.github.dhruv1110.jcachex.kotlin.createCache
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -14,10 +15,11 @@ class StatisticsExtensionsTest {
 
     @BeforeEach
     fun setUp() {
-        cache = createCache {
-            maximumSize(100)
-            recordStats(true)
-        }
+        cache =
+            createCache {
+                maximumSize(100)
+                recordStats(true)
+            }
     }
 
     @Test
@@ -41,28 +43,33 @@ class StatisticsExtensionsTest {
 
     @Test
     fun `test averageLoadTimeMillis`() {
-        val stats = createTestStats(
-            hitCount = 50,
-            missCount = 10,
-            loadCount = 10,
-            totalLoadTime = 1_000_000_000L // 1 second in nanoseconds
-        )
+        val stats =
+            createTestStats(
+                hitCount = 50,
+                missCount = 10,
+                loadCount = 10,
+                // 1 second in nanoseconds
+                totalLoadTime = 1_000_000_000L,
+            )
 
         val averageLoadTimeMillis = stats.averageLoadTimeMillis()
 
-        assertEquals(100.0, averageLoadTimeMillis, 0.01) // 1 second / 10 loads = 100ms per load
+        // 1 second / 10 loads = 100ms per load
+        assertEquals(100.0, averageLoadTimeMillis, 0.01)
     }
 
     @Test
     fun `test formatted statistics`() {
-        val stats = createTestStats(
-            hitCount = 80,
-            missCount = 20,
-            evictionCount = 5,
-            loadCount = 10,
-            loadFailureCount = 2,
-            totalLoadTime = 500_000_000L // 500ms in nanoseconds
-        )
+        val stats =
+            createTestStats(
+                hitCount = 80,
+                missCount = 20,
+                evictionCount = 5,
+                loadCount = 10,
+                loadFailureCount = 2,
+                // 500ms in nanoseconds
+                totalLoadTime = 500_000_000L,
+            )
 
         val formatted = stats.formatted()
 
@@ -144,12 +151,14 @@ class StatisticsExtensionsTest {
 
     @Test
     fun `test averageLoadTimeMillis with high load time`() {
-        val stats = createTestStats(
-            hitCount = 50,
-            missCount = 10,
-            loadCount = 5,
-            totalLoadTime = 5_000_000_000L // 5 seconds in nanoseconds
-        )
+        val stats =
+            createTestStats(
+                hitCount = 50,
+                missCount = 10,
+                loadCount = 5,
+                // 5 seconds in nanoseconds
+                totalLoadTime = 5_000_000_000L,
+            )
 
         val averageLoadTimeMillis = stats.averageLoadTimeMillis()
 
@@ -230,14 +239,15 @@ class StatisticsExtensionsTest {
 
     @Test
     fun `test formatted statistics with all fields`() {
-        val stats = createTestStats(
-            hitCount = 100,
-            missCount = 50,
-            evictionCount = 10,
-            loadCount = 20,
-            loadFailureCount = 5,
-            totalLoadTime = 2_000_000_000L // 2 seconds in nanoseconds
-        )
+        val stats =
+            createTestStats(
+                hitCount = 100,
+                missCount = 50,
+                evictionCount = 10,
+                loadCount = 20,
+                loadFailureCount = 5,
+                totalLoadTime = 2_000_000_000L, // 2 seconds in nanoseconds
+            )
 
         val formatted = stats.formatted()
 
@@ -254,11 +264,12 @@ class StatisticsExtensionsTest {
 
     @Test
     fun `test statistics with evictions`() {
-        val stats = createTestStats(
-            hitCount = 80,
-            missCount = 20,
-            evictionCount = 15
-        )
+        val stats =
+            createTestStats(
+                hitCount = 80,
+                missCount = 20,
+                evictionCount = 15,
+            )
 
         val formatted = stats.formatted()
 
@@ -267,11 +278,12 @@ class StatisticsExtensionsTest {
 
     @Test
     fun `test statistics with load failures`() {
-        val stats = createTestStats(
-            hitCount = 90,
-            missCount = 10,
-            loadFailureCount = 3
-        )
+        val stats =
+            createTestStats(
+                hitCount = 90,
+                missCount = 10,
+                loadFailureCount = 3,
+            )
 
         val formatted = stats.formatted()
 
@@ -280,11 +292,12 @@ class StatisticsExtensionsTest {
 
     @Test
     fun `test statistics with loads`() {
-        val stats = createTestStats(
-            hitCount = 70,
-            missCount = 30,
-            loadCount = 25
-        )
+        val stats =
+            createTestStats(
+                hitCount = 70,
+                missCount = 30,
+                loadCount = 25,
+            )
 
         val formatted = stats.formatted()
 
@@ -316,12 +329,13 @@ class StatisticsExtensionsTest {
 
     @Test
     fun `test statistics with very small load times`() {
-        val stats = createTestStats(
-            hitCount = 100,
-            missCount = 10,
-            loadCount = 5,
-            totalLoadTime = 1000L // 1 microsecond in nanoseconds
-        )
+        val stats =
+            createTestStats(
+                hitCount = 100,
+                missCount = 10,
+                loadCount = 5,
+                totalLoadTime = 1000L, // 1 microsecond in nanoseconds
+            )
 
         val averageLoadTimeMillis = stats.averageLoadTimeMillis()
 
@@ -330,12 +344,13 @@ class StatisticsExtensionsTest {
 
     @Test
     fun `test statistics with very large load times`() {
-        val stats = createTestStats(
-            hitCount = 100,
-            missCount = 10,
-            loadCount = 2,
-            totalLoadTime = 10_000_000_000L // 10 seconds in nanoseconds
-        )
+        val stats =
+            createTestStats(
+                hitCount = 100,
+                missCount = 10,
+                loadCount = 2,
+                totalLoadTime = 10_000_000_000L, // 10 seconds in nanoseconds
+            )
 
         val averageLoadTimeMillis = stats.averageLoadTimeMillis()
 
@@ -351,7 +366,7 @@ class StatisticsExtensionsTest {
         evictionCount: Long = 0,
         loadCount: Long = 0,
         loadFailureCount: Long = 0,
-        totalLoadTime: Long = 0
+        totalLoadTime: Long = 0,
     ): CacheStats {
         return CacheStats(
             AtomicLong(hitCount),
@@ -359,7 +374,7 @@ class StatisticsExtensionsTest {
             AtomicLong(evictionCount),
             AtomicLong(loadCount),
             AtomicLong(loadFailureCount),
-            AtomicLong(totalLoadTime)
+            AtomicLong(totalLoadTime),
         )
     }
 }

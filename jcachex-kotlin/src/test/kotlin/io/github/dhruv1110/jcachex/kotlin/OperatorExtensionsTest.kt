@@ -1,6 +1,7 @@
 package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.Cache
+import io.github.dhruv1110.jcachex.kotlin.createCache
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -12,10 +13,11 @@ class OperatorExtensionsTest {
 
     @BeforeEach
     fun setUp() {
-        cache = createCache {
-            maximumSize(100)
-            recordStats(true)
-        }
+        cache =
+            createCache {
+                maximumSize(100)
+                recordStats(true)
+            }
     }
 
     @Test
@@ -97,10 +99,11 @@ class OperatorExtensionsTest {
 
     @Test
     fun `test operator with different types`() {
-        val intCache = createCache<Int, String> {
-            maximumSize(100)
-            recordStats(true)
-        }
+        val intCache =
+            createCache<Int, String> {
+                maximumSize(100)
+                recordStats(true)
+            }
 
         // Test with Int keys
         intCache[1] = "one"
@@ -119,10 +122,11 @@ class OperatorExtensionsTest {
 
     @Test
     fun `test operator with null values`() {
-        val nullableCache = createCache<String, String?> {
-            maximumSize(100)
-            recordStats(true)
-        }
+        val nullableCache =
+            createCache<String, String?> {
+                maximumSize(100)
+                recordStats(true)
+            }
 
         nullableCache["key1"] = null
         nullableCache["key2"] = "value2"
@@ -136,10 +140,11 @@ class OperatorExtensionsTest {
     @Test
     fun `test operator performance with large cache`() {
         // Test operators with larger dataset
-        val largeCache = createCache<Int, String> {
-            maximumSize(1000)
-            recordStats(true)
-        }
+        val largeCache =
+            createCache<Int, String> {
+                maximumSize(1000)
+                recordStats(true)
+            }
 
         // Add many entries using +=
         repeat(100) { i ->
@@ -169,10 +174,11 @@ class OperatorExtensionsTest {
     fun `test operator with complex objects`() {
         data class User(val id: Int, val name: String)
 
-        val userCache = createCache<String, User> {
-            maximumSize(100)
-            recordStats(true)
-        }
+        val userCache =
+            createCache<String, User> {
+                maximumSize(100)
+                recordStats(true)
+            }
 
         val user1 = User(1, "John")
         val user2 = User(2, "Jane")
@@ -213,23 +219,25 @@ class OperatorExtensionsTest {
 
     @Test
     fun `test operator with concurrent access`() {
-        val concurrentCache = createCache<String, String> {
-            maximumSize(100)
-            recordStats(true)
-        }
+        val concurrentCache =
+            createCache<String, String> {
+                maximumSize(100)
+                recordStats(true)
+            }
 
         // Simulate concurrent access patterns
-        val threads = List(10) { threadId ->
-            Thread {
-                repeat(100) { i ->
-                    val key = "key_${threadId}_$i"
-                    concurrentCache[key] = "value_$i"
-                    assertTrue(key in concurrentCache)
-                    concurrentCache -= key
-                    assertFalse(key in concurrentCache)
+        val threads =
+            List(10) { threadId ->
+                Thread {
+                    repeat(100) { i ->
+                        val key = "key_${threadId}_$i"
+                        concurrentCache[key] = "value_$i"
+                        assertTrue(key in concurrentCache)
+                        concurrentCache -= key
+                        assertFalse(key in concurrentCache)
+                    }
                 }
             }
-        }
 
         threads.forEach { it.start() }
         threads.forEach { it.join() }

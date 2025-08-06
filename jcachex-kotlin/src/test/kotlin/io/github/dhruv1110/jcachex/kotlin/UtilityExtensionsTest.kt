@@ -1,6 +1,7 @@
 package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.Cache
+import io.github.dhruv1110.jcachex.kotlin.createCache
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -12,19 +13,21 @@ class UtilityExtensionsTest {
 
     @BeforeEach
     fun setUp() {
-        cache = createCache {
-            maximumSize(100)
-            recordStats(true)
-        }
+        cache =
+            createCache {
+                maximumSize(100)
+                recordStats(true)
+            }
     }
 
     @Test
     fun `test batch operations`() {
-        val result = cache.batch {
-            put("key1", "value1")
-            put("key2", "value2")
-            put("key3", "value3")
-        }
+        val result =
+            cache.batch {
+                put("key1", "value1")
+                put("key2", "value2")
+                put("key3", "value3")
+            }
 
         // Should return the cache itself
         assertSame(cache, result)
@@ -145,8 +148,8 @@ class UtilityExtensionsTest {
             mapOf(
                 "key1" to "value1",
                 "key2" to "value2",
-                "key3" to "value3"
-            )
+                "key3" to "value3",
+            ),
         )
 
         cache.replaceAll { key, value -> value.uppercase() }
@@ -158,11 +161,12 @@ class UtilityExtensionsTest {
 
     @Test
     fun `test measureTime`() {
-        val (result, time) = cache.measureTime {
-            put("key1", "value1")
-            put("key2", "value2")
-            "operation_completed"
-        }
+        val (result, time) =
+            cache.measureTime {
+                put("key1", "value1")
+                put("key2", "value2")
+                "operation_completed"
+            }
 
         assertEquals("operation_completed", result)
         assertTrue(time > 0) // Should take some time
@@ -188,8 +192,8 @@ class UtilityExtensionsTest {
             mapOf(
                 "key1" to "value1",
                 "key2" to "value2",
-                "key3" to "value3"
-            )
+                "key3" to "value3",
+            ),
         )
 
         val summary = cache.summary()
@@ -221,15 +225,17 @@ class UtilityExtensionsTest {
     fun `test computeIfAbsent with complex computation`() {
         var computationCount = 0
 
-        val value1 = cache.computeIfAbsent("key1") {
-            computationCount++
-            "expensive_computation_$computationCount"
-        }
+        val value1 =
+            cache.computeIfAbsent("key1") {
+                computationCount++
+                "expensive_computation_$computationCount"
+            }
 
-        val value2 = cache.computeIfAbsent("key1") {
-            computationCount++
-            "should_not_be_computed"
-        }
+        val value2 =
+            cache.computeIfAbsent("key1") {
+                computationCount++
+                "should_not_be_computed"
+            }
 
         assertEquals("expensive_computation_1", value1)
         assertEquals("expensive_computation_1", value2) // Should return cached value
@@ -240,11 +246,12 @@ class UtilityExtensionsTest {
     fun `test computeIfPresent with key parameter`() {
         cache["key1"] = "value1"
 
-        val result = cache.computeIfPresent("key1") { key, value ->
-            assertEquals("key1", key)
-            assertEquals("value1", value)
-            "updated_$value"
-        }
+        val result =
+            cache.computeIfPresent("key1") { key, value ->
+                assertEquals("key1", key)
+                assertEquals("value1", value)
+                "updated_$value"
+            }
 
         assertEquals("updated_value1", result)
         assertEquals("updated_value1", cache["key1"])
@@ -260,17 +267,19 @@ class UtilityExtensionsTest {
         cache["counter1"] = counter1.toString()
         cache["counter2"] = counter2.toString()
 
-        val result1 = cache.merge("counter1", Counter(2).toString()) { existing, new ->
-            val existingCount = existing.substringAfter("count=").substringBefore(")").toIntOrNull() ?: 0
-            val newCount = new.substringAfter("count=").substringBefore(")").toIntOrNull() ?: 0
-            Counter(existingCount + newCount).toString()
-        }
+        val result1 =
+            cache.merge("counter1", Counter(2).toString()) { existing, new ->
+                val existingCount = existing.substringAfter("count=").substringBefore(")").toIntOrNull() ?: 0
+                val newCount = new.substringAfter("count=").substringBefore(")").toIntOrNull() ?: 0
+                Counter(existingCount + newCount).toString()
+            }
 
-        val result2 = cache.merge("counter2", Counter(4).toString()) { existing, new ->
-            val existingCount = existing.substringAfter("count=").substringBefore(")").toIntOrNull() ?: 0
-            val newCount = new.substringAfter("count=").substringBefore(")").toIntOrNull() ?: 0
-            Counter(existingCount * newCount).toString()
-        }
+        val result2 =
+            cache.merge("counter2", Counter(4).toString()) { existing, new ->
+                val existingCount = existing.substringAfter("count=").substringBefore(")").toIntOrNull() ?: 0
+                val newCount = new.substringAfter("count=").substringBefore(")").toIntOrNull() ?: 0
+                Counter(existingCount * newCount).toString()
+            }
 
         assertEquals("Counter(count=7)", result1) // 5 + 2
         assertEquals("Counter(count=12)", result2) // 3 * 4
@@ -286,8 +295,8 @@ class UtilityExtensionsTest {
                 "user1" to "John",
                 "user2" to "Jane",
                 "admin1" to "Admin",
-                "system1" to "System"
-            )
+                "system1" to "System",
+            ),
         )
 
         cache.replaceAll { key, value ->
@@ -306,15 +315,17 @@ class UtilityExtensionsTest {
 
     @Test
     fun `test measureTime with different operations`() {
-        val (result1, time1) = cache.measureTime {
-            put("key1", "value1")
-        }
+        val (result1, time1) =
+            cache.measureTime {
+                put("key1", "value1")
+            }
 
-        val (result2, time2) = cache.measureTime {
-            put("key2", "value2")
-            put("key3", "value3")
-            put("key4", "value4")
-        }
+        val (result2, time2) =
+            cache.measureTime {
+                put("key2", "value2")
+                put("key3", "value3")
+                put("key4", "value4")
+            }
 
         assertNotNull(result1)
         assertNotNull(result2)
@@ -326,14 +337,15 @@ class UtilityExtensionsTest {
 
     @Test
     fun `test batch with nested operations`() {
-        val result = cache.batch {
-            put("key1", "value1")
-            batch {
-                put("key2", "value2")
-                put("key3", "value3")
+        val result =
+            cache.batch {
+                put("key1", "value1")
+                batch {
+                    put("key2", "value2")
+                    put("key3", "value3")
+                }
+                put("key4", "value4")
             }
-            put("key4", "value4")
-        }
 
         assertSame(cache, result)
         assertEquals("value1", cache["key1"])
@@ -359,10 +371,11 @@ class UtilityExtensionsTest {
 
     @Test
     fun `test merge with null values`() {
-        val nullableCache = createCache<String, String?> {
-            maximumSize(100)
-            recordStats(true)
-        }
+        val nullableCache =
+            createCache<String, String?> {
+                maximumSize(100)
+                recordStats(true)
+            }
 
         nullableCache["key1"] = null
 
@@ -389,10 +402,11 @@ class UtilityExtensionsTest {
 
     @Test
     fun `test utility functions with different types`() {
-        val intCache = createCache<Int, String> {
-            maximumSize(100)
-            recordStats(true)
-        }
+        val intCache =
+            createCache<Int, String> {
+                maximumSize(100)
+                recordStats(true)
+            }
 
         val result1 = intCache.computeIfAbsent(1) { "one" }
         assertEquals("one", result1)

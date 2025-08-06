@@ -48,7 +48,7 @@ class KotlinCoreIntegrationTest {
     /**
      * Helper function to create a cache with automatic cleanup.
      */
-    private fun <K, V> createCache(configure: JCacheXBuilder<K, V>.() -> Unit): Cache<K, V> {
+    private fun <K, V> createTestCache(configure: JCacheXBuilder<K, V>.() -> Unit): Cache<K, V> {
         val cache = io.github.dhruv1110.jcachex.kotlin.createCache(configure)
         createdCaches.add(cache)
         return cache
@@ -100,11 +100,13 @@ class KotlinCoreIntegrationTest {
                 }
 
             val cache =
-                createCache(fun JCacheXBuilder<String, String>.() {
-                    maximumSize(100L)
-                    expireAfterWrite(Duration.ofMinutes(10))
-                    recordStats(true)
-                })
+                createTestCache(
+                    fun JCacheXBuilder<String, String>.() {
+                        maximumSize(100L)
+                        expireAfterWrite(Duration.ofMinutes(10))
+                        recordStats(true)
+                    },
+                )
 
             // Test DSL-configured cache works with core features
             cache.put("key1", "value1")
@@ -123,7 +125,7 @@ class KotlinCoreIntegrationTest {
         @DisplayName("Kotlin extensions work with DSL-created caches")
         fun kotlinExtensionsWithDSLTest() {
             val cache =
-                createCache<String, Int> {
+                createTestCache<String, Int> {
                     maximumSize(50L)
                     recordStats(true)
                     // evictionStrategy(LRUEvictionStrategy()) // Legacy - removed
@@ -167,7 +169,7 @@ class KotlinCoreIntegrationTest {
         fun coroutineAsyncIntegrationTest() =
             runBlocking {
                 val cache =
-                    createCache<String, String> {
+                    createTestCache<String, String> {
                         maximumSize(100L)
                         recordStats(true)
                     }
@@ -206,7 +208,7 @@ class KotlinCoreIntegrationTest {
         fun concurrentCoroutineOperationsTest() =
             runBlocking {
                 val cache =
-                    createCache<String, String> {
+                    createTestCache<String, String> {
                         maximumSize(1000L)
                         recordStats(true)
                         // concurrencyLevel(16) // Legacy - removed
@@ -242,7 +244,7 @@ class KotlinCoreIntegrationTest {
         fun coroutineCancellationTest() =
             runBlocking {
                 val cache =
-                    createCache<String, String> {
+                    createTestCache<String, String> {
                         maximumSize(100L)
                     }
 
@@ -270,7 +272,7 @@ class KotlinCoreIntegrationTest {
         @DisplayName("Compute operations with eviction")
         fun computeOperationsWithEvictionTest() {
             val cache =
-                createCache<String, String> {
+                createTestCache<String, String> {
                     maximumSize(3L)
                     // evictionStrategy(LRUEvictionStrategy()) // Legacy - removed
                     recordStats(true)
@@ -300,7 +302,7 @@ class KotlinCoreIntegrationTest {
         @DisplayName("Merge operations with conflict resolution")
         fun mergeOperationsTest() {
             val cache =
-                createCache<String, Int> {
+                createTestCache<String, Int> {
                     maximumSize(100L)
                     recordStats(true)
                 }
@@ -364,7 +366,7 @@ class KotlinCoreIntegrationTest {
                 }
 
             val cache =
-                createCache<String, String> {
+                createTestCache<String, String> {
                     maximumSize(100L)
                     listener(listener)
                 }
@@ -391,7 +393,7 @@ class KotlinCoreIntegrationTest {
         @DisplayName("Performance measurement integration")
         fun performanceMeasurementTest() {
             val cache =
-                createCache<String, String> {
+                createTestCache<String, String> {
                     maximumSize(1000L)
                     recordStats(true)
                 }
@@ -418,7 +420,7 @@ class KotlinCoreIntegrationTest {
         @DisplayName("Statistics extensions work with core stats")
         fun statisticsExtensionsTest() {
             val cache =
-                createCache<String, String> {
+                createTestCache<String, String> {
                     maximumSize(100L)
                     recordStats(true)
                     loader { key -> "loaded_$key" }
@@ -461,7 +463,7 @@ class KotlinCoreIntegrationTest {
         @DisplayName("Safe operations handle exceptions")
         fun safeOperationsExceptionHandlingTest() {
             val cache =
-                createCache<String, String> {
+                createTestCache<String, String> {
                     maximumSize(100L)
                 }
 
@@ -482,7 +484,7 @@ class KotlinCoreIntegrationTest {
         @DisplayName("Conditional operations with complex scenarios")
         fun conditionalOperationsTest() {
             val cache =
-                createCache<String, String> {
+                createTestCache<String, String> {
                     maximumSize(100L)
                     recordStats(true)
                 }
@@ -521,7 +523,7 @@ class KotlinCoreIntegrationTest {
         @DisplayName("Replace operations with edge cases")
         fun replaceOperationsEdgeCasesTest() {
             val cache =
-                createCache<String, String> {
+                createTestCache<String, String> {
                     maximumSize(100L)
                 }
 
@@ -556,7 +558,7 @@ class KotlinCoreIntegrationTest {
             runBlocking {
                 val eventCount = AtomicInteger(0)
                 val cache =
-                    createCache<String, String> {
+                    createTestCache<String, String> {
                         maximumSize(10L)
                         recordStats(true)
                         // evictionStrategy(LRUEvictionStrategy()) // Legacy - removed
@@ -641,7 +643,7 @@ class KotlinCoreIntegrationTest {
         fun concurrentKotlinExtensionsTest() =
             runBlocking {
                 val cache =
-                    createCache<String, Int> {
+                    createTestCache<String, Int> {
                         maximumSize(1000L)
                         recordStats(true)
                         // concurrencyLevel(16) // Legacy - removed
@@ -707,7 +709,7 @@ class KotlinCoreIntegrationTest {
         @DisplayName("Java and Kotlin operations interoperability")
         fun javaKotlinInteroperabilityTest() {
             val cache =
-                createCache<String, String> {
+                createTestCache<String, String> {
                     maximumSize(100L)
                     recordStats(true)
                 }
@@ -743,7 +745,7 @@ class KotlinCoreIntegrationTest {
         fun coreAsyncWithCoroutinesTest() =
             runBlocking {
                 val cache =
-                    createCache<String, String> {
+                    createTestCache<String, String> {
                         maximumSize(100L)
                         asyncLoader { key ->
                             CompletableFuture.supplyAsync {

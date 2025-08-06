@@ -1,6 +1,7 @@
 package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.Cache
+import io.github.dhruv1110.jcachex.kotlin.createCache
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -12,10 +13,11 @@ class CollectionExtensionsTest {
 
     @BeforeEach
     fun setUp() {
-        cache = createCache {
-            maximumSize(100)
-            recordStats(true)
-        }
+        cache =
+            createCache {
+                maximumSize(100)
+                recordStats(true)
+            }
     }
 
     @Test
@@ -65,8 +67,8 @@ class CollectionExtensionsTest {
                 "user1" to "John",
                 "user2" to "Jane",
                 "admin1" to "Admin",
-                "system1" to "System"
-            )
+                "system1" to "System",
+            ),
         )
 
         val userKeys = cache.filterKeys { it.startsWith("user") }
@@ -87,8 +89,8 @@ class CollectionExtensionsTest {
                 "key1" to "short",
                 "key2" to "verylongvalue",
                 "key3" to "medium",
-                "key4" to "tiny"
-            )
+                "key4" to "tiny",
+            ),
         )
 
         val shortValues = cache.filterValues { it.length <= 6 }
@@ -110,8 +112,8 @@ class CollectionExtensionsTest {
                 "user1" to "John",
                 "user2" to "Jane",
                 "admin1" to "Admin",
-                "system1" to "System"
-            )
+                "system1" to "System",
+            ),
         )
 
         val userEntries = cache.filter { key, value -> key.startsWith("user") && value.length == 4 }
@@ -184,8 +186,8 @@ class CollectionExtensionsTest {
             mapOf(
                 "user1" to "John",
                 "user2" to "Jane",
-                "admin1" to "Admin"
-            )
+                "admin1" to "Admin",
+            ),
         )
 
         val found = cache.find { key, value -> key.startsWith("user") && value.length == 4 }
@@ -211,8 +213,8 @@ class CollectionExtensionsTest {
                 "user1" to "John",
                 "user2" to "Jane",
                 "admin1" to "Admin",
-                "system1" to "System"
-            )
+                "system1" to "System",
+            ),
         )
 
         val userEntries = cache.findAll { key, value -> key.startsWith("user") }
@@ -229,8 +231,8 @@ class CollectionExtensionsTest {
                 "user1" to "John",
                 "user2" to "Jane",
                 "admin1" to "Admin",
-                "system1" to "System"
-            )
+                "system1" to "System",
+            ),
         )
 
         val userCount = cache.count { key, value -> key.startsWith("user") }
@@ -277,8 +279,8 @@ class CollectionExtensionsTest {
                 "user1" to "John",
                 "user2" to "Jane",
                 "admin1" to "Admin",
-                "system1" to "System"
-            )
+                "system1" to "System",
+            ),
         )
 
         val groupedByPrefix = cache.groupBy { key, value -> key.substring(0, 4) }
@@ -296,8 +298,8 @@ class CollectionExtensionsTest {
                 "user1" to "John",
                 "user2" to "Jane",
                 "admin1" to "Admin",
-                "system1" to "System"
-            )
+                "system1" to "System",
+            ),
         )
 
         val (users, others) = cache.partition { key, value -> key.startsWith("user") }
@@ -315,8 +317,8 @@ class CollectionExtensionsTest {
             mapOf(
                 "key1" to "short",
                 "key2" to "verylongvalue",
-                "key3" to "medium"
-            )
+                "key3" to "medium",
+            ),
         )
 
         val shortest = cache.minByOrNull { key, value -> value.length }
@@ -331,8 +333,8 @@ class CollectionExtensionsTest {
             mapOf(
                 "key1" to "short",
                 "key2" to "verylongvalue",
-                "key3" to "medium"
-            )
+                "key3" to "medium",
+            ),
         )
 
         val longest = cache.maxByOrNull { key, value -> value.length }
@@ -443,8 +445,8 @@ class CollectionExtensionsTest {
                 "user1" to "John",
                 "user2" to "Jane",
                 "admin1" to "Admin",
-                "system1" to "System"
-            )
+                "system1" to "System",
+            ),
         )
 
         val removedCount = cache.removeIf { key, value -> key.startsWith("user") }

@@ -1,6 +1,7 @@
 package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.Cache
+import io.github.dhruv1110.jcachex.kotlin.createCache
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -12,10 +13,11 @@ class SafeExtensionsTest {
 
     @BeforeEach
     fun setUp() {
-        cache = createCache {
-            maximumSize(100)
-            recordStats(true)
-        }
+        cache =
+            createCache {
+                maximumSize(100)
+                recordStats(true)
+            }
     }
 
     @Test
@@ -137,10 +139,11 @@ class SafeExtensionsTest {
 
     @Test
     fun `test safe operations with null values`() {
-        val nullableCache = createCache<String, String?> {
-            maximumSize(100)
-            recordStats(true)
-        }
+        val nullableCache =
+            createCache<String, String?> {
+                maximumSize(100)
+                recordStats(true)
+            }
 
         nullableCache["key1"] = null
         nullableCache["key2"] = "value2"
@@ -163,10 +166,11 @@ class SafeExtensionsTest {
     fun `test safe operations with complex objects`() {
         data class User(val id: Int, val name: String)
 
-        val userCache = createCache<String, User> {
-            maximumSize(100)
-            recordStats(true)
-        }
+        val userCache =
+            createCache<String, User> {
+                maximumSize(100)
+                recordStats(true)
+            }
 
         val user1 = User(1, "John")
         val user2 = User(2, "Jane")
@@ -195,10 +199,11 @@ class SafeExtensionsTest {
     fun `test ifContains with complex objects`() {
         data class Product(val id: String, val name: String, val price: Double)
 
-        val productCache = createCache<String, Product> {
-            maximumSize(100)
-            recordStats(true)
-        }
+        val productCache =
+            createCache<String, Product> {
+                maximumSize(100)
+                recordStats(true)
+            }
 
         val product1 = Product("p1", "Laptop", 999.99)
         val product2 = Product("p2", "Mouse", 29.99)
@@ -234,8 +239,8 @@ class SafeExtensionsTest {
             mapOf(
                 "key1" to "value1",
                 "key2" to "value2",
-                "key3" to "value3"
-            )
+                "key3" to "value3",
+            ),
         )
 
         val results = mutableListOf<Result<String?>>()
@@ -257,10 +262,11 @@ class SafeExtensionsTest {
     @Test
     fun `test safe operations with error handling`() {
         // Create a cache that might throw exceptions
-        val problematicCache = createCache<String, String> {
-            maximumSize(1) // Very small size to trigger eviction
-            recordStats(true)
-        }
+        val problematicCache =
+            createCache<String, String> {
+                maximumSize(1) // Very small size to trigger eviction
+                recordStats(true)
+            }
 
         // Fill the cache to trigger eviction
         problematicCache["key1"] = "value1"
@@ -317,21 +323,22 @@ class SafeExtensionsTest {
 
     @Test
     fun `test safe operations with concurrent access`() {
-        val threads = List(10) { threadId ->
-            Thread {
-                repeat(100) { i ->
-                    val key = "key_${threadId}_$i"
-                    val value = "value_$i"
+        val threads =
+            List(10) { threadId ->
+                Thread {
+                    repeat(100) { i ->
+                        val key = "key_${threadId}_$i"
+                        val value = "value_$i"
 
-                    val putResult = cache.putOrNull(key, value)
-                    assertTrue(putResult.isSuccess)
+                        val putResult = cache.putOrNull(key, value)
+                        assertTrue(putResult.isSuccess)
 
-                    val getResult = cache.safeGet(key)
-                    assertTrue(getResult.isSuccess)
-                    assertEquals(value, getResult.getOrNull())
+                        val getResult = cache.safeGet(key)
+                        assertTrue(getResult.isSuccess)
+                        assertEquals(value, getResult.getOrNull())
+                    }
                 }
             }
-        }
 
         threads.forEach { it.start() }
         threads.forEach { it.join() }
@@ -343,10 +350,11 @@ class SafeExtensionsTest {
 
     @Test
     fun `test safe operations with different types`() {
-        val intCache = createCache<Int, String> {
-            maximumSize(100)
-            recordStats(true)
-        }
+        val intCache =
+            createCache<Int, String> {
+                maximumSize(100)
+                recordStats(true)
+            }
 
         val putResult = intCache.putOrNull(1, "one")
         assertTrue(putResult.isSuccess)
@@ -366,10 +374,11 @@ class SafeExtensionsTest {
 
     @Test
     fun `test safe operations with empty cache`() {
-        val emptyCache = createCache<String, String> {
-            maximumSize(100)
-            recordStats(true)
-        }
+        val emptyCache =
+            createCache<String, String> {
+                maximumSize(100)
+                recordStats(true)
+            }
 
         val getResult = emptyCache.safeGet("any_key")
         assertTrue(getResult.isSuccess)
