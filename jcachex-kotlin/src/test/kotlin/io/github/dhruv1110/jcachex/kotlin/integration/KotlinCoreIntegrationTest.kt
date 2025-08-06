@@ -5,6 +5,7 @@ package io.github.dhruv1110.jcachex.kotlin.integration
 import io.github.dhruv1110.jcachex.Cache
 import io.github.dhruv1110.jcachex.CacheEventListener
 import io.github.dhruv1110.jcachex.EvictionReason
+import io.github.dhruv1110.jcachex.JCacheXBuilder
 import io.github.dhruv1110.jcachex.kotlin.*
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.*
@@ -47,8 +48,8 @@ class KotlinCoreIntegrationTest {
     /**
      * Helper function to create a cache with automatic cleanup.
      */
-    private fun <K, V> createCache(configure: UnifiedCacheBuilderScope<K, V>.() -> Unit): Cache<K, V> {
-        val cache = io.github.dhruv1110.jcachex.kotlin.createUnifiedCache(configure)
+    private fun <K, V> createCache(configure: JCacheXBuilder<K, V>.() -> Unit): Cache<K, V> {
+        val cache = createCache(configure)
         createdCaches.add(cache)
         return cache
     }
