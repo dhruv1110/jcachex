@@ -2,7 +2,6 @@ package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.Cache
 import io.github.dhruv1110.jcachex.CacheStats
-import io.github.dhruv1110.jcachex.kotlin.createCache
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -246,7 +245,8 @@ class StatisticsExtensionsTest {
                 evictionCount = 10,
                 loadCount = 20,
                 loadFailureCount = 5,
-                totalLoadTime = 2_000_000_000L, // 2 seconds in nanoseconds
+                // 2 seconds in nanoseconds
+                totalLoadTime = 2_000_000_000L,
             )
 
         val formatted = stats.formatted()
@@ -334,7 +334,8 @@ class StatisticsExtensionsTest {
                 hitCount = 100,
                 missCount = 10,
                 loadCount = 5,
-                totalLoadTime = 1000L, // 1 microsecond in nanoseconds
+                // 1 microsecond in nanoseconds
+                totalLoadTime = 1000L,
             )
 
         val averageLoadTimeMillis = stats.averageLoadTimeMillis()
@@ -349,7 +350,8 @@ class StatisticsExtensionsTest {
                 hitCount = 100,
                 missCount = 10,
                 loadCount = 2,
-                totalLoadTime = 10_000_000_000L, // 10 seconds in nanoseconds
+                // 10 seconds in nanoseconds
+                totalLoadTime = 10_000_000_000L,
             )
 
         val averageLoadTimeMillis = stats.averageLoadTimeMillis()
@@ -360,6 +362,7 @@ class StatisticsExtensionsTest {
     /**
      * Helper function to create test CacheStats with specific values
      */
+    @Suppress("LongParameterList")
     private fun createTestStats(
         hitCount: Long = 0,
         missCount: Long = 0,

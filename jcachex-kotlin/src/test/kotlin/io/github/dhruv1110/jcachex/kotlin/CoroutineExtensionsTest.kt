@@ -153,6 +153,7 @@ class CoroutineExtensionsTest {
         }
 
     @Test
+    @Suppress("TooGenericExceptionThrown")
     fun `test getOrPutAsync with exception handling`() =
         runBlocking {
             // Test with computation that throws exception
@@ -298,18 +299,21 @@ class CoroutineExtensionsTest {
         }
 
     @Test
-    fun `test getOrPutAsync with different dispatchers`() = runBlocking {
-        val ioResult = withContext(Dispatchers.IO) {
-            cache.getOrPutAsync("io_key") { "io_value" }
-        }
+    fun `test getOrPutAsync with different dispatchers`() =
+        runBlocking {
+            val ioResult =
+                withContext(Dispatchers.IO) {
+                    cache.getOrPutAsync("io_key") { "io_value" }
+                }
 
-        val defaultResult = withContext(Dispatchers.Default) {
-            cache.getOrPutAsync("default_key") { "default_value" }
-        }
+            val defaultResult =
+                withContext(Dispatchers.Default) {
+                    cache.getOrPutAsync("default_key") { "default_value" }
+                }
 
-        assertEquals("io_value", ioResult)
-        assertEquals("default_value", defaultResult)
-        assertEquals("io_value", cache["io_key"])
-        assertEquals("default_value", cache["default_key"])
-    }
+            assertEquals("io_value", ioResult)
+            assertEquals("default_value", defaultResult)
+            assertEquals("io_value", cache["io_key"])
+            assertEquals("default_value", cache["default_key"])
+        }
 }
