@@ -87,9 +87,9 @@ class TcpCommunicationProtocolTest {
     }
 
     private int findAvailablePort() throws IOException {
-        try (ServerSocket socket = new ServerSocket(0)) {
-            return socket.getLocalPort();
-        }
+        // Use fixed port ranges for all environments to ensure consistency
+        // This avoids socket operations that can be restricted in CI environments
+        return 8080 + (int) (Math.random() * 100);
     }
 
     // ============= Configuration and Builder Tests =============

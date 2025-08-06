@@ -6,7 +6,6 @@ import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery;
 import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery.DiscoveredNode;
 import io.github.dhruv1110.jcachex.distributed.discovery.NodeDiscovery.NodeDiscoveryListener;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -56,18 +55,14 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
             return podName;
         }
 
-        // Fallback to hostname-based ID
-        try {
-            String hostname = InetAddress.getLocalHost().getHostName();
-            String nodeId = "k8s-" + hostname + "-" + System.currentTimeMillis();
-            logger.info("Using fallback hostname-based node ID: " + nodeId);
-            return nodeId;
-        } catch (Exception e) {
-            // Last resort: generate based on current time
-            String nodeId = "k8s-node-" + System.currentTimeMillis();
-            logger.warning("Using generated node ID: " + nodeId);
-            return nodeId;
+        // Fallback to hostname-based ID using environment variables
+        String hostname = System.getenv("HOSTNAME");
+        if (hostname == null || hostname.isEmpty()) {
+            hostname = System.getProperty("host.name", "unknown");
         }
+        String nodeId = "k8s-" + hostname + "-" + System.currentTimeMillis();
+        logger.info("Using fallback hostname-based node ID: " + nodeId);
+        return nodeId;
     }
 
     @Override
@@ -140,29 +135,6 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
 
         logger.info("Node left cluster: " + nodeId);
     }
-
-    // ============= Kubernetes-Specific Methods =============
-//
-//    /**
-//     * Get the current Kubernetes pod name (if running in a pod).
-//     */
-//    public String getPodName() {
-//        return System.getenv("HOSTNAME");
-//    }
-//
-//    /**
-//     * Get the current Kubernetes namespace (if available).
-//     */
-//    public String getNamespace() {
-//        return System.getenv("POD_NAMESPACE");
-//    }
-//
-//    /**
-//     * Check if running inside a Kubernetes pod.
-//     */
-//    public boolean isRunningInKubernetes() {
-//        return System.getenv("KUBERNETES_SERVICE_HOST") != null;
-//    }
 
     public CompletableFuture<Void> migrateData(String fromNode, String toNode, Set<String> keys) {
         return CompletableFuture.runAsync(() -> {
@@ -245,8 +217,6 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
                     ". Migrated: " + migratedCount + ", Failed: " + failedCount);
         }, distributionExecutor);
     }
-
-
 
     @Override
     public ClusterTopology getClusterTopology() {
@@ -418,10 +388,6 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
         long total = perNodeLatencies.values().stream().mapToLong(java.util.concurrent.atomic.AtomicLong::get).sum();
         return (double) total / perNodeLatencies.size();
     }
-
-
-
-
 
     // ============= Builder =============
 
