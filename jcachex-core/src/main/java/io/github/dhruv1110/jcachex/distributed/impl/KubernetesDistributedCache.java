@@ -444,16 +444,5 @@ public class KubernetesDistributedCache<K, V> extends AbstractDistributedCache<K
 
             return new KubernetesDistributedCache<>(this);
         }
-
-        // Kubernetes-specific builder methods can be added here if needed
-        public Builder<K, V> podNamePrefix(String prefix) {
-            // Custom configuration for Kubernetes pod naming
-            return this;
-        }
-
-        public Builder<K, V> kubernetesNamespace(String namespace) {
-            // Custom configuration for Kubernetes namespace
-            return this;
-        }
     }
 }

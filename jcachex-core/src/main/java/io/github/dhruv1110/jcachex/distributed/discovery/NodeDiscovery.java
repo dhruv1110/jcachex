@@ -95,22 +95,6 @@ public interface NodeDiscovery {
     CompletableFuture<Set<DiscoveredNode>> discoverNodes();
 
     /**
-     * Registers this node with the discovery service.
-     *
-     * @param node the node to register
-     * @return CompletableFuture that completes when registration is successful
-     */
-    CompletableFuture<Void> registerNode(DiscoveredNode node);
-
-    /**
-     * Unregisters this node from the discovery service.
-     *
-     * @param nodeId the ID of the node to unregister
-     * @return CompletableFuture that completes when unregistration is successful
-     */
-    CompletableFuture<Void> unregisterNode(String nodeId);
-
-    /**
      * Checks the health of a specific node.
      *
      * @param nodeId the ID of the node to check

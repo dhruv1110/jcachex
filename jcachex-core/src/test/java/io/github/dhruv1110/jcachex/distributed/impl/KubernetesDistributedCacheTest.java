@@ -11,10 +11,11 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import java.time.Duration;
-import java.util.Collections;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -230,4 +231,205 @@ class KubernetesDistributedCacheTest {
         assertNotNull(toString);
         assertTrue(toString.contains("KubernetesDistributedCache") || toString.contains("DistributedCache"));
     }
+
+    // ============= Kubernetes-Specific Tests =============
+
+    @Test
+    void testKubernetesNodeIdGeneration() {
+        setupBasicMocks();
+
+        // Test with HOSTNAME environment variable
+        try {
+            System.setProperty("HOSTNAME", "test-pod-123");
+            DistributedCache<String, String> cache = KubernetesDistributedCache.<String, String>builder()
+                    .clusterName("k8s-cluster")
+                    .nodeDiscovery(mockNodeDiscovery)
+                    .communicationProtocol(mockCommunicationProtocol)
+                    .build();
+            assertNotNull(cache);
+        } finally {
+            System.clearProperty("HOSTNAME");
+        }
+    }
+
+    @Test
+    void testDataMigrationScenario() {
+        setupBasicMocks();
+
+        // Mock successful migration
+        when(mockCommunicationProtocol.sendGet(anyString(), anyString()))
+                .thenReturn(CompletableFuture.completedFuture(
+                        CommunicationProtocol.CommunicationResult.success("migrated-value", Duration.ofMillis(50))));
+
+        when(mockCommunicationProtocol.sendPut(anyString(), anyString(), anyString()))
+                .thenReturn(CompletableFuture.completedFuture(
+                        CommunicationProtocol.CommunicationResult.success(null, Duration.ofMillis(50))));
+
+        when(mockCommunicationProtocol.sendRemove(anyString(), anyString()))
+                .thenReturn(CompletableFuture.completedFuture(
+                        CommunicationProtocol.CommunicationResult.success("migrated-value", Duration.ofMillis(50))));
+
+        KubernetesDistributedCache<String, String> k8sCache = (KubernetesDistributedCache<String, String>) KubernetesDistributedCache
+                .<String, String>builder()
+                .clusterName("migration-test")
+                .nodeDiscovery(mockNodeDiscovery)
+                .communicationProtocol(mockCommunicationProtocol)
+                .build();
+
+        // Test migration functionality
+        Set<String> keys = new HashSet<>();
+        keys.add("key1");
+        keys.add("key2");
+        CompletableFuture<Void> migrationFuture = k8sCache.migrateData(
+                "source-node", "target-node", keys);
+        assertNotNull(migrationFuture);
+        assertDoesNotThrow(() -> migrationFuture.get(2, java.util.concurrent.TimeUnit.SECONDS));
+    }
+
+//    @Test
+//    void testStatsCollectionFromRemoteNodes() {
+//        setupBasicMocks();
+//
+//        // Mock health check response with stats
+//        when(mockCommunicationProtocol.sendHealthCheck(anyString()))
+//                .thenReturn(CompletableFuture.completedFuture(
+//                        CommunicationProtocol.CommunicationResult.success("OK|remote-node|100|1024|2048",
+//                                Duration.ofMillis(25))));
+//
+//        DistributedCache<String, String> k8sCache = KubernetesDistributedCache.<String, String>builder()
+//                .clusterName("stats-test")
+//                .nodeDiscovery(mockNodeDiscovery)
+//                .communicationProtocol(mockCommunicationProtocol)
+//                .build();
+//
+//        // Add a mock remote node
+//        k8sCache.healthyNodes.add("remote-node");
+//        k8sCache.clusterNodes.put("remote-node", new DistributedCache.NodeInfo(
+//                "remote-node", "localhost:8080", DistributedCache.NodeStatus.HEALTHY,
+//                System.currentTimeMillis(), Collections.emptySet()));
+//
+//        Map<String, io.github.dhruv1110.jcachex.CacheStats> stats = k8sCache.getPerNodeStats();
+//        assertNotNull(stats);
+//        assertTrue(stats.size() >= 1); // Should have at least local node
+//    }
+
+    @Test
+    void testNodeHealthChangeHandling() {
+        setupBasicMocks();
+
+        // Create a node discovery listener holder
+        final NodeDiscovery.NodeDiscoveryListener[] capturedListener = new NodeDiscovery.NodeDiscoveryListener[1];
+
+        doAnswer(invocation -> {
+            capturedListener[0] = invocation.getArgument(0);
+            return null;
+        }).when(mockNodeDiscovery).addNodeDiscoveryListener(any());
+
+        DistributedCache<String, String> k8sCache = KubernetesDistributedCache.<String, String>builder()
+                .clusterName("health-test")
+                .nodeDiscovery(mockNodeDiscovery)
+                .communicationProtocol(mockCommunicationProtocol)
+                .build();
+
+        // Verify listener was registered
+        assertNotNull(capturedListener[0]);
+
+        // Test node discovery
+        NodeDiscovery.DiscoveredNode testNode = new NodeDiscovery.DiscoveredNode(
+                "test-node", "192.168.1.100", 8080, NodeDiscovery.NodeHealth.HEALTHY,
+                java.time.Instant.now(), Collections.emptyMap());
+
+        assertDoesNotThrow(() -> capturedListener[0].onNodeDiscovered(testNode));
+        assertDoesNotThrow(() -> capturedListener[0].onNodeLost("test-node"));
+        assertDoesNotThrow(() -> capturedListener[0].onNodeHealthChanged(
+                "test-node", NodeDiscovery.NodeHealth.HEALTHY, NodeDiscovery.NodeHealth.UNHEALTHY));
+    }
+
+//    @Test
+//    void testKubernetesSpecificBuilderMethods() {
+//        setupBasicMocks();
+//
+//        assertDoesNotThrow(() -> {
+//            KubernetesDistributedCache<String, String> cache = KubernetesDistributedCache.<String, String>builder()
+//                    .clusterName("k8s-specific-test")
+//                    .nodeDiscovery(mockNodeDiscovery)
+//                    .communicationProtocol(mockCommunicationProtocol)
+//                    .podNamePrefix("jcachex-")
+//                    .kubernetesNamespace("production")
+//                    .build();
+//            assertNotNull(cache);
+//        });
+//    }
+//
+//    @Test
+//    void testDistributedMetricsCalculation() {
+//        setupBasicMocks();
+//
+//        DistributedCache<String, String> k8sCache = KubernetesDistributedCache.<String, String>builder()
+//                .clusterName("metrics-test")
+//                .nodeDiscovery(mockNodeDiscovery)
+//                .communicationProtocol(mockCommunicationProtocol)
+//                .build();
+//
+//        // Simulate some metrics
+//        k8sCache.networkRequests.set(100);
+//        k8sCache.networkFailures.set(5);
+//        k8sCache.conflictResolutions.set(2);
+//
+//        DistributedCache.DistributedMetrics metrics = k8sCache.getDistributedMetrics();
+//        assertNotNull(metrics);
+//        assertEquals(100, metrics.getNetworkRequests());
+//        assertEquals(5, metrics.getNetworkFailures());
+//        assertEquals(2, metrics.getConflictResolutions());
+//        assertEquals(0.95, metrics.getNetworkSuccessRate(), 0.01);
+//    }
+//
+//    @Test
+//    void testFailedMigrationHandling() {
+//        setupBasicMocks();
+//
+//        // Mock failed communication
+//        when(mockCommunicationProtocol.sendGet(anyString(), anyString()))
+//                .thenReturn(CompletableFuture.completedFuture(
+//                        CommunicationProtocol.CommunicationResult.failure("Connection failed",
+//                                new RuntimeException())));
+//
+//        DistributedCache<String, String> k8sCache = KubernetesDistributedCache.<String, String>builder()
+//                .clusterName("failed-migration-test")
+//                .nodeDiscovery(mockNodeDiscovery)
+//                .communicationProtocol(mockCommunicationProtocol)
+//                .build();
+//
+//        // Test failed migration - should not throw but should handle gracefully
+//        CompletableFuture<Void> migrationFuture = k8sCache.migrateData(
+//                "source-node", "target-node", Set.of("key1"));
+//        assertNotNull(migrationFuture);
+//        assertDoesNotThrow(() -> migrationFuture.get(2, java.util.concurrent.TimeUnit.SECONDS));
+//    }
+//
+//    @Test
+//    void testEmptyStatsCreation() {
+//        setupBasicMocks();
+//
+//        // Mock failed health check
+//        when(mockCommunicationProtocol.sendHealthCheck(anyString()))
+//                .thenReturn(CompletableFuture.completedFuture(
+//                        CommunicationProtocol.CommunicationResult.failure("Node unreachable", new RuntimeException())));
+//
+//        DistributedCache<String, String> k8sCache = KubernetesDistributedCache.<String, String>builder()
+//                .clusterName("empty-stats-test")
+//                .nodeDiscovery(mockNodeDiscovery)
+//                .communicationProtocol(mockCommunicationProtocol)
+//                .build();
+//
+//        // Add a failed node
+//        k8sCache.healthyNodes.add("failed-node");
+//        k8sCache.clusterNodes.put("failed-node", new DistributedCache.NodeInfo(
+//                "failed-node", "unreachable:8080", DistributedCache.NodeStatus.FAILED,
+//                System.currentTimeMillis(), Collections.emptySet()));
+//
+//        Map<String, io.github.dhruv1110.jcachex.CacheStats> stats = k8sCache.getPerNodeStats();
+//        assertNotNull(stats);
+//        // Should contain stats even for failed nodes (empty stats)
+//    }
 }
