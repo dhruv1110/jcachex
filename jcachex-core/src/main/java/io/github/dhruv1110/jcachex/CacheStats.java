@@ -1,7 +1,7 @@
 package io.github.dhruv1110.jcachex;
 
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Statistics for cache performance monitoring and analysis.

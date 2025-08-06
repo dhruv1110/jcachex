@@ -2,8 +2,6 @@ package io.github.dhruv1110.jcachex.example.springboot
 
 import io.github.dhruv1110.jcachex.Cache
 import io.github.dhruv1110.jcachex.JCacheXBuilder
-import io.github.dhruv1110.jcachex.FrequencySketchType
-import io.github.dhruv1110.jcachex.eviction.EvictionStrategy
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

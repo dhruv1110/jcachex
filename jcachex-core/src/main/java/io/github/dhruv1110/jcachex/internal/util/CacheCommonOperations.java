@@ -3,7 +3,6 @@ package io.github.dhruv1110.jcachex.internal.util;
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheStats;
 
-import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;

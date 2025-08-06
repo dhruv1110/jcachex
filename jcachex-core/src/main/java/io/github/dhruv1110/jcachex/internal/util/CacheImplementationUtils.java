@@ -1,8 +1,6 @@
 package io.github.dhruv1110.jcachex.internal.util;
 
-import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.CacheEntry;
 import io.github.dhruv1110.jcachex.CacheStats;
 
 import java.util.Collection;
@@ -11,7 +9,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Utility class that extracts common patterns found across cache

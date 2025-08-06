@@ -1,7 +1,6 @@
 package io.github.dhruv1110.jcachex.resilience;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -24,7 +23,7 @@ import java.util.function.Supplier;
  * </ul>
  *
  * <h3>Usage Examples:</h3>
- * 
+ *
  * <pre>{@code
  * // Basic circuit breaker configuration
  * CircuitBreaker circuitBreaker = CircuitBreaker.builder()

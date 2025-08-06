@@ -95,13 +95,6 @@ public class BasicOperationsBenchmark extends BaseBenchmark {
         bh.consume(idx);
     }
 
-    @Benchmark
-    public void jcacheXDistributedPut(ThreadState state, Blackhole bh) {
-        int idx = state.nextIndex();
-        jcacheXDistributed.put(getSequentialKey(idx), getSequentialValue(idx));
-        bh.consume(idx);
-    }
-
     // Industry-leading cache implementations PUT benchmarks
     @Benchmark
     public void caffeinePut(ThreadState state, Blackhole bh) {
@@ -165,7 +158,6 @@ public class BasicOperationsBenchmark extends BaseBenchmark {
             jcacheXMlOptimized.put(key, value);
             jcacheXZeroCopy.put(key, value);
             jcacheXHardwareOptimized.put(key, value);
-            jcacheXDistributed.put(key, value);
 
             // Industry implementations
             caffeineCache.put(key, value);
@@ -240,10 +232,6 @@ public class BasicOperationsBenchmark extends BaseBenchmark {
         return jcacheXHardwareOptimized.get(getRandomKey(state.randomIndex()));
     }
 
-    @Benchmark
-    public String jcacheXDistributedGet(ThreadState state) {
-        return jcacheXDistributed.get(getRandomKey(state.randomIndex()));
-    }
 
     // Industry implementations GET benchmarks
     @Benchmark
@@ -334,11 +322,6 @@ public class BasicOperationsBenchmark extends BaseBenchmark {
     @Benchmark
     public String jcacheXHardwareOptimizedRemove(ThreadState state) {
         return jcacheXHardwareOptimized.remove(getRandomKey(state.randomIndex()));
-    }
-
-    @Benchmark
-    public String jcacheXDistributedRemove(ThreadState state) {
-        return jcacheXDistributed.remove(getRandomKey(state.randomIndex()));
     }
 
     // Industry implementations REMOVE benchmarks
@@ -515,18 +498,6 @@ public class BasicOperationsBenchmark extends BaseBenchmark {
             bh.consume(result);
         } else {
             jcacheXHardwareOptimized.put(getSequentialKey(idx), getSequentialValue(idx));
-            bh.consume(idx);
-        }
-    }
-
-    @Benchmark
-    public void jcacheXDistributedMixed(ThreadState state, Blackhole bh) {
-        int idx = state.nextIndex();
-        if (state.random.nextDouble() < 0.8) {
-            String result = jcacheXDistributed.get(getRandomKey(state.randomIndex()));
-            bh.consume(result);
-        } else {
-            jcacheXDistributed.put(getSequentialKey(idx), getSequentialValue(idx));
             bh.consume(idx);
         }
     }

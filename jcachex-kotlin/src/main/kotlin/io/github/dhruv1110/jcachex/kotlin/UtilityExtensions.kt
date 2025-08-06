@@ -3,18 +3,6 @@
 package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.Cache
-import io.github.dhruv1110.jcachex.impl.AllocationOptimizedCache
-import io.github.dhruv1110.jcachex.impl.CacheLocalityOptimizedCache
-import io.github.dhruv1110.jcachex.impl.DefaultCache
-import io.github.dhruv1110.jcachex.impl.HardwareOptimizedCache
-import io.github.dhruv1110.jcachex.impl.JITOptimizedCache
-import io.github.dhruv1110.jcachex.impl.JVMOptimizedCache
-import io.github.dhruv1110.jcachex.impl.MLOptimizedCache
-import io.github.dhruv1110.jcachex.impl.OptimizedCache
-import io.github.dhruv1110.jcachex.impl.ProfiledOptimizedCache
-import io.github.dhruv1110.jcachex.impl.ReadOnlyOptimizedCache
-import io.github.dhruv1110.jcachex.impl.WriteHeavyOptimizedCache
-import io.github.dhruv1110.jcachex.impl.ZeroCopyOptimizedCache
 
 /*
  * Utility extensions for cache operations.
@@ -137,28 +125,6 @@ inline fun <K, V, R> Cache<K, V>.measureTime(block: Cache<K, V>.() -> R): Pair<R
     val endTime = System.nanoTime()
     return result to (endTime - startTime)
 }
-
-/**
- * Extension function to get cache type information.
- */
-
-val <K, V> Cache<K, V>.cacheType: String
-    get() =
-        when (this) {
-            is DefaultCache -> "Default"
-            is OptimizedCache -> "Optimized"
-            is JITOptimizedCache -> "JIT-Optimized"
-            is AllocationOptimizedCache -> "Allocation-Optimized"
-            is CacheLocalityOptimizedCache -> "Locality-Optimized"
-            is ZeroCopyOptimizedCache -> "Zero-Copy-Optimized"
-            is ReadOnlyOptimizedCache -> "Read-Only-Optimized"
-            is WriteHeavyOptimizedCache -> "Write-Heavy-Optimized"
-            is JVMOptimizedCache -> "JVM-Optimized"
-            is HardwareOptimizedCache -> "Hardware-Optimized"
-            is MLOptimizedCache -> "ML-Optimized"
-            is ProfiledOptimizedCache -> "Profiled-Optimized"
-            else -> "Unknown"
-        }
 
 /**
  * Returns a summary of the cache contents.

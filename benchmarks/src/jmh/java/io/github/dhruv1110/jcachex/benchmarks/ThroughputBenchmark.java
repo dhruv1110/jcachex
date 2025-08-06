@@ -39,7 +39,6 @@ public class ThroughputBenchmark extends BaseBenchmark {
             jcacheXMlOptimized.put(key, value);
             jcacheXZeroCopy.put(key, value);
             jcacheXHardwareOptimized.put(key, value);
-            jcacheXDistributed.put(key, value);
             caffeineCache.put(key, value);
             cache2kCache.put(key, value);
             ehcacheCache.put(key, value);
@@ -209,20 +208,6 @@ public class ThroughputBenchmark extends BaseBenchmark {
     public void jcacheXHardwareOptimizedPutThroughput(ThreadState state, Blackhole bh) {
         int idx = state.nextIndex();
         jcacheXHardwareOptimized.put(getRandomKey(idx), getRandomValue(idx));
-        bh.consume(idx);
-    }
-
-    @Benchmark
-    @Threads(1)
-    public String jcacheXDistributedGetThroughput(ThreadState state) {
-        return jcacheXDistributed.get(getRandomKey(state.randomIndex()));
-    }
-
-    @Benchmark
-    @Threads(1)
-    public void jcacheXDistributedPutThroughput(ThreadState state, Blackhole bh) {
-        int idx = state.nextIndex();
-        jcacheXDistributed.put(getRandomKey(idx), getRandomValue(idx));
         bh.consume(idx);
     }
 
@@ -441,20 +426,6 @@ public class ThroughputBenchmark extends BaseBenchmark {
     public void jcacheXHardwareOptimizedPutThroughput4T(ThreadState state, Blackhole bh) {
         int idx = state.nextIndex();
         jcacheXHardwareOptimized.put(getRandomKey(idx), getRandomValue(idx));
-        bh.consume(idx);
-    }
-
-    @Benchmark
-    @Threads(4)
-    public String jcacheXDistributedGetThroughput4T(ThreadState state) {
-        return jcacheXDistributed.get(getRandomKey(state.randomIndex()));
-    }
-
-    @Benchmark
-    @Threads(4)
-    public void jcacheXDistributedPutThroughput4T(ThreadState state, Blackhole bh) {
-        int idx = state.nextIndex();
-        jcacheXDistributed.put(getRandomKey(idx), getRandomValue(idx));
         bh.consume(idx);
     }
 

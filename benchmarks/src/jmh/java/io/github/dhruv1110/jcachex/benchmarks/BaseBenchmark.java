@@ -54,7 +54,6 @@ public abstract class BaseBenchmark {
     protected Cache<String, String> jcacheXMlOptimized;
     protected Cache<String, String> jcacheXZeroCopy;
     protected Cache<String, String> jcacheXHardwareOptimized;
-    protected Cache<String, String> jcacheXDistributed;
 
     // Industry-leading cache implementations
     protected com.github.benmanes.caffeine.cache.Cache<String, String> caffeineCache;
@@ -186,13 +185,6 @@ public abstract class BaseBenchmark {
                     .recordStats(false)
                     .build();
 
-            jcacheXDistributed = io.github.dhruv1110.jcachex.JCacheXBuilder
-                    .<String, String>fromProfile(io.github.dhruv1110.jcachex.profiles.ProfileName.DISTRIBUTED)
-                    .maximumSize(CACHE_SIZE)
-                    .expireAfterWrite(Duration.ofMinutes(30))
-                    .recordStats(false)
-                    .build();
-
         } catch (Exception e) {
             System.err.println("JCacheX profiles setup failed: " + e.getMessage());
             setupJCacheXProfiles = false;
@@ -313,8 +305,6 @@ public abstract class BaseBenchmark {
                 jcacheXZeroCopy.clear();
             if (jcacheXHardwareOptimized != null)
                 jcacheXHardwareOptimized.clear();
-            if (jcacheXDistributed != null)
-                jcacheXDistributed.clear();
             if (caffeineCache != null) {
                 caffeineCache.invalidateAll();
             }

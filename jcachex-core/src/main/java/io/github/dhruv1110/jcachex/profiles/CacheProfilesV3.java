@@ -2,7 +2,6 @@ package io.github.dhruv1110.jcachex.profiles;
 
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.impl.*;
-import io.github.dhruv1110.jcachex.impl.UltraFastCache;
 
 /**
  * Simplified and standardized cache profiles using the new ProfileRegistry
@@ -60,6 +59,12 @@ import io.github.dhruv1110.jcachex.impl.UltraFastCache;
  *     .register();
  * }</pre>
  *
+ * <p>
+ * <strong>Note:</strong> Cache profiles focus on local cache configurations.
+ * For distributed caching solutions like KubernetesDistributedCache,
+ * use the dedicated distributed cache APIs directly instead of profiles.
+ * </p>
+ *
  * @since 1.0.0
  */
 public final class CacheProfilesV3 {
@@ -85,7 +90,7 @@ public final class CacheProfilesV3 {
                 // Specialized Profiles - for specific scenarios
                 createSpecializedProfiles();
 
-                // Advanced Profiles - for cutting-edge requirements
+                // Advanced Profiles - for cutting-edge local cache requirements
                 createAdvancedProfiles();
 
                 // Avoid circular dependency - don't call ProfileRegistry methods during
@@ -211,11 +216,11 @@ public final class CacheProfilesV3 {
         }
 
         /**
-         * Creates advanced profiles for cutting-edge requirements.
+         * Creates advanced profiles for cutting-edge local cache requirements.
          *
          * <p>
          * These profiles demonstrate advanced features and show how the new system
-         * makes it easy to configure complex cache implementations.
+         * makes it easy to configure complex local cache implementations.
          * </p>
          */
         private static void createAdvancedProfiles() {
@@ -262,50 +267,5 @@ public final class CacheProfilesV3 {
                                 .suitableFor(workload -> workload.requiresHighConcurrency() &&
                                                 workload.getConcurrencyLevel() == WorkloadCharacteristics.ConcurrencyLevel.VERY_HIGH)
                                 .register();
-
-                // DISTRIBUTED - Cluster environments with network-aware caching
-                CacheProfileBuilder.create(ProfileName.DISTRIBUTED)
-                                .implementation(DefaultDistributedCache.class)
-                                .evictionStrategy(EvictionStrategy.ENHANCED_LRU())
-                                .defaultMaximumSize(ProfileConstants.SIZE_XLARGE / 10) // 5000 entries
-                                .defaultExpireAfterWrite(ProfileConstants.EXPIRATION_LONG)
-                                .defaultInitialCapacity(ProfileConstants.CAPACITY_LARGE)
-                                .priority(ProfileConstants.PRIORITY_HIGH)
-                                .tags(ProfileTag.DISTRIBUTED, ProfileTag.CLUSTER, ProfileTag.NETWORK_AWARE,
-                                                ProfileTag.CONSISTENCY)
-                                .suitableFor(workload -> workload.isRequiresConsistency() &&
-                                                workload.getConcurrencyLevel() == WorkloadCharacteristics.ConcurrencyLevel.HIGH)
-                                .register();
-        }
-
-        /**
-         * Example of how easy it is to create a custom profile.
-         *
-         * <p>
-         * This demonstrates the power and simplicity of the new system:
-         * </p>
-         *
-         * <ul>
-         * <li><strong>Type Safe</strong>: Uses enums instead of strings</li>
-         * <li><strong>Reusable</strong>: Uses constants for common values</li>
-         * <li><strong>Readable</strong>: Self-documenting code</li>
-         * <li><strong>Testable</strong>: Easy to test individual components</li>
-         * </ul>
-         *
-         * @return example custom profile for Redis-like workloads
-         */
-        public static CacheProfile<Object, Object> createRedisLikeProfile() {
-                return CacheProfileBuilder.create(ProfileName.DISTRIBUTED)
-                                .description("Redis-like distributed cache with persistence")
-                                .implementation(DefaultDistributedCache.class)
-                                .evictionStrategy(EvictionStrategy.ENHANCED_LRU())
-                                .defaultMaximumSize(ProfileConstants.SIZE_XLARGE)
-                                .defaultExpireAfterWrite(ProfileConstants.EXPIRATION_LONG)
-                                .defaultInitialCapacity(ProfileConstants.CAPACITY_LARGE)
-                                .category(ProfileCategory.ADVANCED)
-                                .priority(ProfileConstants.PRIORITY_HIGH)
-                                .tags(ProfileTag.DISTRIBUTED, ProfileTag.NETWORK_AWARE, ProfileTag.ENTERPRISE)
-                                .suitableFor(workload -> workload.isRequiresConsistency())
-                                .build(); // Note: build() instead of register() for custom profiles
         }
 }

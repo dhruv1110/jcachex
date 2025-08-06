@@ -2,25 +2,14 @@ package io.github.dhruv1110.jcachex.impl;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.CacheEntry;
 import io.github.dhruv1110.jcachex.CacheStats;
 import io.github.dhruv1110.jcachex.internal.util.CacheCommonOperations;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.Set;
+
 import java.util.Collection;
 import java.util.Map;
-import java.util.AbstractMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.time.Instant;
-import java.time.Duration;
+import java.util.Set;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Profiled and optimized cache implementation with assembly-level performance

@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:function-naming")
+
 package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.Cache
@@ -21,7 +23,7 @@ class CacheExtensionsTest {
     @BeforeEach
     fun setUp() {
         cache =
-            createUnifiedCache {
+            createCache {
                 maximumSize(100)
                 expireAfterWrite(Duration.ofMinutes(5))
                 recordStats(true)
@@ -31,11 +33,10 @@ class CacheExtensionsTest {
     @Test
     fun `test DSL cache creation`() {
         val testCache =
-            createUnifiedCache<String, Int> {
+            createCache<String, String> {
                 maximumSize(50)
                 recordStats(true)
             }
-
         assertNotNull(testCache)
         assertEquals(0, testCache.size())
         assertTrue(testCache.isEmpty())

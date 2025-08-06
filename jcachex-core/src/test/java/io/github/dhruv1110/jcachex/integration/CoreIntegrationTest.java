@@ -1,6 +1,9 @@
 package io.github.dhruv1110.jcachex.integration;
 
-import io.github.dhruv1110.jcachex.*;
+import io.github.dhruv1110.jcachex.Cache;
+import io.github.dhruv1110.jcachex.CacheConfig;
+import io.github.dhruv1110.jcachex.CacheEventListener;
+import io.github.dhruv1110.jcachex.CacheStats;
 import io.github.dhruv1110.jcachex.eviction.*;
 import io.github.dhruv1110.jcachex.exceptions.CacheConfigurationException;
 import io.github.dhruv1110.jcachex.impl.DefaultCache;
@@ -17,7 +20,6 @@ import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**

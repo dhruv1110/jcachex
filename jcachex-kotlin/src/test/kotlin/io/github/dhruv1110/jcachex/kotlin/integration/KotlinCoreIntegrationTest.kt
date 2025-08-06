@@ -7,12 +7,8 @@ import io.github.dhruv1110.jcachex.CacheEventListener
 import io.github.dhruv1110.jcachex.EvictionReason
 import io.github.dhruv1110.jcachex.kotlin.*
 import kotlinx.coroutines.*
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
 import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit

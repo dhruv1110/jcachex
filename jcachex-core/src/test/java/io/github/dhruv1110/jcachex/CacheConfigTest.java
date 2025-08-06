@@ -2,9 +2,9 @@ package io.github.dhruv1110.jcachex;
 
 import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy;
 import io.github.dhruv1110.jcachex.exceptions.CacheConfigurationException;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;

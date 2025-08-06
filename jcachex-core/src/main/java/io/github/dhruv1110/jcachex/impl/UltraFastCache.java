@@ -2,17 +2,16 @@ package io.github.dhruv1110.jcachex.impl;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.CacheEntry;
 import io.github.dhruv1110.jcachex.CacheStats;
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
-import java.util.concurrent.CompletableFuture;
-import java.util.Set;
-import java.util.Collection;
-import java.util.Map;
 
 /**
  * Ultra-fast cache implementation optimized for maximum throughput.
