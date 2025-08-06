@@ -187,24 +187,6 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
             Set<DiscoveredNode> podNodes = discoverPodsAsNodes();
             discoveredNodes.addAll(podNodes);
 
-            // Optionally discover services
-            // if (config.serviceName != null) {
-            // Set<DiscoveredNode> serviceNodes = discoverServiceEndpoints();
-            // if (serviceNodes.isEmpty()) {
-            // logger.info("No service endpoints found for service " + config.serviceName +
-            // " in namespace " + actualNamespace);
-            // } else {
-            // logger.info("Discovered " + serviceNodes.size() + " service endpoints for
-            // service " + config.serviceName + " in namespace " + actualNamespace);
-            // logger.info("Service nodes: " + serviceNodes);
-            // }
-            // discoveredNodes.addAll(serviceNodes);
-            // }
-
-            // logger.info("Discovered " + discoveredNodes.size() + " nodes in namespace " +
-            // actualNamespace);
-            // logger.info("Discovered nodes: " + discoveredNodes);
-
         } catch (Exception e) {
             logger.severe("Failed to perform Kubernetes discovery: " + e.getMessage());
             throw new RuntimeException("Kubernetes discovery failed", e);
@@ -266,38 +248,6 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
 
         return nodes;
     }
-
-    // private Set<DiscoveredNode> discoverServiceEndpoints() {
-    // Set<DiscoveredNode> nodes = new HashSet<>();
-
-    // try {
-    // V1Endpoints endpoints = coreV1Api.readNamespacedEndpoints(
-    // config.serviceName,
-    // actualNamespace,
-    // null // pretty
-    // );
-
-    // if (endpoints.getSubsets() != null) {
-    // for (V1EndpointSubset subset : endpoints.getSubsets()) {
-    // if (subset.getAddresses() != null) {
-    // for (V1EndpointAddress address : subset.getAddresses()) {
-    // DiscoveredNode node = createNodeFromEndpointAddress(address);
-    // if (node != null) {
-    // nodes.add(node);
-    // }
-    // }
-    // }
-    // }
-    // }
-
-    // } catch (ApiException e) {
-    // logger.warning(
-    // "Failed to discover service endpoints for " + config.serviceName + ": " +
-    // e.getResponseBody());
-    // }
-
-    // return nodes;
-    // }
 
     private DiscoveredNode createNodeFromPod(V1Pod pod) {
         try {
@@ -368,37 +318,6 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
         return NodeHealth.HEALTHY;
     }
 
-    // private DiscoveredNode createNodeFromEndpointAddress(V1EndpointAddress
-    // address) {
-    // try {
-    // String ip = address.getIp();
-    // String hostname = address.getHostname();
-
-    // if (ip == null || ip.isEmpty()) {
-    // return null;
-    // }
-
-    // String nodeId = hostname != null ? hostname : ip;
-    // Map<String, String> nodeMetadata = new HashMap<>();
-    // nodeMetadata.put("namespace", actualNamespace);
-    // // nodeMetadata.put("serviceName", config.serviceName);
-    // nodeMetadata.put("source", "kubernetes-endpoint");
-
-    // return new DiscoveredNode(
-    // nodeId,
-    // ip,
-    // DEFAULT_CACHE_PORT,
-    // NodeHealth.HEALTHY,
-    // Instant.now(),
-    // nodeMetadata);
-
-    // } catch (Exception e) {
-    // logger.warning("Failed to create node from endpoint address: " +
-    // e.getMessage());
-    // return null;
-    // }
-    // }
-
     private void performDiscovery() {
         if (!running.get())
             return;
@@ -453,20 +372,6 @@ public class KubernetesNodeDiscovery implements NodeDiscovery {
                 logger.warning("Health check discovery failed: " + e.getMessage());
             }
         });
-    }
-
-    @Override
-    public CompletableFuture<Void> registerNode(DiscoveredNode node) {
-        // In Kubernetes, nodes are registered via pod/service creation
-        // This is typically handled by the deployment system
-        return CompletableFuture.completedFuture(null);
-    }
-
-    @Override
-    public CompletableFuture<Void> unregisterNode(String nodeId) {
-        // In Kubernetes, nodes are unregistered via pod/service deletion
-        // This is typically handled by the deployment system
-        return CompletableFuture.completedFuture(null);
     }
 
     @Override
