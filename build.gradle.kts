@@ -407,7 +407,7 @@ project(":jcachex-core") {
         implementation("org.slf4j:slf4j-api:1.7.36")
 
         // Testing
-        testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
         testImplementation("org.mockito:mockito-core:4.11.0") {
             // Force version to maintain Java 8 compatibility
             version {
@@ -436,7 +436,7 @@ project(":jcachex-kotlin") {
 
         // Testing
         testImplementation("org.jetbrains.kotlin:kotlin-test")
-        testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
         testImplementation("org.mockito:mockito-core:4.11.0") {
             version {
                 strictly("4.11.0")
@@ -464,7 +464,7 @@ project(":jcachex-spring") {
         implementation("org.springframework.boot:spring-boot-configuration-processor:2.7.18")
 
         // Testing
-        testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.13.4")
         testImplementation("org.springframework.boot:spring-boot-starter-test:2.7.18")
         testImplementation("org.mockito:mockito-core:4.11.0") {
             version {
