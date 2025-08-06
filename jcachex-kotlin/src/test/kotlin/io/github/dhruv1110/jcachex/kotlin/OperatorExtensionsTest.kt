@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.time.Duration
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OperatorExtensionsTest {

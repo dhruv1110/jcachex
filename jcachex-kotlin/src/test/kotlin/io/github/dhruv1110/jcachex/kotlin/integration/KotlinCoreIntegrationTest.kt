@@ -49,7 +49,7 @@ class KotlinCoreIntegrationTest {
      * Helper function to create a cache with automatic cleanup.
      */
     private fun <K, V> createCache(configure: JCacheXBuilder<K, V>.() -> Unit): Cache<K, V> {
-        val cache = createCache(configure)
+        val cache = io.github.dhruv1110.jcachex.kotlin.createCache(configure)
         createdCaches.add(cache)
         return cache
     }
@@ -100,11 +100,11 @@ class KotlinCoreIntegrationTest {
                 }
 
             val cache =
-                createUnifiedCache<String, String> {
+                createCache(fun JCacheXBuilder<String, String>.() {
                     maximumSize(100L)
                     expireAfterWrite(Duration.ofMinutes(10))
                     recordStats(true)
-                }
+                })
 
             // Test DSL-configured cache works with core features
             cache.put("key1", "value1")
@@ -662,18 +662,21 @@ class KotlinCoreIntegrationTest {
                                     }
                                 },
                             )
+
                         1 ->
                             jobs.add(
                                 launch {
                                     cache.computeIfAbsent("key$i") { i }
                                 },
                             )
+
                         2 ->
                             jobs.add(
                                 launch {
                                     cache.merge("key$i", i) { old, new -> old + new }
                                 },
                             )
+
                         3 ->
                             jobs.add(
                                 launch {

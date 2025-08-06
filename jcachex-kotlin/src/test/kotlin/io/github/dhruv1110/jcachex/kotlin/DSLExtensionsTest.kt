@@ -1,9 +1,7 @@
 package io.github.dhruv1110.jcachex.kotlin
 
-import io.github.dhruv1110.jcachex.Cache
-import io.github.dhruv1110.jcachex.profiles.CacheProfile
+import io.github.dhruv1110.jcachex.JCacheXBuilder
 import io.github.dhruv1110.jcachex.profiles.ProfileName
-import io.github.dhruv1110.jcachex.profiles.WorkloadCharacteristics
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -186,7 +184,6 @@ class DSLExtensionsTest {
             expireAfterAccess(Duration.ofMinutes(30))
             refreshAfterWrite(Duration.ofMinutes(15))
             loader { key -> "loaded_$key" }
-            asyncLoader { key -> java.util.concurrent.CompletableFuture.completedFuture("async_$key") }
             weigher { key, value -> key.length.toLong() + value.length.toLong() }
             recordStats(true)
             listener(object : io.github.dhruv1110.jcachex.CacheEventListener<String, String> {
@@ -425,10 +422,10 @@ class DSLExtensionsTest {
 
     @Test
     fun `test legacy createUnifiedCache`() {
-        val cache = createUnifiedCache<String, String> {
+        val cache = createCache(fun JCacheXBuilder<String, String>.() {
             maximumSize(100)
             recordStats(true)
-        }
+        })
 
         assertNotNull(cache)
         assertEquals(0, cache.size())
@@ -468,11 +465,6 @@ class DSLExtensionsTest {
             expireAfterAccess(Duration.ofMinutes(30))
             refreshAfterWrite(Duration.ofMinutes(15))
             loader { key -> ComplexObject(key.hashCode(), "loaded_$key", mapOf("key" to "value")) }
-            asyncLoader { key ->
-                java.util.concurrent.CompletableFuture.completedFuture(
-                    ComplexObject(key.hashCode(), "async_$key", mapOf("async" to "value"))
-                )
-            }
             weigher { key, value -> key.length.toLong() + value.name.length.toLong() }
             recordStats(true)
             listener(object : io.github.dhruv1110.jcachex.CacheEventListener<String, ComplexObject> {
@@ -484,7 +476,11 @@ class DSLExtensionsTest {
                     // Test listener
                 }
 
-                override fun onEvict(key: String, value: ComplexObject, reason: io.github.dhruv1110.jcachex.EvictionReason) {
+                override fun onEvict(
+                    key: String,
+                    value: ComplexObject,
+                    reason: io.github.dhruv1110.jcachex.EvictionReason
+                ) {
                     // Test listener
                 }
 

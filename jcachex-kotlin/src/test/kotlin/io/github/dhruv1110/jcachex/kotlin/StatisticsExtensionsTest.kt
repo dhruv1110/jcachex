@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.time.Duration
 import java.util.concurrent.atomic.AtomicLong
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -45,12 +44,13 @@ class StatisticsExtensionsTest {
         val stats = createTestStats(
             hitCount = 50,
             missCount = 10,
+            loadCount = 10,
             totalLoadTime = 1_000_000_000L // 1 second in nanoseconds
         )
 
         val averageLoadTimeMillis = stats.averageLoadTimeMillis()
 
-        assertEquals(100.0, averageLoadTimeMillis, 0.01) // 1 second = 1000ms, but we have 10 loads
+        assertEquals(100.0, averageLoadTimeMillis, 0.01) // 1 second / 10 loads = 100ms per load
     }
 
     @Test
@@ -325,7 +325,7 @@ class StatisticsExtensionsTest {
 
         val averageLoadTimeMillis = stats.averageLoadTimeMillis()
 
-        assertEquals(0.001, averageLoadTimeMillis, 0.0001) // 1 microsecond = 0.001ms
+        assertEquals(0.0002, averageLoadTimeMillis, 0.0001) // 1000ns / 5 loads = 200ns = 0.0002ms
     }
 
     @Test

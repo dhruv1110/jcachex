@@ -60,12 +60,14 @@ class CollectionExtensionsTest {
 
     @Test
     fun `test filterKeys`() {
-        cache.putAll(mapOf(
-            "user1" to "John",
-            "user2" to "Jane",
-            "admin1" to "Admin",
-            "system1" to "System"
-        ))
+        cache.putAll(
+            mapOf(
+                "user1" to "John",
+                "user2" to "Jane",
+                "admin1" to "Admin",
+                "system1" to "System"
+            )
+        )
 
         val userKeys = cache.filterKeys { it.startsWith("user") }
         val adminKeys = cache.filterKeys { it.startsWith("admin") }
@@ -80,12 +82,14 @@ class CollectionExtensionsTest {
 
     @Test
     fun `test filterValues`() {
-        cache.putAll(mapOf(
-            "key1" to "short",
-            "key2" to "verylongvalue",
-            "key3" to "medium",
-            "key4" to "tiny"
-        ))
+        cache.putAll(
+            mapOf(
+                "key1" to "short",
+                "key2" to "verylongvalue",
+                "key3" to "medium",
+                "key4" to "tiny"
+            )
+        )
 
         val shortValues = cache.filterValues { it.length <= 6 }
         val longValues = cache.filterValues { it.length > 10 }
@@ -101,12 +105,14 @@ class CollectionExtensionsTest {
 
     @Test
     fun `test filter`() {
-        cache.putAll(mapOf(
-            "user1" to "John",
-            "user2" to "Jane",
-            "admin1" to "Admin",
-            "system1" to "System"
-        ))
+        cache.putAll(
+            mapOf(
+                "user1" to "John",
+                "user2" to "Jane",
+                "admin1" to "Admin",
+                "system1" to "System"
+            )
+        )
 
         val userEntries = cache.filter { key, value -> key.startsWith("user") && value.length == 4 }
 
@@ -174,11 +180,13 @@ class CollectionExtensionsTest {
 
     @Test
     fun `test find`() {
-        cache.putAll(mapOf(
-            "user1" to "John",
-            "user2" to "Jane",
-            "admin1" to "Admin"
-        ))
+        cache.putAll(
+            mapOf(
+                "user1" to "John",
+                "user2" to "Jane",
+                "admin1" to "Admin"
+            )
+        )
 
         val found = cache.find { key, value -> key.startsWith("user") && value.length == 4 }
 
@@ -198,12 +206,14 @@ class CollectionExtensionsTest {
 
     @Test
     fun `test findAll`() {
-        cache.putAll(mapOf(
-            "user1" to "John",
-            "user2" to "Jane",
-            "admin1" to "Admin",
-            "system1" to "System"
-        ))
+        cache.putAll(
+            mapOf(
+                "user1" to "John",
+                "user2" to "Jane",
+                "admin1" to "Admin",
+                "system1" to "System"
+            )
+        )
 
         val userEntries = cache.findAll { key, value -> key.startsWith("user") }
 
@@ -214,12 +224,14 @@ class CollectionExtensionsTest {
 
     @Test
     fun `test count`() {
-        cache.putAll(mapOf(
-            "user1" to "John",
-            "user2" to "Jane",
-            "admin1" to "Admin",
-            "system1" to "System"
-        ))
+        cache.putAll(
+            mapOf(
+                "user1" to "John",
+                "user2" to "Jane",
+                "admin1" to "Admin",
+                "system1" to "System"
+            )
+        )
 
         val userCount = cache.count { key, value -> key.startsWith("user") }
         val shortNameCount = cache.count { key, value -> value.length <= 4 }
@@ -260,12 +272,14 @@ class CollectionExtensionsTest {
 
     @Test
     fun `test groupBy`() {
-        cache.putAll(mapOf(
-            "user1" to "John",
-            "user2" to "Jane",
-            "admin1" to "Admin",
-            "system1" to "System"
-        ))
+        cache.putAll(
+            mapOf(
+                "user1" to "John",
+                "user2" to "Jane",
+                "admin1" to "Admin",
+                "system1" to "System"
+            )
+        )
 
         val groupedByPrefix = cache.groupBy { key, value -> key.substring(0, 4) }
 
@@ -277,12 +291,14 @@ class CollectionExtensionsTest {
 
     @Test
     fun `test partition`() {
-        cache.putAll(mapOf(
-            "user1" to "John",
-            "user2" to "Jane",
-            "admin1" to "Admin",
-            "system1" to "System"
-        ))
+        cache.putAll(
+            mapOf(
+                "user1" to "John",
+                "user2" to "Jane",
+                "admin1" to "Admin",
+                "system1" to "System"
+            )
+        )
 
         val (users, others) = cache.partition { key, value -> key.startsWith("user") }
 
@@ -295,11 +311,13 @@ class CollectionExtensionsTest {
 
     @Test
     fun `test minByOrNull`() {
-        cache.putAll(mapOf(
-            "key1" to "short",
-            "key2" to "verylongvalue",
-            "key3" to "medium"
-        ))
+        cache.putAll(
+            mapOf(
+                "key1" to "short",
+                "key2" to "verylongvalue",
+                "key3" to "medium"
+            )
+        )
 
         val shortest = cache.minByOrNull { key, value -> value.length }
 
@@ -309,11 +327,13 @@ class CollectionExtensionsTest {
 
     @Test
     fun `test maxByOrNull`() {
-        cache.putAll(mapOf(
-            "key1" to "short",
-            "key2" to "verylongvalue",
-            "key3" to "medium"
-        ))
+        cache.putAll(
+            mapOf(
+                "key1" to "short",
+                "key2" to "verylongvalue",
+                "key3" to "medium"
+            )
+        )
 
         val longest = cache.maxByOrNull { key, value -> value.length }
 
@@ -418,12 +438,14 @@ class CollectionExtensionsTest {
 
     @Test
     fun `test removeIf`() {
-        cache.putAll(mapOf(
-            "user1" to "John",
-            "user2" to "Jane",
-            "admin1" to "Admin",
-            "system1" to "System"
-        ))
+        cache.putAll(
+            mapOf(
+                "user1" to "John",
+                "user2" to "Jane",
+                "admin1" to "Admin",
+                "system1" to "System"
+            )
+        )
 
         val removedCount = cache.removeIf { key, value -> key.startsWith("user") }
 

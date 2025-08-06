@@ -5,7 +5,6 @@ package io.github.dhruv1110.jcachex.kotlin
 import io.github.dhruv1110.jcachex.Cache
 import io.github.dhruv1110.jcachex.CacheConfig
 import io.github.dhruv1110.jcachex.JCacheXBuilder
-import io.github.dhruv1110.jcachex.profiles.CacheProfile
 import io.github.dhruv1110.jcachex.profiles.ProfileName
 
 /*
