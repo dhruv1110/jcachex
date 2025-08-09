@@ -14,7 +14,7 @@ import CodeTabs from './CodeTabs';
 import PerformanceComparison from './PerformanceComparison';
 
 const HomeComponent: React.FC = () => {
-    const { version } = useVersion();
+    const { version, replaceVersionInTabs } = useVersion();
 
     // Use progressive learning examples for hero section
     const heroCodeTabs: CodeTab[] = PROGRESSIVE_LEARNING_EXAMPLES;
@@ -376,7 +376,7 @@ const HomeComponent: React.FC = () => {
                     </Box>
 
                     <Box sx={{ maxWidth: 900, mx: 'auto' }}>
-                        <CodeTabs tabs={INSTALLATION_TABS} />
+                        <CodeTabs tabs={replaceVersionInTabs(INSTALLATION_TABS)} />
                     </Box>
                 </Container>
             </Box>
