@@ -253,6 +253,21 @@ public class JCacheXCacheManager implements CacheManager {
     }
 
     /**
+     * Registers a pre-built JCacheX cache instance with this manager under the
+     * given name.
+     * If a cache with the same name exists it will be replaced.
+     *
+     * @param name  cache name
+     * @param cache native JCacheX cache
+     */
+    public void registerCache(String name, Cache<Object, Object> cache) {
+        if (name == null || cache == null) {
+            return;
+        }
+        caches.put(name, new JCacheXSpringCache(name, cache, allowNullValues));
+    }
+
+    /**
      * Initializes caches based on configuration properties.
      *
      * This method is called automatically by the auto-configuration to create

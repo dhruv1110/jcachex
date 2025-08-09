@@ -171,7 +171,6 @@ class CacheConfigTest {
             assertFalse(config.isWeakKeys());
             assertFalse(config.isWeakValues());
             assertFalse(config.isSoftValues());
-            assertTrue(config.isRecordStats()); // Default is true
             assertEquals(16, config.getInitialCapacity()); // Default is 16
             assertEquals(16, config.getConcurrencyLevel()); // Default is 16
             assertTrue(config.getListeners().isEmpty());

@@ -345,7 +345,7 @@ public class CacheConfig<K, V> {
         private Function<K, V> loader;
         private Function<K, CompletableFuture<V>> asyncLoader;
         private Duration refreshAfterWrite;
-        private boolean recordStats = true;
+        private boolean recordStats = false;
         private int initialCapacity = 16;
         private int concurrencyLevel = 16;
         private String directory;

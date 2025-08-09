@@ -495,17 +495,17 @@ public final class JCacheXBuilder<K, V> {
      * Applies profile defaults only for values that haven't been explicitly set.
      */
     private void applyProfileDefaults(CacheConfig<K, V> preProfileConfig) {
-        // Apply eviction strategy from profile
-        configBuilder.evictionStrategy(profile.getEvictionStrategy());
+        // Apply eviction strategy from profile only if user didn't set one
+        if (preProfileConfig.getEvictionStrategy() == null) {
+            configBuilder.evictionStrategy(profile.getEvictionStrategy());
+        }
 
         // For critical configurable values, don't override if they were set
         if (preProfileConfig.getMaximumSize() != null) {
-            // User explicitly set maximumSize, preserve it
             configBuilder.maximumSize(preProfileConfig.getMaximumSize());
         }
 
         if (preProfileConfig.isRecordStats()) {
-            // User explicitly set recordStats, preserve it
             configBuilder.recordStats(preProfileConfig.isRecordStats());
         }
 

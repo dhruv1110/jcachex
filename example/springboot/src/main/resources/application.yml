@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+spring:
+  cache:
+    type: none # use JCacheXCacheManager only
+
+jcachex:
+  enabled: true
+  autoCreateCaches: true
+  default:
+    maximumSize: 1000
+    expireAfterSeconds: 600
+    enableStatistics: true
+  caches:
+    users:
+      profile: READ_HEAVY
+      maximumSize: 1000
+      expireAfterSeconds: 300
