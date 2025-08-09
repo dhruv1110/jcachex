@@ -141,16 +141,9 @@ public class JCacheXAutoConfiguration {
         this.properties = properties;
     }
 
-    /**
-     * Provides the JCacheX properties with the expected bean name.
-     *
-     * @return the JCacheX properties
-     */
-    @Bean("jcacheXProperties")
-    @Primary
-    public JCacheXProperties jcacheXProperties() {
-        return this.properties;
-    }
+    // Do not declare an explicit JCacheXProperties bean; it's already provided by
+    // @EnableConfigurationProperties(JCacheXProperties.class). Declaring another
+    // bean here causes NoUniqueBeanDefinitionException in tests.
 
     /**
      * Creates the primary JCacheX cache manager.
