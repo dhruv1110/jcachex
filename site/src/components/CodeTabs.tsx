@@ -34,12 +34,12 @@ interface CodeTabsProps {
 
 // Performance metrics for different code examples
 const PERFORMANCE_METRICS: { [key: string]: string } = {
-    'thirty-second': '7.9ns GET, Production-ready defaults',
-    'five-minute': '11.5ns GET, Automatic optimization',
-    'production-ready': '11.5ns GET, Full monitoring',
-    'java': '11.5ns GET, Zero configuration',
-    'kotlin': '11.5ns GET, DSL optimized',
-    'spring': '11.5ns GET, Auto-configured',
+    'thirty-second': '7.9ns GET (ZeroCopy), production-tuned',
+    'five-minute': 'Profile-optimized setup',
+    'production-ready': 'Monitoring & resilience enabled',
+    'java': 'Low-latency defaults',
+    'kotlin': 'DSL-optimized API',
+    'spring': 'Auto-config via jcachex-spring',
     'ecommerce': '11.5ns GET, Multi-layer caching',
     'api-gateway': '5min TTL, Circuit breaker enabled',
     'session-management': '30min TTL, High throughput',
@@ -158,6 +158,7 @@ const CodeTabs: React.FC<CodeTabsProps> = ({
                     <Tabs
                         value={activeTab}
                         onChange={handleTabChange}
+                        aria-label="Example code tabs"
                         sx={{
                             minHeight: 36,
                             '& .MuiTab-root': {
@@ -184,9 +185,9 @@ const CodeTabs: React.FC<CodeTabsProps> = ({
                         {tabs.map((tab, index) => (
                             <Tab
                                 key={tab.id}
+                                aria-controls={`code-tabpanel-${index}`}
                                 label={tab.label}
                                 id={`code-tab-${index}`}
-                                aria-controls={`code-tabpanel-${index}`}
                             />
                         ))}
                     </Tabs>

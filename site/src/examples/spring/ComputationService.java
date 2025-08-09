@@ -1,4 +1,4 @@
-import io.github.dhruv1110.jcachex.spring.annotation.JCacheXCacheable;
+import io.github.dhruv1110.jcachex.spring.annotations.JCacheXCacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.scheduling.annotation.Async;
 import java.util.concurrent.CompletableFuture;

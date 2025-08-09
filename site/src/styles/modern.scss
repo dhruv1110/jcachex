@@ -1,1 +1,24 @@
 // No custom styles needed - everything handled by Material UI
+
+/* Accessibility: visibly focusable skip link */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.skip-link:focus {
+    position: fixed;
+    left: 16px;
+    top: 16px;
+    width: auto;
+    height: auto;
+    background: #111827;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 2000;
+}

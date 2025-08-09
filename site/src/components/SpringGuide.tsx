@@ -565,10 +565,10 @@ public class CacheMetrics implements MeterBinder {
                                             label: 'Maven',
                                             language: 'xml',
                                             code: `<dependencies>
-    <!-- JCacheX Spring Boot Starter -->
+    <!-- JCacheX Spring Integration -->
     <dependency>
         <groupId>io.github.dhruv1110</groupId>
-        <artifactId>jcachex-spring-boot-starter</artifactId>
+        <artifactId>jcachex-spring</artifactId>
         <version>${version}</version>
     </dependency>
 
@@ -590,8 +590,8 @@ public class CacheMetrics implements MeterBinder {
                                             label: 'Gradle',
                                             language: 'groovy',
                                             code: `dependencies {
-    // JCacheX Spring Boot Starter
-    implementation 'io.github.dhruv1110:jcachex-spring-boot-starter:${version}'
+    // JCacheX Spring Integration
+    implementation 'io.github.dhruv1110:jcachex-spring:${version}'
 
     // Spring Boot Web (if building web app)
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -602,10 +602,10 @@ public class CacheMetrics implements MeterBinder {
                                         }
                                     ]} />
                                     <div className="step-explanation">
-                                        <h4>💡 What you get with the starter:</h4>
+                                        <h4>💡 What you get with the integration:</h4>
                                         <ul>
-                                            <li><strong>Auto-configuration</strong>: JCacheX is automatically configured and ready to use</li>
-                                            <li><strong>Spring integration</strong>: Works seamlessly with @Cacheable, @CacheEvict, etc.</li>
+                                            <li><strong>Auto-configuration</strong>: JCacheX integrates with Spring’s caching abstraction</li>
+                                            <li><strong>Spring integration</strong>: Works with @Cacheable, @CacheEvict, etc.</li>
                                             <li><strong>Health checks</strong>: Automatic health indicators for monitoring</li>
                                             <li><strong>Metrics</strong>: Cache statistics exposed to Micrometer/Actuator</li>
                                         </ul>

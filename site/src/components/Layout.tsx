@@ -49,6 +49,8 @@ const Layout: React.FC<LayoutProps> = ({ children, sidebarConfig }) => {
                 flexDirection: 'column',
             }}
         >
+            {/* Skip to content for accessibility */}
+            <a href="#main-content" className="skip-link">Skip to content</a>
             <Navbar />
             <Box sx={{ display: 'flex', flex: 1, position: 'relative' }}>
                 {showSidebar && sidebarConfig && (
@@ -62,6 +64,7 @@ const Layout: React.FC<LayoutProps> = ({ children, sidebarConfig }) => {
                 )}
                 <Box
                     component="main"
+                    id="main-content"
                     sx={{
                         flex: 1,
                         display: 'flex',

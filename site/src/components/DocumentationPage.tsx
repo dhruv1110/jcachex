@@ -268,6 +268,14 @@ const DocumentationPage: React.FC = () => {
             ],
         },
         {
+            id: 'distributed-caching',
+            title: 'Distributed Caching',
+            icon: <CloudSyncIcon />,
+            children: [
+                { id: 'kubernetes-distributed', title: 'Kubernetes', icon: <CloudSyncIcon /> },
+            ],
+        },
+        {
             id: 'java-configuration',
             title: 'Java Configuration',
             icon: <JavaIcon />,
@@ -675,7 +683,7 @@ val user = cache["user123"]  // ZeroCopy retrieval`
                                     code: `// Maven dependency
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
-    <artifactId>jcachex-spring-boot-starter</artifactId>
+    <artifactId>jcachex-spring</artifactId>
     <version>${version}</version>
 </dependency>
 
@@ -1412,6 +1420,100 @@ val apiCache = JCacheXBuilder
                             ))}
                         </Box>
                     </Box>
+                </Box>
+
+                {/* Kubernetes Distributed Caching */}
+                <Box id="kubernetes-distributed" sx={{ mb: 8 }}>
+                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                        Distributed Caching on Kubernetes
+                    </Typography>
+
+                    <Typography variant="body1" sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                        JCacheX provides a distributed cache implementation optimized for Kubernetes via
+                        <code style={{ marginLeft: 4, marginRight: 4 }}>KubernetesDistributedCache</code> and
+                        <code style={{ marginLeft: 4 }}>KubernetesNodeDiscovery</code>. It uses pod identities and
+                        service discovery to form a cluster and distribute keys via consistent hashing.
+                    </Typography>
+
+                    <Alert severity="info" sx={{ mb: 3 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                            Advantages
+                        </Typography>
+                        <List dense>
+                            <ListItem><ListItemText primary="Native pod identity for node IDs" /></ListItem>
+                            <ListItem><ListItemText primary="Automatic discovery and topology updates" /></ListItem>
+                            <ListItem><ListItemText primary="Consistent hashing for balanced distribution" /></ListItem>
+                            <ListItem><ListItemText primary="Graceful handling of pod restarts and scaling" /></ListItem>
+                        </List>
+                    </Alert>
+
+                    <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+                        Quick Start (Kubernetes)
+                    </Typography>
+                    <CodeTabs
+                        tabs={[
+                            {
+                                id: 'k8s-java',
+                                label: 'Java Builder',
+                                language: 'java',
+                                code: `import io.github.dhruv1110.jcachex.distributed.DistributedCache;
+import io.github.dhruv1110.jcachex.distributed.impl.KubernetesDistributedCache;
+import io.github.dhruv1110.jcachex.distributed.communication.TcpCommunicationProtocol;
+import io.github.dhruv1110.jcachex.distributed.discovery.KubernetesNodeDiscovery;
+
+DistributedCache<String, String> cache = KubernetesDistributedCache.<String, String>builder()
+    .clusterName("jcachex-cluster")
+    .partitionCount(1024)
+    .networkTimeout(java.time.Duration.ofSeconds(2))
+    .nodeDiscovery(new KubernetesNodeDiscovery(
+        new KubernetesNodeDiscovery.KubernetesDiscoveryBuilder()
+            .namespace("default")
+            .serviceName("jcachex-service")
+            .build()
+    ))
+    .communicationProtocol(new TcpCommunicationProtocol())
+    .build();
+
+cache.put("user:1", "alice");
+String v = cache.get("user:1");`
+                            },
+                            {
+                                id: 'k8s-k8s',
+                                label: 'K8s YAML (Service)',
+                                language: 'yaml',
+                                code: `apiVersion: v1
+kind: Service
+metadata:
+  name: jcachex-service
+spec:
+  selector:
+    app: jcachex-node
+  ports:
+    - port: 8081
+      targetPort: 8081
+      name: cache`
+                            }
+                        ]}
+                    />
+
+                    <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mt: 4, mb: 2 }}>
+                        Best Practices
+                    </Typography>
+                    <List dense sx={{ mb: 2 }}>
+                        <ListItem><ListItemText primary="Use a headless Service for node discovery" /></ListItem>
+                        <ListItem><ListItemText primary="Allocate resource requests/limits to avoid eviction" /></ListItem>
+                        <ListItem><ListItemText primary="Set reasonable networkTimeout and partitionCount" /></ListItem>
+                        <ListItem><ListItemText primary="Monitor per-node stats and network failures" /></ListItem>
+                    </List>
+
+                    <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mt: 4, mb: 2 }}>
+                        Operations
+                    </Typography>
+                    <List dense>
+                        <ListItem><ListItemText primary="getClusterTopology() - inspect nodes/partitions" /></ListItem>
+                        <ListItem><ListItemText primary="getPerNodeStats() - collect cluster-wide stats" /></ListItem>
+                        <ListItem><ListItemText primary="getNodeStatuses() and getDistributedMetrics()" /></ListItem>
+                    </List>
                 </Box>
 
                 {/* Java Configuration Section */}

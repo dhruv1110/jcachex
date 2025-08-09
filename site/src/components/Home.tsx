@@ -309,6 +309,82 @@ const HomeComponent: React.FC = () => {
                 </Container>
             </Box>
 
+            {/* Kubernetes Distributed Caching Section */}
+            <Box sx={{ py: 8, bgcolor: 'grey.50' }}>
+                <Container maxWidth="lg">
+                    <Box sx={{ textAlign: 'center', mb: 6 }}>
+                        <Chip
+                            label="Kubernetes"
+                            sx={{ mb: 2, px: 2, py: 1 }}
+                            variant="outlined"
+                            color="primary"
+                        />
+                        <Typography variant="h2" component="h2" sx={{ mb: 2, fontWeight: 700 }}>
+                            Kubernetes Distributed Caching
+                        </Typography>
+                        <Typography variant="h6" sx={{ color: 'text.secondary', maxWidth: '720px', mx: 'auto' }}>
+                            Our native Kubernetes implementation provides pod-aware node discovery, consistent hashing
+                            for key distribution, and graceful scaling to build low-latency, resilient clusters.
+                        </Typography>
+                    </Box>
+
+                    <Box sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                        gap: 3,
+                        mb: 4
+                    }}>
+                        <Card sx={{ p: 2 }}>
+                            <CardContent>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                    <Cloud sx={{ color: 'primary.main', mr: 1 }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>Native K8s Discovery</Typography>
+                                </Box>
+                                <Typography variant="body2" color="text.secondary">
+                                    Pod name identification, service-based discovery, and health-aware topology updates
+                                    ensure the cluster adapts seamlessly to rolling updates and auto-scaling events.
+                                </Typography>
+                            </CardContent>
+                        </Card>
+
+                        <Card sx={{ p: 2 }}>
+                            <CardContent>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                    <Security sx={{ color: 'secondary.main', mr: 1 }} />
+                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>Consistent Hashing</Typography>
+                                </Box>
+                                <Typography variant="body2" color="text.secondary">
+                                    Balanced partitioning with minimal rebalancing on node changes. Low overhead network
+                                    protocol and timeouts tuned for high throughput and predictable latency.
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Box>
+
+                    <Box sx={{ textAlign: 'center' }}>
+                        <Button
+                            component={Link}
+                            to="/documentation#kubernetes-distributed"
+                            variant="contained"
+                            size="large"
+                            endIcon={<ArrowIcon />}
+                            sx={{ px: 4, py: 1.5, mr: 2 }}
+                        >
+                            Learn More
+                        </Button>
+                        <Button
+                            component={Link}
+                            to="/examples"
+                            variant="outlined"
+                            size="large"
+                            sx={{ px: 4, py: 1.5 }}
+                        >
+                            View Examples
+                        </Button>
+                    </Box>
+                </Container>
+            </Box>
+
             {/* Progressive Learning Section */}
             <Box sx={{ py: 8, bgcolor: 'grey.50' }}>
                 <Container maxWidth="lg">
