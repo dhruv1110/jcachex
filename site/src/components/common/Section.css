@@ -39,23 +39,25 @@
 
 /* Background variants */
 .section.default {
-    background: #ffffff;
+    /* Inherit page background; remove hard-coded light background */
+    background: transparent;
 }
 
 .section.light {
-    background: #f8fafc;
+    /* Subtle elevated surface for dark theme */
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .section.dark {
-    background: #1e293b;
+    background: var(--jcx-surface, #1e293b);
 }
 
 .section.dark .section-title {
-    color: #ffffff;
+    color: var(--jcx-text-primary, #ffffff);
 }
 
 .section.dark .section-subtitle {
-    color: #cbd5e1;
+    color: var(--jcx-text-secondary, #cbd5e1);
 }
 
 .section.gradient {

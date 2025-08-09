@@ -526,7 +526,7 @@ const DocumentationPage: React.FC = () => {
                     </Box>
 
                     {/* Supported Platforms */}
-                    <Box id="supported-platforms" sx={{ mb: 6 }}>
+                    <Box id="supported-platforms" className="jcx-divider" sx={{ mb: 6 }}>
                         <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
                             <AndroidIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
                             Supported Platforms
@@ -538,14 +538,11 @@ const DocumentationPage: React.FC = () => {
 
                         <Stack spacing={2} sx={{ mb: 4 }}>
                             {platformsData.map((platform, index) => (
-                                <Box key={index} sx={{
+                                <Box key={index} className="jcx-surface" sx={{
                                     display: 'flex',
                                     alignItems: 'center',
                                     p: { xs: 1.5, sm: 2 }, // Responsive padding
                                     borderRadius: 1,
-                                    backgroundColor: 'grey.50',
-                                    border: '1px solid',
-                                    borderColor: 'grey.200',
                                     flexDirection: { xs: 'column', sm: 'row' }, // Stack on mobile
                                     textAlign: { xs: 'center', sm: 'left' },
                                     gap: { xs: 1, sm: 0 }
@@ -574,22 +571,8 @@ const DocumentationPage: React.FC = () => {
                         <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                             Platform-Specific Features
                         </Typography>
-                        <Box sx={{
-                            display: 'grid',
-                            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                            gap: 3,
-                            mt: 2
-                        }}>
-                            <Box sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                backgroundColor: 'primary.50',
-                                border: '1px solid',
-                                borderColor: 'primary.100',
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: 2
-                            }}>
+                        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mt: 2 }}>
+                            <Box className="jcx-surface" sx={{ p: 2, borderRadius: 2, display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                                 <JavaIcon color="primary" sx={{ mt: 0.5 }} />
                                 <Box>
                                     <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
@@ -600,16 +583,7 @@ const DocumentationPage: React.FC = () => {
                                     </Typography>
                                 </Box>
                             </Box>
-                            <Box sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                backgroundColor: 'secondary.50',
-                                border: '1px solid',
-                                borderColor: 'secondary.100',
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: 2
-                            }}>
+                            <Box className="jcx-surface" sx={{ p: 2, borderRadius: 2, display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                                 <ExtensionIcon color="secondary" sx={{ mt: 0.5 }} />
                                 <Box>
                                     <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
@@ -620,16 +594,7 @@ const DocumentationPage: React.FC = () => {
                                     </Typography>
                                 </Box>
                             </Box>
-                            <Box sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                backgroundColor: 'success.50',
-                                border: '1px solid',
-                                borderColor: 'success.100',
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: 2
-                            }}>
+                            <Box className="jcx-surface" sx={{ p: 2, borderRadius: 2, display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                                 <SpeedIcon color="success" sx={{ mt: 0.5 }} />
                                 <Box>
                                     <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
@@ -640,16 +605,7 @@ const DocumentationPage: React.FC = () => {
                                     </Typography>
                                 </Box>
                             </Box>
-                            <Box sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                backgroundColor: 'info.50',
-                                border: '1px solid',
-                                borderColor: 'info.100',
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: 2
-                            }}>
+                            <Box className="jcx-surface" sx={{ p: 2, borderRadius: 2, display: 'flex', alignItems: 'flex-start', gap: 2 }}>
                                 <AndroidIcon color="info" sx={{ mt: 0.5 }} />
                                 <Box>
                                     <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
@@ -1275,13 +1231,7 @@ val apiCache = JCacheXBuilder
 
                         <Stack spacing={3}>
                             {evictionStrategies.map((strategy, index) => (
-                                <Box key={index} sx={{
-                                    p: 3,
-                                    borderRadius: 2,
-                                    backgroundColor: 'grey.50',
-                                    border: '1px solid',
-                                    borderColor: 'grey.200'
-                                }}>
+                                <Box key={index} className="jcx-surface" sx={{ p: 3, borderRadius: 2 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                                         <Box sx={{ color: 'primary.main', mr: 2 }}>
                                             {strategy.icon}

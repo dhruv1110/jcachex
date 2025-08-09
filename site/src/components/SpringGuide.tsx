@@ -491,7 +491,7 @@ public class CacheMetrics implements MeterBinder {
                 ]} />
 
                 {/* Header */}
-                <Section padding="lg" centered>
+                <Section padding="lg" centered className="jcx-surface">
                     <div className="spring-header">
                         <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
                             Spring Boot Integration
@@ -504,7 +504,7 @@ public class CacheMetrics implements MeterBinder {
                 </Section>
 
                 {/* Why JCacheX + Spring Boot */}
-                <Section padding="lg">
+                <Section padding="lg" className="jcx-surface">
                     <div className="intro-section">
                         <h2 className="section-title">Why JCacheX + Spring Boot?</h2>
                         <p className="section-description">
@@ -537,7 +537,7 @@ public class CacheMetrics implements MeterBinder {
                 </Section>
 
                 {/* Step-by-Step Setup */}
-                <Section padding="lg">
+                <Section padding="lg" className="jcx-surface">
                     <div className="setup-guide">
                         <Box id="maven" />
                         <h2 className="section-title">📋 Step-by-Step Setup</h2>
@@ -845,7 +845,7 @@ spring.cache.type=jcachex`
                 </Section>
 
                 {/* Annotations Section */}
-                <Section padding="lg">
+                <Section padding="lg" className="jcx-surface">
                     <Box id="spring-annotations" />
                     <div className="annotations-guide">
                         <h2 className="section-title">🧩 Annotations</h2>
@@ -857,7 +857,7 @@ spring.cache.type=jcachex`
                 </Section>
 
                 {/* Real-World Spring Boot Examples */}
-                <Section padding="lg">
+                <Section padding="lg" className="jcx-surface">
                     <div className="examples-section">
                         <h2 className="section-title">🏗️ Real-World Spring Boot Examples</h2>
                         <p className="section-description">
@@ -1111,7 +1111,7 @@ public class SessionCacheService {
                 </Section>
 
                 {/* Monitoring & Management */}
-                <Section padding="lg">
+                <Section padding="lg" className="jcx-surface">
                     <div className="monitoring-section">
                         <h2 className="section-title">📊 Monitoring & Management</h2>
                         <p className="section-description">
@@ -1283,7 +1283,7 @@ public class JCacheXManagementController {
                 </Section>
 
                 {/* Best Practices for Spring Boot */}
-                <Section padding="lg">
+                <Section padding="lg" className="jcx-surface">
                     <div className="best-practices">
                         <h2 className="section-title">🎯 Spring Boot Best Practices</h2>
 
@@ -1318,7 +1318,7 @@ public class JCacheXManagementController {
                 </Section>
 
                 {/* Production Deployment */}
-                <Section padding="lg" centered>
+                <Section padding="lg" centered className="jcx-surface">
                     <div className="deployment-section">
                         <h2 className="deployment-title">🚀 Ready for Production?</h2>
                         <p className="deployment-subtitle">

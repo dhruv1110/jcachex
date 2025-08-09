@@ -42,8 +42,7 @@ const Navbar: React.FC = () => {
         { label: 'Documentation', path: '/docs' },
         { label: 'Examples', path: '/examples' },
         { label: 'Spring', path: '/spring' },
-        { label: 'Migration', path: '/migration' },
-        { label: 'Troubleshooting', path: '/troubleshooting' },
+        { label: 'Performance', path: '/performance' },
         { label: 'FAQ', path: '/faq' },
     ];
 
