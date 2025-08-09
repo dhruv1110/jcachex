@@ -161,20 +161,27 @@ val sessionCache = createSessionCache {
 
 ### **5. Spring Boot Integration**
 ```yaml
-# Configuration-based
+# application.yml (auto-created caches via properties)
 jcachex:
+  enabled: true
+  autoCreateCaches: true
+  default:
+    maximumSize: 1000
+    expireAfterSeconds: 600
+    enableStatistics: true
   caches:
     users:
       profile: READ_HEAVY
-      maximumSize: 5000
+      maximumSize: 1000
+      expireAfterSeconds: 300
 ```
 
 ### 3. See It Work
 ```java
 // Check performance
 CacheStats stats = cache.stats();
-System.out.println("Hit rate: " + (stats.hitRate() * 100) + "%");
-// Output: Hit rate: 94.7%
+logger.info("Hit rate: {}%", stats.hitRate() * 100);
+// Output: e.g. Hit rate: 94.7%
 ```
 
 ---
@@ -313,6 +320,7 @@ Cache<String, User> userCache = JCacheXBuilder.forReadHeavyWorkload()
     .expireAfterWrite(Duration.ofMinutes(30))
     .expireAfterAccess(Duration.ofMinutes(10))
     .loader(userId -> loadUserFromDatabase(userId))
+    // Statistics are opt-in; default is false
     .recordStats(true)
     .build();
 ```

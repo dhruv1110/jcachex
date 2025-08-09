@@ -108,7 +108,7 @@ JCacheX implements multiple eviction algorithms:
 #### TTL (Time To Live)
 - **Use Case**: Time-sensitive data with expiration
 - **Memory**: O(1) for all operations
-- **Implementation**: Scheduled cleanup with lazy expiration
+- **Implementation**: Scheduled cleanup with lazy expiration (using a shared ScheduledExecutorService)
 
 ### Configuration System
 
@@ -134,7 +134,7 @@ CacheConfig<String, User> config = CacheConfig.<String, User>builder()
     .weakKeys(true)
     .softValues(true)
 
-    // Monitoring
+    // Monitoring (default is off; enable explicitly when needed)
     .recordStats(true)
     .addListener(new CacheEventListener<String, User>() {
         @Override
@@ -187,10 +187,10 @@ Cache<String, User> cache = new DefaultCache<>(config);
 
 // Monitor performance with built-in statistics
 CacheStats stats = cache.stats();
-System.out.println("Hit rate: " + (stats.hitRate() * 100) + "%");
-System.out.println("Miss rate: " + (stats.missRate() * 100) + "%");
-System.out.println("Evictions: " + stats.evictionCount());
-System.out.println("Average load time: " + (stats.averageLoadTime() / 1_000_000.0) + "ms");
+logger.info("Hit rate: {}%", stats.hitRate() * 100);
+logger.info("Miss rate: {}%", stats.missRate() * 100);
+logger.info("Evictions: {}", stats.evictionCount());
+logger.info("Average load time: {} ms", stats.averageLoadTime() / 1_000_000.0);
 ```
 
 ### Essential Metrics
@@ -321,7 +321,7 @@ CacheConfig<String, Object> productionConfig = CacheConfig.<String, Object>build
     .initialCapacity(1024)
     .concurrencyLevel(16)
 
-    // Resilience
+    // Resilience (stats collection is opt-in; default is false)
     .recordStats(true)
     .addListener(new ProductionCacheListener())
 

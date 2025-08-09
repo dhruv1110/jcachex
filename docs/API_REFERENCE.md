@@ -198,6 +198,7 @@ CacheConfig<String, User> config = CacheConfig.<String, User>builder()
     .expireAfterAccess(Duration.ofMinutes(30))
     .evictionStrategy(new LRUEvictionStrategy<>())
     .loader(key -> userService.findById(key))
+    // Statistics are opt-in; default is false in core
     .recordStats(true)
     .addListener(new UserCacheListener())
     .build();
