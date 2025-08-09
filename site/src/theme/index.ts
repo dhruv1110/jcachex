@@ -153,6 +153,13 @@ const components = {
             },
         },
     },
+    MuiCssBaseline: {
+        styleOverrides: {
+            body: {
+                backgroundColor: palette.background.default,
+            },
+        },
+    },
 };
 
 // Dark theme variant
@@ -170,7 +177,7 @@ const darkPalette = {
     grey: {
         ...palette.grey,
         50: '#1e293b',
-        100: '#334155',
+        100: '#b7c0cd',
         200: '#475569',
         300: '#64748b',
         400: '#94a3b8',
@@ -199,6 +206,14 @@ export const darkTheme = createTheme({
     typography,
     components: {
         ...components,
+        MuiCssBaseline: {
+            styleOverrides: {
+                body: {
+                    backgroundColor: darkPalette.background.default,
+                    backgroundImage: 'none',
+                },
+            },
+        },
         MuiAppBar: {
             styleOverrides: {
                 root: {
@@ -209,6 +224,30 @@ export const darkTheme = createTheme({
                 },
             },
         },
+        MuiCard: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: '#1e293b',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+                },
+            },
+        },
+        MuiPaper: {
+            styleOverrides: {
+                root: {
+                    backgroundColor: '#1e293b',
+                    borderColor: 'rgba(255,255,255,0.08)'
+                },
+            },
+        },
+        MuiChip: {
+            styleOverrides: {
+                root: {
+                    borderColor: 'rgba(255,255,255,0.18)'
+                },
+            },
+        },
     },
     spacing: 8,
     shape: {
@@ -216,5 +255,5 @@ export const darkTheme = createTheme({
     },
 } as ThemeOptions);
 
-// Default export (light theme)
-export default lightTheme;
+// Default export (dark theme by default for modern look)
+export default darkTheme;

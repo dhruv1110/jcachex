@@ -39,11 +39,12 @@ const Navbar: React.FC = () => {
     };
 
     const navigationLinks = [
-        { label: 'Documentation', path: '/docs' },
+        { label: 'Docs', path: '/docs' },
         { label: 'Examples', path: '/examples' },
         { label: 'Spring', path: '/spring' },
-        { label: 'Migration', path: '/migration' },
+        { label: 'Performance', path: '/performance' },
         { label: 'Troubleshooting', path: '/troubleshooting' },
+        { label: 'Migration', path: '/migration' },
         { label: 'FAQ', path: '/faq' },
     ];
 

@@ -129,7 +129,7 @@ const PerformanceComparison: React.FC<PerformanceComparisonProps> = ({
     const jcacheXBest = sortedData.find(item => item.library.includes('JCacheX'));
 
     return (
-        <Paper elevation={2} sx={{ p: 3, borderRadius: 2 }}>
+        <Paper elevation={2} className="jcx-surface" sx={{ p: 3, borderRadius: 2 }}>
             <Box sx={{ mb: 3 }}>
                 <Typography variant="h5" component="h2" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <SpeedIcon color="primary" />
@@ -289,7 +289,7 @@ const PerformanceComparison: React.FC<PerformanceComparisonProps> = ({
             )}
 
             {/* Benchmark Information */}
-            <Box sx={{ mt: 3, p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
+            <Box sx={{ mt: 3, p: 2 }} className="jcx-surface">
                 <Typography variant="body2" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     <InfoIcon fontSize="small" />
                     Benchmark Environment: Intel Core i7-9750H @ 2.6GHz, 32GB RAM, OpenJDK 17

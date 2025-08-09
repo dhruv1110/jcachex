@@ -195,40 +195,106 @@ const DocumentationPage: React.FC = () => {
     const kotlinExtensions = [
         {
             name: 'Operator Overloading',
-            description: 'Array-like syntax for cache operations',
+            description: 'Array-like syntax and idiomatic operators',
             examples: [
                 'cache["key"] = value',
                 'val value = cache["key"]',
                 'cache += "key" to value',
-                'cache -= "key"'
+                'cache -= "key"',
+                'if ("key" in cache) { /* ... */ }'
             ]
         },
         {
-            name: 'Coroutine Support',
-            description: 'Suspending functions for async operations',
+            name: 'Coroutine & Async Support',
+            description: 'Suspending helpers and Deferred wrappers',
             examples: [
-                'cache.getOrPut("key") { suspendingFunction() }',
-                'cache.getDeferred("key", scope)',
-                'cache.putAsync("key", value)'
+                'val v = cache.getOrPut("key") { suspendingCompute() }',
+                'val d1 = cache.getDeferred("key", scope)  // Deferred<V?>',
+                'val d2 = cache.putDeferred("key", value, scope)',
+                'val d3 = cache.removeDeferred("key", scope)',
+                'val d4 = cache.clearDeferred(scope)',
+                'val v2 = cache.getOrPutAsync("key") { k -> suspendingCompute(k) }'
             ]
         },
         {
-            name: 'Collection Operations',
-            description: 'Collection-like operations for filtering and mapping',
+            name: 'Collection & Bulk Operations',
+            description: 'Filter, map, group, and batch operations',
             examples: [
+                'cache.filterKeys { it.startsWith("user:") }',
                 'cache.filterValues { it.isActive }',
-                'cache.mapValues { it.toUpperCase() }',
-                'cache.forEach { key, value -> ... }'
+                'cache.mapValues { it.toDTO() }',
+                'cache.mapKeys { it.removePrefix("user:") }',
+                'cache.getAll(listOf("k1","k2"))',
+                'cache.getAllPresent(listOf("k1","k2"))',
+                'cache.find { k, v -> v.priority > 5 }',
+                'cache.groupBy { k, v -> v.segment }',
+                'cache.partition { k, v -> v.isHot }',
+                'cache.putAll(mapOf("a" to 1, "b" to 2))',
+                'cache.removeAll(listOf("a","b"))',
+                'cache.retainAll(listOf("keep1","keep2"))',
+                'cache.removeIf { k, v -> v.isExpired }',
+                'cache.forEach { k, v -> log(k to v) }'
             ]
         },
         {
-            name: 'DSL Configuration',
-            description: 'Kotlin DSL for fluent configuration',
+            name: 'DSL & Profile Builders',
+            description: 'Fluent creation with profiles and smart defaults',
             examples: [
                 'val cache = createCache<String, User> {',
-                '    maximumSize(1000L)',
+                '    maximumSize(1000)',
                 '    expireAfterWrite(Duration.ofMinutes(30))',
-                '}'
+                '}',
+                'val pCache = createCacheWithProfile<String, User>(ProfileName.READ_HEAVY) {',
+                '    maximumSize(2000)',
+                '}',
+                'val read = createReadHeavyCache<String, User> { maximumSize(10_000) }',
+                'val write = createWriteHeavyCache<String, Counter> { maximumSize(5_000) }',
+                'val perf = createHighPerformanceCache<String, Session> { maximumSize(50_000) }',
+                'val mem  = createMemoryEfficientCache<String, Blob> { maximumSize(1_000) }',
+                'val api  = createApiCache<String, ApiResponse> { }',
+                'val cmp  = createComputeCache<String, Result> { }',
+                'val ml   = createMachineLearningCache<String, FeatureVec> { }',
+                'val ull  = createUltraLowLatencyCache<String, Tick> { }',
+                'val hw   = createHardwareOptimizedCache<String, Frame> { }'
+            ]
+        },
+        {
+            name: 'Safe Operations (Result)',
+            description: 'Non-throwing ops that return Result types',
+            examples: [
+                'cache.safeGet("k").onSuccess { v -> println(v) }',
+                'cache.getOrNull("k").getOrNull()',
+                'cache.putOrNull("k", v).onFailure { log(it) }',
+                'cache.removeOrNull("k").getOrNull()',
+                'cache.ifContains("k") { v -> use(v) }',
+                'cache.ifNotContains("k") { initialize() }'
+            ]
+        },
+        {
+            name: 'Statistics Helpers',
+            description: 'Convenient formatting and metrics access',
+            examples: [
+                'val s = cache.stats()',
+                'println(s.formatted())',
+                'println("hitRate=%2.2f%%".format(s.hitRatePercent()))',
+                'println("avgLoad=%2.2fms".format(s.averageLoadTimeMillis()))',
+                'println(cache.statsString())'
+            ]
+        },
+        {
+            name: 'Utility Helpers',
+            description: 'Compute/merge/replace, batch, timing, summaries',
+            examples: [
+                'cache.computeIfAbsent("k") { load(k) }',
+                'cache.computeIfPresent("k") { k, v -> v.tune() }',
+                'cache.compute("k") { k, v -> v ?: bootstrap(k) }',
+                'cache.merge("k", v) { old, cur -> combine(old, cur) }',
+                'cache.replace("k", v)',
+                'cache.replace("k", old, new)',
+                'cache.replaceAll { k, v -> v.normalize() }',
+                'cache.batch { put("a",1); put("b",2) }',
+                'val (result, nanos) = cache.measureTime { get("k") }',
+                'println(cache.summary())'
             ]
         }
     ];
@@ -328,292 +394,248 @@ const DocumentationPage: React.FC = () => {
                 }}
             >
 
-                {/* Header */}
-                <Box sx={{ textAlign: 'center', mb: 6 }}>
-                    <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
-                        JCacheX Documentation
-                    </Typography>
-                    <Typography variant="h5" color="text.secondary" sx={{ mb: 4 }}>
-                        Comprehensive guide to high-performance caching in Java and Kotlin
-                    </Typography>
-                    <Box sx={{
-                        display: 'grid',
-                        gridTemplateColumns: { xs: '1fr 1fr', sm: '1fr 1fr 1fr 1fr' },
-                        gap: 2,
-                        justifyItems: 'center',
-                        maxWidth: '600px',
-                        mx: 'auto'
-                    }}>
-                        <Chip
-                            icon={<RocketIcon />}
-                            label="High Performance"
-                            color="primary"
-                            sx={{ px: 2, py: 1 }}
-                        />
-                        <Chip
-                            icon={<ApiIcon />}
-                            label="Simple API"
-                            color="secondary"
-                            sx={{ px: 2, py: 1 }}
-                        />
-                        <Chip
-                            icon={<CloudSyncIcon />}
-                            label="Async Support"
-                            color="success"
-                            sx={{ px: 2, py: 1 }}
-                        />
-                        <Chip
-                            icon={<SpeedIcon />}
-                            label="Spring Integration"
-                            color="info"
-                            sx={{ px: 2, py: 1 }}
-                        />
-                    </Box>
-                </Box>
-
-                {/* Introduction Section */}
-                <Box id="introduction" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
-                        Introduction
-                    </Typography>
-
-                    {/* What is JCacheX */}
-                    <Box id="what-is-jcachex" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            <InfoIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            What is JCacheX?
-                        </Typography>
-                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                            JCacheX is a high-performance, modern caching library for Java and Kotlin applications.
-                            It provides a simple, intuitive API while offering enterprise-grade features for production use.
-                        </Typography>
-
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                            <RocketIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            Core Features
-                        </Typography>
-                        <List dense sx={{ mb: 3 }}>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="High Performance"
-                                    secondary="Optimized for speed with minimal overhead and efficient memory usage"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="Simple API"
-                                    secondary="Intuitive, fluent interface that's easy to learn and use"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="Async Support"
-                                    secondary="Built-in CompletableFuture and Kotlin Coroutines support for non-blocking operations"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="Spring Integration"
-                                    secondary="Seamless Spring Boot integration with annotations and auto-configuration"
-                                />
-                            </ListItem>
-                        </List>
-
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                            <BuildIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            Enterprise Features
-                        </Typography>
-                        <List dense sx={{ mb: 3 }}>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="Distributed Caching"
-                                    secondary="Multi-node clustering with consistency guarantees and automatic failover"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="Comprehensive Monitoring"
-                                    secondary="Built-in metrics, observability, and health checks for production monitoring"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="Flexible Configuration"
-                                    secondary="Multiple eviction strategies, expiration policies, and custom cache loaders"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
-                                <ListItemText
-                                    primary="Production Ready"
-                                    secondary="Circuit breakers, cache warming, graceful degradation, and resilience patterns"
-                                />
-                            </ListItem>
-                        </List>
-                    </Box>
-
-                    {/* Supported Platforms */}
-                    <Box id="supported-platforms" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            <AndroidIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            Supported Platforms
-                        </Typography>
-                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                            JCacheX is designed to work seamlessly across different platforms and frameworks.
-                            Below are the officially supported platforms with their version requirements:
-                        </Typography>
-
-                        <Stack spacing={2} sx={{ mb: 4 }}>
-                            {platformsData.map((platform, index) => (
-                                <Box key={index} sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    p: { xs: 1.5, sm: 2 }, // Responsive padding
-                                    borderRadius: 1,
-                                    backgroundColor: 'grey.50',
-                                    border: '1px solid',
-                                    borderColor: 'grey.200',
-                                    flexDirection: { xs: 'column', sm: 'row' }, // Stack on mobile
-                                    textAlign: { xs: 'center', sm: 'left' },
-                                    gap: { xs: 1, sm: 0 }
-                                }}>
-                                    <Box sx={{ color: 'primary.main', mr: { xs: 0, sm: 2 } }}>
-                                        {platform.icon}
-                                    </Box>
-                                    <Box sx={{ flex: 1 }}>
-                                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
-                                            {platform.name}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Version: {platform.version}
-                                        </Typography>
-                                    </Box>
-                                    <Chip
-                                        label={platform.status}
-                                        color="success"
-                                        size="small"
-                                        sx={{ fontWeight: 500, mt: { xs: 1, sm: 0 } }}
-                                    />
-                                </Box>
-                            ))}
-                        </Stack>
-
-                        <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                            Platform-Specific Features
-                        </Typography>
-                        <Box sx={{
-                            display: 'grid',
-                            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                            gap: 3,
-                            mt: 2
-                        }}>
+                        {/* Header */}
+                        <Box sx={{ textAlign: 'center', mb: 6 }}>
+                            <Typography variant="h2" component="h1" gutterBottom sx={{ fontWeight: 700, mb: 2 }}>
+                                JCacheX Documentation
+                            </Typography>
+                            <Typography variant="h5" color="text.secondary" sx={{ mb: 4 }}>
+                                Comprehensive guide to high-performance caching in Java and Kotlin
+                            </Typography>
                             <Box sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                backgroundColor: 'primary.50',
-                                border: '1px solid',
-                                borderColor: 'primary.100',
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: 2
+                                display: 'grid',
+                                gridTemplateColumns: { xs: '1fr 1fr', sm: '1fr 1fr 1fr 1fr' },
+                                gap: 2,
+                                justifyItems: 'center',
+                                maxWidth: '600px',
+                                mx: 'auto'
                             }}>
-                                <JavaIcon color="primary" sx={{ mt: 0.5 }} />
-                                <Box>
-                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                        Java 8+ Support
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Full compatibility with Java 8 through 21+, including Virtual Threads in Java 21
-                                    </Typography>
-                                </Box>
-                            </Box>
-                            <Box sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                backgroundColor: 'secondary.50',
-                                border: '1px solid',
-                                borderColor: 'secondary.100',
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: 2
-                            }}>
-                                <ExtensionIcon color="secondary" sx={{ mt: 0.5 }} />
-                                <Box>
-                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                        Kotlin Native Extensions
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Operator overloading, coroutines, and DSL builders for idiomatic Kotlin code
-                                    </Typography>
-                                </Box>
-                            </Box>
-                            <Box sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                backgroundColor: 'success.50',
-                                border: '1px solid',
-                                borderColor: 'success.100',
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: 2
-                            }}>
-                                <SpeedIcon color="success" sx={{ mt: 0.5 }} />
-                                <Box>
-                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                        Spring Boot Auto-Configuration
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Zero-configuration setup with Spring Boot 2.7+ and 3.x support
-                                    </Typography>
-                                </Box>
-                            </Box>
-                            <Box sx={{
-                                p: 2,
-                                borderRadius: 2,
-                                backgroundColor: 'info.50',
-                                border: '1px solid',
-                                borderColor: 'info.100',
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: 2
-                            }}>
-                                <AndroidIcon color="info" sx={{ mt: 0.5 }} />
-                                <Box>
-                                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                        Android Compatibility
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Optimized for Android API 21+ with ProGuard and R8 support
-                                    </Typography>
-                                </Box>
+                                <Chip
+                                    icon={<RocketIcon />}
+                                    label="High Performance"
+                                    color="primary"
+                                    sx={{ px: 2, py: 1 }}
+                                />
+                                <Chip
+                                    icon={<ApiIcon />}
+                                    label="Simple API"
+                                    color="secondary"
+                                    sx={{ px: 2, py: 1 }}
+                                />
+                                <Chip
+                                    icon={<CloudSyncIcon />}
+                                    label="Async Support"
+                                    color="success"
+                                    sx={{ px: 2, py: 1 }}
+                                />
+                                <Chip
+                                    icon={<SpeedIcon />}
+                                    label="Spring Integration"
+                                    color="info"
+                                    sx={{ px: 2, py: 1 }}
+                                />
                             </Box>
                         </Box>
-                    </Box>
 
-                    {/* Quick Start */}
-                    <Box id="quick-start" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            <RocketIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            1 Minute Quick Start
-                        </Typography>
-                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                            Get started with JCacheX in less than a minute. Choose your preferred language and follow the simple setup.
-                            Each example below provides a complete working solution that you can copy and run immediately.
-                        </Typography>
-                        <CodeTabs
-                            tabs={[
-                                {
-                                    id: 'java',
-                                    label: 'Java',
-                                    language: 'java',
-                                    code: `// Maven dependency
+                        {/* Introduction Section */}
+                        <Box id="introduction" sx={{ mb: 8 }}>
+                            <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                                Introduction
+                            </Typography>
+
+                            {/* What is JCacheX */}
+                            <Box id="what-is-jcachex" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    <InfoIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    What is JCacheX?
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                                    JCacheX is a high-performance, modern caching library for Java and Kotlin applications.
+                                    It provides a simple, intuitive API while offering enterprise-grade features for production use.
+                                </Typography>
+
+                                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                                    <RocketIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    Core Features
+                                </Typography>
+                                <List dense sx={{ mb: 3 }}>
+                                    <ListItem>
+                                        <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                        <ListItemText
+                                            primary="High Performance"
+                                            secondary="Optimized for speed with minimal overhead and efficient memory usage"
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                        <ListItemText
+                                            primary="Simple API"
+                                            secondary="Intuitive, fluent interface that's easy to learn and use"
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                        <ListItemText
+                                            primary="Async Support"
+                                            secondary="Built-in CompletableFuture and Kotlin Coroutines support for non-blocking operations"
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                        <ListItemText
+                                            primary="Spring Integration"
+                                            secondary="Seamless Spring Boot integration with annotations and auto-configuration"
+                                        />
+                                    </ListItem>
+                                </List>
+
+                                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                                    <BuildIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    Enterprise Features
+                                </Typography>
+                                <List dense sx={{ mb: 3 }}>
+                                    <ListItem>
+                                        <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                        <ListItemText
+                                            primary="Distributed Caching"
+                                            secondary="Multi-node clustering with consistency guarantees and automatic failover"
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                        <ListItemText
+                                            primary="Comprehensive Monitoring"
+                                            secondary="Built-in metrics, observability, and health checks for production monitoring"
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                        <ListItemText
+                                            primary="Flexible Configuration"
+                                            secondary="Multiple eviction strategies, expiration policies, and custom cache loaders"
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemIcon><CheckIcon color="success" /></ListItemIcon>
+                                        <ListItemText
+                                            primary="Production Ready"
+                                            secondary="Circuit breakers, cache warming, graceful degradation, and resilience patterns"
+                                        />
+                                    </ListItem>
+                                </List>
+                            </Box>
+
+                            {/* Supported Platforms */}
+                            <Box id="supported-platforms" className="jcx-divider" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    <AndroidIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    Supported Platforms
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                                    JCacheX is designed to work seamlessly across different platforms and frameworks.
+                                    Below are the officially supported platforms with their version requirements:
+                                </Typography>
+
+                                <Stack spacing={2} sx={{ mb: 4 }}>
+                                    {platformsData.map((platform, index) => (
+                                        <Box key={index} className="jcx-surface" sx={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            p: { xs: 1.5, sm: 2 }, // Responsive padding
+                                            borderRadius: 1,
+                                            flexDirection: { xs: 'column', sm: 'row' }, // Stack on mobile
+                                            textAlign: { xs: 'center', sm: 'left' },
+                                            gap: { xs: 1, sm: 0 }
+                                        }}>
+                                            <Box sx={{ color: 'primary.main', mr: { xs: 0, sm: 2 } }}>
+                                                {platform.icon}
+                                            </Box>
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                                                    {platform.name}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Version: {platform.version}
+                                                </Typography>
+                                            </Box>
+                                            <Chip
+                                                label={platform.status}
+                                                color="success"
+                                                size="small"
+                                                sx={{ fontWeight: 500, mt: { xs: 1, sm: 0 } }}
+                                            />
+                                        </Box>
+                                    ))}
+                                </Stack>
+
+                                <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                                    Platform-Specific Features
+                                </Typography>
+                                <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3, mt: 2 }}>
+                                    <Box className="jcx-surface" sx={{ p: 2, borderRadius: 2, display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                                        <JavaIcon color="primary" sx={{ mt: 0.5 }} />
+                                        <Box>
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                                Java 8+ Support
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Full compatibility with Java 8 through 21+, including Virtual Threads in Java 21
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                    <Box className="jcx-surface" sx={{ p: 2, borderRadius: 2, display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                                        <ExtensionIcon color="secondary" sx={{ mt: 0.5 }} />
+                                        <Box>
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                                Kotlin Native Extensions
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Operator overloading, coroutines, and DSL builders for idiomatic Kotlin code
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                    <Box className="jcx-surface" sx={{ p: 2, borderRadius: 2, display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                                        <SpeedIcon color="success" sx={{ mt: 0.5 }} />
+                                        <Box>
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                                Spring Boot Auto-Configuration
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Zero-configuration setup with Spring Boot 2.7+ and 3.x support
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                    <Box className="jcx-surface" sx={{ p: 2, borderRadius: 2, display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                                        <AndroidIcon color="info" sx={{ mt: 0.5 }} />
+                                        <Box>
+                                            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                                Android Compatibility
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Optimized for Android API 21+ with ProGuard and R8 support
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </Box>
+                            </Box>
+
+                            {/* Quick Start */}
+                            <Box id="quick-start" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    <RocketIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    1 Minute Quick Start
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                                    Get started with JCacheX in less than a minute. Choose your preferred language and follow the simple setup.
+                                    Each example below provides a complete working solution that you can copy and run immediately.
+                                </Typography>
+                                <CodeTabs
+                                    tabs={[
+                                        {
+                                            id: 'java',
+                                            label: 'Java',
+                                            language: 'java',
+                                            code: `// Maven dependency
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-core</artifactId>
@@ -644,12 +666,12 @@ Cache<String, User> cache3 = JCacheXBuilder
 // Use cache - 501.1M ops/sec with ZeroCopy profile
 cache.put("user123", new User("Alice"));
 User user = cache.get("user123");  // Ultra-fast retrieval`
-                                },
-                                {
-                                    id: 'kotlin',
-                                    label: 'Kotlin',
-                                    language: 'kotlin',
-                                    code: `// Gradle dependency
+                                        },
+                                        {
+                                            id: 'kotlin',
+                                            label: 'Kotlin',
+                                            language: 'kotlin',
+                                            code: `// Gradle dependency
 implementation 'io.github.dhruv1110:jcachex-kotlin:${version}'
 
 // Modern Kotlin DSL with profiles
@@ -675,12 +697,12 @@ val cache3 = createCache<String, User> {
 // Use cache with operators - 501.1M ops/sec performance
 cache["user123"] = User("Alice")
 val user = cache["user123"]  // ZeroCopy retrieval`
-                                },
-                                {
-                                    id: 'spring',
-                                    label: 'Spring Boot',
-                                    language: 'java',
-                                    code: `// Maven dependency
+                                        },
+                                        {
+                                            id: 'spring',
+                                            label: 'Spring Boot',
+                                            language: 'java',
+                                            code: `// Maven dependency
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-spring</artifactId>
@@ -719,74 +741,74 @@ public class UserService {
 #       maximum-size: 10000
 #       expire-after-access-seconds: 1800
 #       record-stats: true`
-                                }
-                            ]}
-                        />
-                    </Box>
-                </Box>
+                                        }
+                                    ]}
+                                />
+                            </Box>
+                        </Box>
 
-                {/* Cache Profiles Section */}
-                <Box id="cache-profiles" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
-                        <ArchitectureIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                        Cache Profiles
-                    </Typography>
-
-                    {/* Profiles Overview */}
-                    <Box id="profiles-overview" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            <InfoIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            Profiles Overview
-                        </Typography>
-                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                            JCacheX profiles eliminate complex configuration decisions by providing pre-optimized settings
-                            for specific use cases. Simply choose a profile that matches your workload characteristics
-                            and get optimal performance automatically.
-                        </Typography>
-
-                        <Alert severity="success" sx={{ mb: 4 }}>
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                                Why Use Profiles?
+                        {/* Cache Profiles Section */}
+                        <Box id="cache-profiles" sx={{ mb: 8 }}>
+                            <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                                <ArchitectureIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                Cache Profiles
                             </Typography>
-                            <Typography variant="body2" sx={{ mb: 2 }}>
-                                Profiles automatically configure eviction strategies, initial capacities, concurrency levels,
-                                and other performance-critical settings based on real-world usage patterns.
-                            </Typography>
-                            <List dense>
-                                <ListItem sx={{ py: 0 }}>
-                                    <ListItemText
-                                        primary="• No guessing about optimal configurations"
-                                        primaryTypographyProps={{ variant: 'body2' }}
-                                    />
-                                </ListItem>
-                                <ListItem sx={{ py: 0 }}>
-                                    <ListItemText
-                                        primary="• Performance optimized for specific workloads"
-                                        primaryTypographyProps={{ variant: 'body2' }}
-                                    />
-                                </ListItem>
-                                <ListItem sx={{ py: 0 }}>
-                                    <ListItemText
-                                        primary="• Easy to switch between profiles as needs change"
-                                        primaryTypographyProps={{ variant: 'body2' }}
-                                    />
-                                </ListItem>
-                                <ListItem sx={{ py: 0 }}>
-                                    <ListItemText
-                                        primary="• Override defaults when needed for fine-tuning"
-                                        primaryTypographyProps={{ variant: 'body2' }}
-                                    />
-                                </ListItem>
-                            </List>
-                        </Alert>
 
-                        <CodeTabs
-                            tabs={[
-                                {
-                                    id: 'java-profiles',
-                                    label: 'Java',
-                                    language: 'java',
-                                    code: `// Modern JCacheXBuilder with profiles - automatically optimized
+                            {/* Profiles Overview */}
+                            <Box id="profiles-overview" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    <InfoIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    Profiles Overview
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                                    JCacheX profiles eliminate complex configuration decisions by providing pre-optimized settings
+                                    for specific use cases. Simply choose a profile that matches your workload characteristics
+                                    and get optimal performance automatically.
+                                </Typography>
+
+                                <Alert severity="success" sx={{ mb: 4 }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                                        Why Use Profiles?
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mb: 2 }}>
+                                        Profiles automatically configure eviction strategies, initial capacities, concurrency levels,
+                                        and other performance-critical settings based on real-world usage patterns.
+                                    </Typography>
+                                    <List dense>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText
+                                                primary="• No guessing about optimal configurations"
+                                                primaryTypographyProps={{ variant: 'body2' }}
+                                            />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText
+                                                primary="• Performance optimized for specific workloads"
+                                                primaryTypographyProps={{ variant: 'body2' }}
+                                            />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText
+                                                primary="• Easy to switch between profiles as needs change"
+                                                primaryTypographyProps={{ variant: 'body2' }}
+                                            />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText
+                                                primary="• Override defaults when needed for fine-tuning"
+                                                primaryTypographyProps={{ variant: 'body2' }}
+                                            />
+                                        </ListItem>
+                                    </List>
+                                </Alert>
+
+                                <CodeTabs
+                                    tabs={[
+                                        {
+                                            id: 'java-profiles',
+                                            label: 'Java',
+                                            language: 'java',
+                                            code: `// Modern JCacheXBuilder with profiles - automatically optimized
 Cache<String, Product> productCache = JCacheXBuilder
     .forReadHeavyWorkload()  // Optimized for read-intensive workloads
     .maximumSize(5000)       // Override default if needed
@@ -820,12 +842,12 @@ Cache<String, User> userCache = JCacheXBuilder
 
 Cache<String, Counter> counterCache = JCacheXBuilder
     .createWriteHeavyCache("counters", 5000);`
-                                },
-                                {
-                                    id: 'kotlin-profiles',
-                                    label: 'Kotlin',
-                                    language: 'kotlin',
-                                    code: `// Modern Kotlin DSL with profile-based optimization
+                                        },
+                                        {
+                                            id: 'kotlin-profiles',
+                                            label: 'Kotlin',
+                                            language: 'kotlin',
+                                            code: `// Modern Kotlin DSL with profile-based optimization
 val productCache = createReadHeavyCache<String, Product>(5000)
 
 // Or use the builder pattern with profiles
@@ -855,608 +877,599 @@ val apiCache = JCacheXBuilder
     .maximumSize(2000)
     .expireAfterAccess(Duration.ofMinutes(15))
     .build<String, ApiResponse>()`
-                                }
-                            ]}
-                        />
-                    </Box>
+                                        }
+                                    ]}
+                                />
+                            </Box>
 
-                    {/* Core Profiles */}
-                    <Box id="core-profiles" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            <DashboardIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            Core Profiles
-                        </Typography>
-                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                            Core profiles cover 80% of use cases with proven configurations for common access patterns.
-                        </Typography>
+                            {/* Core Profiles */}
+                            <Box id="core-profiles" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    <DashboardIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    Core Profiles
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                                    Core profiles cover 80% of use cases with proven configurations for common access patterns.
+                                </Typography>
 
-                        <TableContainer component={Paper} sx={{ mb: 4 }}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell><strong>Profile</strong></TableCell>
-                                        <TableCell><strong>Best For</strong></TableCell>
-                                        <TableCell><strong>Eviction Strategy</strong></TableCell>
-                                        <TableCell><strong>Default Size</strong></TableCell>
-                                        <TableCell><strong>Performance</strong></TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell><code>READ_HEAVY</code></TableCell>
-                                        <TableCell>Frequent read operations, reference data</TableCell>
-                                        <TableCell>Enhanced LFU with ZeroCopy</TableCell>
-                                        <TableCell>10,000</TableCell>
-                                        <TableCell>501.1M ops/sec</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell><code>WRITE_HEAVY</code></TableCell>
-                                        <TableCell>Frequent write operations, counters</TableCell>
-                                        <TableCell>Enhanced LRU with optimized eviction</TableCell>
-                                        <TableCell>5,000</TableCell>
-                                        <TableCell>224.6M ops/sec</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell><code>HIGH_PERFORMANCE</code></TableCell>
-                                        <TableCell>Ultra-low latency requirements</TableCell>
-                                        <TableCell>Optimized memory layout</TableCell>
-                                        <TableCell>50,000</TableCell>
-                                        <TableCell>Ultra-low latency</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell><code>MEMORY_EFFICIENT</code></TableCell>
-                                        <TableCell>Memory-constrained environments</TableCell>
-                                        <TableCell>Compact LRU</TableCell>
-                                        <TableCell>1,000</TableCell>
-                                        <TableCell>Memory optimized</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell><code>DEFAULT</code></TableCell>
-                                        <TableCell>General-purpose caching</TableCell>
-                                        <TableCell>TinyWindowLFU</TableCell>
-                                        <TableCell>1,000</TableCell>
-                                        <TableCell>Balanced performance</TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Box>
+                                <TableContainer component={Paper} sx={{ mb: 4 }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell><strong>Profile</strong></TableCell>
+                                                <TableCell><strong>Best For</strong></TableCell>
+                                                <TableCell><strong>Eviction Strategy</strong></TableCell>
+                                                <TableCell><strong>Default Size</strong></TableCell>
+                                                <TableCell><strong>Performance</strong></TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            <TableRow>
+                                                <TableCell><code>READ_HEAVY</code></TableCell>
+                                                <TableCell>Frequent read operations, reference data</TableCell>
+                                                <TableCell>Enhanced LFU with ZeroCopy</TableCell>
+                                                <TableCell>10,000</TableCell>
+                                                <TableCell>501.1M ops/sec</TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell><code>WRITE_HEAVY</code></TableCell>
+                                                <TableCell>Frequent write operations, counters</TableCell>
+                                                <TableCell>Enhanced LRU with optimized eviction</TableCell>
+                                                <TableCell>5,000</TableCell>
+                                                <TableCell>224.6M ops/sec</TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell><code>HIGH_PERFORMANCE</code></TableCell>
+                                                <TableCell>Ultra-low latency requirements</TableCell>
+                                                <TableCell>Optimized memory layout</TableCell>
+                                                <TableCell>50,000</TableCell>
+                                                <TableCell>Ultra-low latency</TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell><code>MEMORY_EFFICIENT</code></TableCell>
+                                                <TableCell>Memory-constrained environments</TableCell>
+                                                <TableCell>Compact LRU</TableCell>
+                                                <TableCell>1,000</TableCell>
+                                                <TableCell>Memory optimized</TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell><code>DEFAULT</code></TableCell>
+                                                <TableCell>General-purpose caching</TableCell>
+                                                <TableCell>TinyWindowLFU</TableCell>
+                                                <TableCell>1,000</TableCell>
+                                                <TableCell>Balanced performance</TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Box>
 
-                    {/* Specialized Profiles */}
-                    <Box id="specialized-profiles" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            <SettingsIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            Specialized Profiles
-                        </Typography>
-                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                            Specialized profiles are optimized for specific scenarios with built-in configurations.
-                        </Typography>
+                            {/* Specialized Profiles */}
+                            <Box id="specialized-profiles" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    <SettingsIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    Specialized Profiles
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                                    Specialized profiles are optimized for specific scenarios with built-in configurations.
+                                </Typography>
 
-                        <TableContainer component={Paper} sx={{ mb: 4 }}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell><strong>Profile</strong></TableCell>
-                                        <TableCell><strong>Best For</strong></TableCell>
-                                        <TableCell><strong>Eviction Strategy</strong></TableCell>
-                                        <TableCell><strong>Default Size</strong></TableCell>
-                                        <TableCell><strong>TTL</strong></TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell><code>API_RESPONSE</code></TableCell>
-                                        <TableCell>External API responses, gateway caching</TableCell>
-                                        <TableCell>TinyWindowLFU</TableCell>
-                                        <TableCell>1,000</TableCell>
-                                        <TableCell>15 minutes</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell><code>COMPUTE_INTENSIVE</code></TableCell>
-                                        <TableCell>Expensive computations, ML inference</TableCell>
-                                        <TableCell>Enhanced LFU</TableCell>
-                                        <TableCell>5,000</TableCell>
-                                        <TableCell>2 hours</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell><code>SESSION_STORAGE</code></TableCell>
-                                        <TableCell>User sessions, temporary data</TableCell>
-                                        <TableCell>LRU with TTL</TableCell>
-                                        <TableCell>10,000</TableCell>
-                                        <TableCell>30 minutes</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell><code>REFERENCE_DATA</code></TableCell>
-                                        <TableCell>Configuration, lookup tables</TableCell>
-                                        <TableCell>LFU with refresh</TableCell>
-                                        <TableCell>2,000</TableCell>
-                                        <TableCell>4 hours</TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Box>
+                                <TableContainer component={Paper} sx={{ mb: 4 }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell><strong>Profile</strong></TableCell>
+                                                <TableCell><strong>Best For</strong></TableCell>
+                                                <TableCell><strong>Eviction Strategy</strong></TableCell>
+                                                <TableCell><strong>Default Size</strong></TableCell>
+                                                <TableCell><strong>TTL</strong></TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            <TableRow>
+                                                <TableCell><code>API_RESPONSE</code></TableCell>
+                                                <TableCell>External API responses, gateway caching</TableCell>
+                                                <TableCell>TinyWindowLFU</TableCell>
+                                                <TableCell>1,000</TableCell>
+                                                <TableCell>15 minutes</TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell><code>COMPUTE_INTENSIVE</code></TableCell>
+                                                <TableCell>Expensive computations, ML inference</TableCell>
+                                                <TableCell>Enhanced LFU</TableCell>
+                                                <TableCell>5,000</TableCell>
+                                                <TableCell>2 hours</TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell><code>SESSION_STORAGE</code></TableCell>
+                                                <TableCell>User sessions, temporary data</TableCell>
+                                                <TableCell>LRU with TTL</TableCell>
+                                                <TableCell>10,000</TableCell>
+                                                <TableCell>30 minutes</TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell><code>REFERENCE_DATA</code></TableCell>
+                                                <TableCell>Configuration, lookup tables</TableCell>
+                                                <TableCell>LFU with refresh</TableCell>
+                                                <TableCell>2,000</TableCell>
+                                                <TableCell>4 hours</TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Box>
 
-                    {/* Advanced Profiles */}
-                    <Box id="advanced-profiles" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            <SpeedIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            Advanced Profiles
-                        </Typography>
-                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                            Advanced profiles provide cutting-edge optimizations for specialized requirements.
-                        </Typography>
+                            {/* Advanced Profiles */}
+                            <Box id="advanced-profiles" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    <SpeedIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    Advanced Profiles
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                                    Advanced profiles provide cutting-edge optimizations for specialized requirements.
+                                </Typography>
 
-                        <TableContainer component={Paper} sx={{ mb: 4 }}>
-                            <Table>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell><strong>Profile</strong></TableCell>
-                                        <TableCell><strong>Best For</strong></TableCell>
-                                        <TableCell><strong>Special Features</strong></TableCell>
-                                        <TableCell><strong>Default Size</strong></TableCell>
-                                        <TableCell><strong>Performance</strong></TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    <TableRow>
-                                        <TableCell><code>ZERO_COPY</code></TableCell>
-                                        <TableCell>Ultra-low latency (HFT, real-time)</TableCell>
-                                        <TableCell>Zero-copy operations</TableCell>
-                                        <TableCell>50,000</TableCell>
-                                        <TableCell>501.1M ops/sec</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell><code>CONCURRENT_HEAVY</code></TableCell>
-                                        <TableCell>High-concurrency workloads</TableCell>
-                                        <TableCell>Lock-free algorithms</TableCell>
-                                        <TableCell>10,000</TableCell>
-                                        <TableCell>Multi-thread optimized</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell><code>BATCH_OPTIMIZED</code></TableCell>
-                                        <TableCell>Batch processing, bulk operations</TableCell>
-                                        <TableCell>Batch eviction, bulk writes</TableCell>
-                                        <TableCell>25,000</TableCell>
-                                        <TableCell>Batch throughput optimized</TableCell>
-                                    </TableRow>
-                                    <TableRow>
-                                        <TableCell><code>DISTRIBUTED</code></TableCell>
-                                        <TableCell>Multi-node clustering</TableCell>
-                                        <TableCell>Network-aware, consistency</TableCell>
-                                        <TableCell>5,000</TableCell>
-                                        <TableCell>Network latency dependent</TableCell>
-                                    </TableRow>
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
-                    </Box>
+                                <TableContainer component={Paper} sx={{ mb: 4 }}>
+                                    <Table>
+                                        <TableHead>
+                                            <TableRow>
+                                                <TableCell><strong>Profile</strong></TableCell>
+                                                <TableCell><strong>Best For</strong></TableCell>
+                                                <TableCell><strong>Special Features</strong></TableCell>
+                                                <TableCell><strong>Default Size</strong></TableCell>
+                                                <TableCell><strong>Performance</strong></TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            <TableRow>
+                                                <TableCell><code>ZERO_COPY</code></TableCell>
+                                                <TableCell>Ultra-low latency (HFT, real-time)</TableCell>
+                                                <TableCell>Zero-copy operations</TableCell>
+                                                <TableCell>50,000</TableCell>
+                                                <TableCell>501.1M ops/sec</TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell><code>CONCURRENT_HEAVY</code></TableCell>
+                                                <TableCell>High-concurrency workloads</TableCell>
+                                                <TableCell>Lock-free algorithms</TableCell>
+                                                <TableCell>10,000</TableCell>
+                                                <TableCell>Multi-thread optimized</TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell><code>BATCH_OPTIMIZED</code></TableCell>
+                                                <TableCell>Batch processing, bulk operations</TableCell>
+                                                <TableCell>Batch eviction, bulk writes</TableCell>
+                                                <TableCell>25,000</TableCell>
+                                                <TableCell>Batch throughput optimized</TableCell>
+                                            </TableRow>
+                                            <TableRow>
+                                                <TableCell><code>DISTRIBUTED</code></TableCell>
+                                                <TableCell>Multi-node clustering</TableCell>
+                                                <TableCell>Network-aware, consistency</TableCell>
+                                                <TableCell>5,000</TableCell>
+                                                <TableCell>Network latency dependent</TableCell>
+                                            </TableRow>
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Box>
 
-                    {/* Profile Selection Guide */}
-                    <Box id="profile-selection-guide" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            <SecurityIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            Profile Selection Guide
-                        </Typography>
-                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                            Choose the right profile based on your application's characteristics and requirements.
-                        </Typography>
+                            {/* Profile Selection Guide */}
+                            <Box id="profile-selection-guide" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    <SecurityIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    Profile Selection Guide
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                                    Choose the right profile based on your application's characteristics and requirements.
+                                </Typography>
 
-                        <Box sx={{
-                            display: 'grid',
-                            gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' },
-                            gap: 4,
-                            mb: 4
-                        }}>
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
-                                        Read-Heavy Applications
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ mb: 2 }}>
-                                        Use JCacheXBuilder.forReadHeavyWorkload() when 80%+ operations are reads:
-                                    </Typography>
-                                    <List dense>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• User profiles and preferences" />
-                                        </ListItem>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Product catalogs and menus" />
-                                        </ListItem>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Reference data and configuration" />
-                                        </ListItem>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Static content and templates" />
-                                        </ListItem>
-                                    </List>
-                                    <Chip label="501.1M ops/sec" color="primary" size="small" sx={{ mt: 2 }} />
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'secondary.main' }}>
-                                        Write-Heavy Applications
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ mb: 2 }}>
-                                        Use JCacheXBuilder.forWriteHeavyWorkload() when 50%+ operations are writes:
-                                    </Typography>
-                                    <List dense>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Counters and statistics" />
-                                        </ListItem>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Real-time analytics data" />
-                                        </ListItem>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Frequently updated user state" />
-                                        </ListItem>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Session data with updates" />
-                                        </ListItem>
-                                    </List>
-                                    <Chip label="224.6M ops/sec" color="secondary" size="small" sx={{ mt: 2 }} />
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'success.main' }}>
-                                        High-Performance Applications
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ mb: 2 }}>
-                                        Use JCacheXBuilder.forHighPerformance() for ultra-low latency requirements:
-                                    </Typography>
-                                    <List dense>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Real-time trading systems" />
-                                        </ListItem>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Gaming leaderboards" />
-                                        </ListItem>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Live chat and messaging" />
-                                        </ListItem>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Real-time dashboards" />
-                                        </ListItem>
-                                    </List>
-                                    <Chip label="Ultra-low latency" color="success" size="small" sx={{ mt: 2 }} />
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardContent>
-                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'info.main' }}>
-                                        Memory-Efficient Applications
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ mb: 2 }}>
-                                        Use JCacheXBuilder.fromProfile(ProfileName.MEMORY_EFFICIENT) for constrained environments:
-                                    </Typography>
-                                    <List dense>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Mobile applications" />
-                                        </ListItem>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• IoT devices" />
-                                        </ListItem>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Edge computing nodes" />
-                                        </ListItem>
-                                        <ListItem sx={{ py: 0 }}>
-                                            <ListItemText primary="• Container-based deployments" />
-                                        </ListItem>
-                                    </List>
-                                    <Chip label="Memory optimized" color="info" size="small" sx={{ mt: 2 }} />
-                                </CardContent>
-                            </Card>
-                        </Box>
-
-                        <Alert severity="warning" sx={{ mb: 3 }}>
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                                Profile Tradeoffs
-                            </Typography>
-                            <Typography variant="body2" sx={{ mb: 2 }}>
-                                While profiles provide optimal defaults, consider these tradeoffs:
-                            </Typography>
-                            <List dense>
-                                <ListItem sx={{ py: 0 }}>
-                                    <ListItemText
-                                        primary="• Advanced profiles may have higher memory overhead"
-                                        primaryTypographyProps={{ variant: 'body2' }}
-                                    />
-                                </ListItem>
-                                <ListItem sx={{ py: 0 }}>
-                                    <ListItemText
-                                        primary="• Some profiles sacrifice flexibility for performance"
-                                        primaryTypographyProps={{ variant: 'body2' }}
-                                    />
-                                </ListItem>
-                                <ListItem sx={{ py: 0 }}>
-                                    <ListItemText
-                                        primary="• Distributed profiles require network infrastructure"
-                                        primaryTypographyProps={{ variant: 'body2' }}
-                                    />
-                                </ListItem>
-                                <ListItem sx={{ py: 0 }}>
-                                    <ListItemText
-                                        primary="• You can always override profile defaults if needed"
-                                        primaryTypographyProps={{ variant: 'body2' }}
-                                    />
-                                </ListItem>
-                            </List>
-                        </Alert>
-                    </Box>
-                </Box>
-
-                {/* Advanced Configurations Section */}
-                <Box id="advanced-configurations" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
-                        Advanced Configurations
-                    </Typography>
-
-                    {/* Eviction Strategies */}
-                    <Box id="eviction-strategies" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            <DashboardIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            Eviction Strategies
-                        </Typography>
-                        <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                            JCacheX provides multiple eviction strategies to manage memory usage when the cache reaches its capacity.
-                            Each strategy is optimized for different use cases and access patterns.
-                        </Typography>
-
-                        <Stack spacing={3}>
-                            {evictionStrategies.map((strategy, index) => (
-                                <Box key={index} sx={{
-                                    p: 3,
-                                    borderRadius: 2,
-                                    backgroundColor: 'grey.50',
-                                    border: '1px solid',
-                                    borderColor: 'grey.200'
+                                <Box sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns: { xs: '1fr', lg: 'repeat(2, 1fr)' },
+                                    gap: 4,
+                                    mb: 4
                                 }}>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                                        <Box sx={{ color: 'primary.main', mr: 2 }}>
-                                            {strategy.icon}
-                                        </Box>
-                                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                            {strategy.name}
-                                        </Typography>
-                                    </Box>
-                                    <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
-                                        {strategy.description}
-                                    </Typography>
-                                    <Box sx={{ mb: 2 }}>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                                            Best Use Cases:
-                                        </Typography>
-                                        <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
-                                            {strategy.useCase}
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ mb: 2 }}>
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                                            Performance Characteristics:
-                                        </Typography>
-                                        <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
-                                            {strategy.performance}
-                                        </Typography>
-                                    </Box>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                        <Typography variant="caption" color="text.secondary">
-                                            Implementation:
-                                        </Typography>
-                                        <Chip
-                                            label={strategy.className}
-                                            size="small"
-                                            variant="outlined"
-                                            sx={{
-                                                fontFamily: 'monospace',
-                                                fontSize: '0.75rem'
-                                            }}
-                                        />
-                                    </Box>
+                                    <Card>
+                                        <CardContent>
+                                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'primary.main' }}>
+                                                Read-Heavy Applications
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ mb: 2 }}>
+                                                Use JCacheXBuilder.forReadHeavyWorkload() when 80%+ operations are reads:
+                                            </Typography>
+                                            <List dense>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• User profiles and preferences" />
+                                                </ListItem>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Product catalogs and menus" />
+                                                </ListItem>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Reference data and configuration" />
+                                                </ListItem>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Static content and templates" />
+                                                </ListItem>
+                                            </List>
+                                            <Chip label="501.1M ops/sec" color="primary" size="small" sx={{ mt: 2 }} />
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card>
+                                        <CardContent>
+                                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'secondary.main' }}>
+                                                Write-Heavy Applications
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ mb: 2 }}>
+                                                Use JCacheXBuilder.forWriteHeavyWorkload() when 50%+ operations are writes:
+                                            </Typography>
+                                            <List dense>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Counters and statistics" />
+                                                </ListItem>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Real-time analytics data" />
+                                                </ListItem>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Frequently updated user state" />
+                                                </ListItem>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Session data with updates" />
+                                                </ListItem>
+                                            </List>
+                                            <Chip label="224.6M ops/sec" color="secondary" size="small" sx={{ mt: 2 }} />
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card>
+                                        <CardContent>
+                                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'success.main' }}>
+                                                High-Performance Applications
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ mb: 2 }}>
+                                                Use JCacheXBuilder.forHighPerformance() for ultra-low latency requirements:
+                                            </Typography>
+                                            <List dense>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Real-time trading systems" />
+                                                </ListItem>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Gaming leaderboards" />
+                                                </ListItem>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Live chat and messaging" />
+                                                </ListItem>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Real-time dashboards" />
+                                                </ListItem>
+                                            </List>
+                                            <Chip label="Ultra-low latency" color="success" size="small" sx={{ mt: 2 }} />
+                                        </CardContent>
+                                    </Card>
+
+                                    <Card>
+                                        <CardContent>
+                                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'info.main' }}>
+                                                Memory-Efficient Applications
+                                            </Typography>
+                                            <Typography variant="body2" sx={{ mb: 2 }}>
+                                                Use JCacheXBuilder.fromProfile(ProfileName.MEMORY_EFFICIENT) for constrained environments:
+                                            </Typography>
+                                            <List dense>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Mobile applications" />
+                                                </ListItem>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• IoT devices" />
+                                                </ListItem>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Edge computing nodes" />
+                                                </ListItem>
+                                                <ListItem sx={{ py: 0 }}>
+                                                    <ListItemText primary="• Container-based deployments" />
+                                                </ListItem>
+                                            </List>
+                                            <Chip label="Memory optimized" color="info" size="small" sx={{ mt: 2 }} />
+                                        </CardContent>
+                                    </Card>
                                 </Box>
-                            ))}
-                        </Stack>
 
-                        <Typography variant="h6" sx={{ mt: 4, mb: 2, fontWeight: 600 }}>
-                            Choosing the Right Strategy
-                        </Typography>
-                        <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
-                            The choice of eviction strategy depends on your application's access patterns:
-                        </Typography>
-                        <List dense sx={{ mt: 2 }}>
-                            <ListItem>
-                                <ListItemText
-                                    primary="• LRU - Best for general-purpose caching with temporal locality"
-                                    secondary="Most recently accessed items are more likely to be accessed again"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemText
-                                    primary="• LFU - Ideal for workloads with clear frequency patterns"
-                                    secondary="Some items are accessed much more frequently than others"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemText
-                                    primary="• FIFO/FILO - Simple strategies for predictable access patterns"
-                                    secondary="When insertion order is the primary factor for eviction"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemText
-                                    primary="• Weight-based - Memory-conscious caching for variable-size objects"
-                                    secondary="When cache entries have significantly different memory footprints"
-                                />
-                            </ListItem>
-                            <ListItem>
-                                <ListItemText
-                                    primary="• Time-based - TTL-based management for time-sensitive data"
-                                    secondary="When data freshness is more important than access patterns"
-                                />
-                            </ListItem>
-                        </List>
-                    </Box>
-
-                    {/* Performance Benchmarks */}
-                    <Box id="performance-benchmarks" sx={{ mb: 6 }}>
-                        <Alert severity="info" sx={{ mb: 3 }}>
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                                🚀 Outstanding Performance
-                            </Typography>
-                            <Typography variant="body2" sx={{ mb: 2 }}>
-                                JCacheX achieves market-leading performance with specialized cache implementations:
-                            </Typography>
-                            <List dense>
-                                <ListItem sx={{ py: 0 }}>
-                                    <ListItemText
-                                        primary="• ZeroCopy Cache: 7.9ns GET (2.6x faster than Caffeine)"
-                                        primaryTypographyProps={{ variant: 'body2' }}
-                                    />
-                                </ListItem>
-                                <ListItem sx={{ py: 0 }}>
-                                    <ListItemText
-                                        primary="• Locality Optimized: 9.7ns GET (1.9x faster than Caffeine)"
-                                        primaryTypographyProps={{ variant: 'body2' }}
-                                    />
-                                </ListItem>
-                                <ListItem sx={{ py: 0 }}>
-                                    <ListItemText
-                                        primary="• All eviction strategies optimized to O(1) operations"
-                                        primaryTypographyProps={{ variant: 'body2' }}
-                                    />
-                                </ListItem>
-                            </List>
-                            <Button
-                                component={Link}
-                                to="/performance"
-                                variant="outlined"
-                                size="small"
-                                startIcon={<SpeedIcon />}
-                                sx={{ mt: 2 }}
-                            >
-                                View Comprehensive Benchmarks
-                            </Button>
-                        </Alert>
-                    </Box>
-
-                    {/* All Configuration Options */}
-                    <Box id="all-configuration-options" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            <ApiIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            All Configuration Options
-                        </Typography>
-                        {configurationOptions.map((category, index) => (
-                            <Accordion key={index} defaultExpanded={index === 0}>
-                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                                        {category.category}
+                                <Alert severity="warning" sx={{ mb: 3 }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                                        Profile Tradeoffs
                                     </Typography>
-                                </AccordionSummary>
-                                <AccordionDetails>
-                                    <TableContainer component={Paper}>
-                                        <Table>
-                                            <TableHead>
-                                                <TableRow>
-                                                    <TableCell>Option</TableCell>
-                                                    <TableCell>Description</TableCell>
-                                                    <TableCell>Example</TableCell>
-                                                </TableRow>
-                                            </TableHead>
-                                            <TableBody>
-                                                {category.options.map((option, optionIndex) => (
-                                                    <TableRow key={optionIndex}>
-                                                        <TableCell>
-                                                            <code>{option.name}</code>
-                                                        </TableCell>
-                                                        <TableCell>{option.description}</TableCell>
-                                                        <TableCell>
-                                                            <code>{option.example}</code>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </TableContainer>
-                                </AccordionDetails>
-                            </Accordion>
-                        ))}
-                    </Box>
-
-                    {/* Kotlin Extensions */}
-                    <Box id="kotlin-extensions" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            <ExtensionIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
-                            Kotlin Extensions
-                        </Typography>
-                        <Box sx={{
-                            display: 'grid',
-                            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
-                            gap: 3
-                        }}>
-                            {kotlinExtensions.map((extension, index) => (
-                                <Card key={index} sx={{ height: '100%' }}>
-                                    <CardContent>
-                                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
-                                            {extension.name}
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                            {extension.description}
-                                        </Typography>
-                                        <Box component="pre" sx={{
-                                            backgroundColor: 'grey.100',
-                                            p: 2,
-                                            borderRadius: 1,
-                                            fontSize: '0.875rem',
-                                            overflow: 'auto'
-                                        }}>
-                                            {extension.examples.join('\n')}
-                                        </Box>
-                                    </CardContent>
-                                </Card>
-                            ))}
+                                    <Typography variant="body2" sx={{ mb: 2 }}>
+                                        While profiles provide optimal defaults, consider these tradeoffs:
+                                    </Typography>
+                                    <List dense>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText
+                                                primary="• Advanced profiles may have higher memory overhead"
+                                                primaryTypographyProps={{ variant: 'body2' }}
+                                            />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText
+                                                primary="• Some profiles sacrifice flexibility for performance"
+                                                primaryTypographyProps={{ variant: 'body2' }}
+                                            />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText
+                                                primary="• Distributed profiles require network infrastructure"
+                                                primaryTypographyProps={{ variant: 'body2' }}
+                                            />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText
+                                                primary="• You can always override profile defaults if needed"
+                                                primaryTypographyProps={{ variant: 'body2' }}
+                                            />
+                                        </ListItem>
+                                    </List>
+                                </Alert>
+                            </Box>
                         </Box>
-                    </Box>
-                </Box>
 
-                {/* Kubernetes Distributed Caching */}
-                <Box id="kubernetes-distributed" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
-                        Distributed Caching on Kubernetes
-                    </Typography>
+                        {/* Advanced Configurations Section */}
+                        <Box id="advanced-configurations" sx={{ mb: 8 }}>
+                            <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                                Advanced Configurations
+                            </Typography>
 
-                    <Typography variant="body1" sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
-                        JCacheX provides a distributed cache implementation optimized for Kubernetes via
-                        <code style={{ marginLeft: 4, marginRight: 4 }}>KubernetesDistributedCache</code> and
-                        <code style={{ marginLeft: 4 }}>KubernetesNodeDiscovery</code>. It uses pod identities and
-                        service discovery to form a cluster and distribute keys via consistent hashing.
-                    </Typography>
+                            {/* Eviction Strategies */}
+                            <Box id="eviction-strategies" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    <DashboardIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    Eviction Strategies
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 4, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                                    JCacheX provides multiple eviction strategies to manage memory usage when the cache reaches its capacity.
+                                    Each strategy is optimized for different use cases and access patterns.
+                                </Typography>
 
-                    <Alert severity="info" sx={{ mb: 3 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                            Advantages
-                        </Typography>
-                        <List dense>
-                            <ListItem><ListItemText primary="Native pod identity for node IDs" /></ListItem>
-                            <ListItem><ListItemText primary="Automatic discovery and topology updates" /></ListItem>
-                            <ListItem><ListItemText primary="Consistent hashing for balanced distribution" /></ListItem>
-                            <ListItem><ListItemText primary="Graceful handling of pod restarts and scaling" /></ListItem>
-                        </List>
-                    </Alert>
+                                <Stack spacing={3}>
+                                    {evictionStrategies.map((strategy, index) => (
+                                        <Box key={index} className="jcx-surface" sx={{ p: 3, borderRadius: 2 }}>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                                <Box sx={{ color: 'primary.main', mr: 2 }}>
+                                                    {strategy.icon}
+                                                </Box>
+                                                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                                    {strategy.name}
+                                                </Typography>
+                                            </Box>
+                                            <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
+                                                {strategy.description}
+                                            </Typography>
+                                            <Box sx={{ mb: 2 }}>
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                                                    Best Use Cases:
+                                                </Typography>
+                                                <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
+                                                    {strategy.useCase}
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{ mb: 2 }}>
+                                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                                                    Performance Characteristics:
+                                                </Typography>
+                                                <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
+                                                    {strategy.performance}
+                                                </Typography>
+                                            </Box>
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    Implementation:
+                                                </Typography>
+                                                <Chip
+                                                    label={strategy.className}
+                                                    size="small"
+                                                    variant="outlined"
+                                                    sx={{
+                                                        fontFamily: 'monospace',
+                                                        fontSize: '0.75rem'
+                                                    }}
+                                                />
+                                            </Box>
+                                        </Box>
+                                    ))}
+                                </Stack>
 
-                    <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-                        Quick Start (Kubernetes)
-                    </Typography>
-                    <CodeTabs
-                        tabs={[
-                            {
-                                id: 'k8s-java',
-                                label: 'Java Builder',
-                                language: 'java',
-                                code: `import io.github.dhruv1110.jcachex.distributed.DistributedCache;
+                                <Typography variant="h6" sx={{ mt: 4, mb: 2, fontWeight: 600 }}>
+                                    Choosing the Right Strategy
+                                </Typography>
+                                <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
+                                    The choice of eviction strategy depends on your application's access patterns:
+                                </Typography>
+                                <List dense sx={{ mt: 2 }}>
+                                    <ListItem>
+                                        <ListItemText
+                                            primary="• LRU - Best for general-purpose caching with temporal locality"
+                                            secondary="Most recently accessed items are more likely to be accessed again"
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemText
+                                            primary="• LFU - Ideal for workloads with clear frequency patterns"
+                                            secondary="Some items are accessed much more frequently than others"
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemText
+                                            primary="• FIFO/FILO - Simple strategies for predictable access patterns"
+                                            secondary="When insertion order is the primary factor for eviction"
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemText
+                                            primary="• Weight-based - Memory-conscious caching for variable-size objects"
+                                            secondary="When cache entries have significantly different memory footprints"
+                                        />
+                                    </ListItem>
+                                    <ListItem>
+                                        <ListItemText
+                                            primary="• Time-based - TTL-based management for time-sensitive data"
+                                            secondary="When data freshness is more important than access patterns"
+                                        />
+                                    </ListItem>
+                                </List>
+                            </Box>
+
+                            {/* Performance Benchmarks */}
+                            <Box id="performance-benchmarks" sx={{ mb: 6 }}>
+                                <Alert severity="info" sx={{ mb: 3 }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                                        🚀 Outstanding Performance
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mb: 2 }}>
+                                        JCacheX achieves market-leading performance with specialized cache implementations:
+                                    </Typography>
+                                    <List dense>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText
+                                                primary="• ZeroCopy Cache: 7.9ns GET (2.6x faster than Caffeine)"
+                                                primaryTypographyProps={{ variant: 'body2' }}
+                                            />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText
+                                                primary="• Locality Optimized: 9.7ns GET (1.9x faster than Caffeine)"
+                                                primaryTypographyProps={{ variant: 'body2' }}
+                                            />
+                                        </ListItem>
+                                        <ListItem sx={{ py: 0 }}>
+                                            <ListItemText
+                                                primary="• All eviction strategies optimized to O(1) operations"
+                                                primaryTypographyProps={{ variant: 'body2' }}
+                                            />
+                                        </ListItem>
+                                    </List>
+                                    <Button
+                                        component={Link}
+                                        to="/performance"
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={<SpeedIcon />}
+                                        sx={{ mt: 2 }}
+                                    >
+                                        View Comprehensive Benchmarks
+                                    </Button>
+                                </Alert>
+                            </Box>
+
+                            {/* All Configuration Options */}
+                            <Box id="all-configuration-options" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    <ApiIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    All Configuration Options
+                                </Typography>
+                                {configurationOptions.map((category, index) => (
+                                    <Accordion key={index} defaultExpanded={index === 0}>
+                                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                                {category.category}
+                                            </Typography>
+                                        </AccordionSummary>
+                                        <AccordionDetails>
+                                            <TableContainer component={Paper}>
+                                                <Table>
+                                                    <TableHead>
+                                                        <TableRow>
+                                                            <TableCell>Option</TableCell>
+                                                            <TableCell>Description</TableCell>
+                                                            <TableCell>Example</TableCell>
+                                                        </TableRow>
+                                                    </TableHead>
+                                                    <TableBody>
+                                                        {category.options.map((option, optionIndex) => (
+                                                            <TableRow key={optionIndex}>
+                                                                <TableCell>
+                                                                    <code>{option.name}</code>
+                                                                </TableCell>
+                                                                <TableCell>{option.description}</TableCell>
+                                                                <TableCell>
+                                                                    <code>{option.example}</code>
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
+                                            </TableContainer>
+                                        </AccordionDetails>
+                                    </Accordion>
+                                ))}
+                            </Box>
+
+                            {/* Kotlin Extensions */}
+                            <Box id="kotlin-extensions" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    <ExtensionIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+                                    Kotlin Extensions
+                                </Typography>
+                                <Box sx={{
+                                    display: 'grid',
+                                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                                    gap: 3
+                                }}>
+                                    {kotlinExtensions.map((extension, index) => (
+
+                                        <Card key={index} className="jcx-surface" sx={{ height: '100%' }}>
+                                            <CardContent>
+                                                <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+                                                    {extension.name}
+                                                </Typography>
+                                                <CodeTabs tabs={[
+                                                                                                            {
+                                                                                                                id: extension.name,
+                                                                                                                label: extension.description,
+                                                                                                                language: 'kotlin',
+                                                                                                                code: extension.examples.join('\n')
+                                                                                                            }
+                                                                                                        ]} />
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </Box>
+                            </Box>
+                        </Box>
+
+                        {/* Kubernetes Distributed Caching */}
+                        <Box id="kubernetes-distributed" sx={{ mb: 8 }}>
+                            <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                                Distributed Caching on Kubernetes
+                            </Typography>
+
+                            <Typography variant="body1" sx={{ mb: 3, fontSize: '1.1rem', lineHeight: 1.7 }}>
+                                JCacheX provides a distributed cache implementation optimized for Kubernetes via
+                                <code style={{ marginLeft: 4, marginRight: 4 }}>KubernetesDistributedCache</code> and
+                                <code style={{ marginLeft: 4 }}>KubernetesNodeDiscovery</code>. It uses pod identities and
+                                service discovery to form a cluster and distribute keys via consistent hashing.
+                            </Typography>
+
+                            <Alert severity="info" sx={{ mb: 3 }}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                    Advantages
+                                </Typography>
+                                <List dense>
+                                    <ListItem><ListItemText primary="Native pod identity for node IDs" /></ListItem>
+                                    <ListItem><ListItemText primary="Automatic discovery and topology updates" /></ListItem>
+                                    <ListItem><ListItemText primary="Consistent hashing for balanced distribution" /></ListItem>
+                                    <ListItem><ListItemText primary="Graceful handling of pod restarts and scaling" /></ListItem>
+                                </List>
+                            </Alert>
+
+                            <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+                                Quick Start (Kubernetes)
+                            </Typography>
+                            <CodeTabs
+                                tabs={[
+                                    {
+                                        id: 'k8s-java',
+                                        label: 'Java Builder',
+                                        language: 'java',
+                                        code: `import io.github.dhruv1110.jcachex.distributed.DistributedCache;
 import io.github.dhruv1110.jcachex.distributed.impl.KubernetesDistributedCache;
 import io.github.dhruv1110.jcachex.distributed.communication.TcpCommunicationProtocol;
 import io.github.dhruv1110.jcachex.distributed.discovery.KubernetesNodeDiscovery;
@@ -1476,12 +1489,12 @@ DistributedCache<String, String> cache = KubernetesDistributedCache.<String, Str
 
 cache.put("user:1", "alice");
 String v = cache.get("user:1");`
-                            },
-                            {
-                                id: 'k8s-k8s',
-                                label: 'K8s YAML (Service)',
-                                language: 'yaml',
-                                code: `apiVersion: v1
+                                    },
+                                    {
+                                        id: 'k8s-k8s',
+                                        label: 'K8s YAML (Service)',
+                                        language: 'yaml',
+                                        code: `apiVersion: v1
 kind: Service
 metadata:
   name: jcachex-service
@@ -1492,47 +1505,47 @@ spec:
     - port: 8081
       targetPort: 8081
       name: cache`
-                            }
-                        ]}
-                    />
+                                    }
+                                ]}
+                            />
 
-                    <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mt: 4, mb: 2 }}>
-                        Best Practices
-                    </Typography>
-                    <List dense sx={{ mb: 2 }}>
-                        <ListItem><ListItemText primary="Use a headless Service for node discovery" /></ListItem>
-                        <ListItem><ListItemText primary="Allocate resource requests/limits to avoid eviction" /></ListItem>
-                        <ListItem><ListItemText primary="Set reasonable networkTimeout and partitionCount" /></ListItem>
-                        <ListItem><ListItemText primary="Monitor per-node stats and network failures" /></ListItem>
-                    </List>
+                            <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mt: 4, mb: 2 }}>
+                                Best Practices
+                            </Typography>
+                            <List dense sx={{ mb: 2 }}>
+                                <ListItem><ListItemText primary="Use a headless Service for node discovery" /></ListItem>
+                                <ListItem><ListItemText primary="Allocate resource requests/limits to avoid eviction" /></ListItem>
+                                <ListItem><ListItemText primary="Set reasonable networkTimeout and partitionCount" /></ListItem>
+                                <ListItem><ListItemText primary="Monitor per-node stats and network failures" /></ListItem>
+                            </List>
 
-                    <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mt: 4, mb: 2 }}>
-                        Operations
-                    </Typography>
-                    <List dense>
-                        <ListItem><ListItemText primary="getClusterTopology() - inspect nodes/partitions" /></ListItem>
-                        <ListItem><ListItemText primary="getPerNodeStats() - collect cluster-wide stats" /></ListItem>
-                        <ListItem><ListItemText primary="getNodeStatuses() and getDistributedMetrics()" /></ListItem>
-                    </List>
-                </Box>
+                            <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mt: 4, mb: 2 }}>
+                                Operations
+                            </Typography>
+                            <List dense>
+                                <ListItem><ListItemText primary="getClusterTopology() - inspect nodes/partitions" /></ListItem>
+                                <ListItem><ListItemText primary="getPerNodeStats() - collect cluster-wide stats" /></ListItem>
+                                <ListItem><ListItemText primary="getNodeStatuses() and getDistributedMetrics()" /></ListItem>
+                            </List>
+                        </Box>
 
-                {/* Java Configuration Section */}
-                <Box id="java-configuration" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
-                        Java Configuration
-                    </Typography>
+                        {/* Java Configuration Section */}
+                        <Box id="java-configuration" sx={{ mb: 8 }}>
+                            <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                                Java Configuration
+                            </Typography>
 
-                    <Box id="java-basic-usage" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            Basic Usage
-                        </Typography>
-                        <CodeTabs
-                            tabs={[
-                                {
-                                    id: 'basic',
-                                    label: 'Basic Setup',
-                                    language: 'java',
-                                    code: `// Create basic cache
+                            <Box id="java-basic-usage" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    Basic Usage
+                                </Typography>
+                                <CodeTabs
+                                    tabs={[
+                                        {
+                                            id: 'basic',
+                                            label: 'Basic Setup',
+                                            language: 'java',
+                                            code: `// Create basic cache
 CacheConfig<String, String> config = CacheConfig.<String, String>builder()
     .maximumSize(1000L)
     .expireAfterWrite(Duration.ofMinutes(30))
@@ -1544,12 +1557,12 @@ Cache<String, String> cache = new DefaultCache<>(config);
 cache.put("key1", "value1");
 String value = cache.get("key1");
 cache.remove("key1");`
-                                },
-                                {
-                                    id: 'async',
-                                    label: 'Async Operations',
-                                    language: 'java',
-                                    code: `// Async operations
+                                        },
+                                        {
+                                            id: 'async',
+                                            label: 'Async Operations',
+                                            language: 'java',
+                                            code: `// Async operations
 CompletableFuture<String> future = cache.getAsync("key1");
 CompletableFuture<Void> putFuture = cache.putAsync("key2", "value2");
 CompletableFuture<Void> removeFuture = cache.removeAsync("key1");
@@ -1563,29 +1576,56 @@ CompletableFuture<String> result = cache.getAsync("key1")
         }
         return CompletableFuture.completedFuture(value);
     });`
-                                }
-                            ]}
-                        />
-                    </Box>
-                </Box>
+                                        }
+                                    ]}
+                                />
+                            </Box>
 
-                {/* Kotlin Configuration Section */}
-                <Box id="kotlin-configuration" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
-                        Kotlin Configuration
-                    </Typography>
+                            {/* Advanced Features */}
+                            <Box id="java-advanced-features" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    Advanced Features
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 2 }}>
+                                    Customize loaders, listeners, and eviction strategies for production usage.
+                                </Typography>
+                                <List dense>
+                                    <ListItem><ListItemText primary="Custom CacheLoader for lazy population" /></ListItem>
+                                    <ListItem><ListItemText primary="Event listeners for evictions and updates" /></ListItem>
+                                    <ListItem><ListItemText primary="Weight-based and TTL-based eviction" /></ListItem>
+                                </List>
+                            </Box>
 
-                    <Box id="kotlin-dsl" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            DSL Configuration
-                        </Typography>
-                        <CodeTabs
-                            tabs={[
-                                {
-                                    id: 'dsl-basic',
-                                    label: 'Basic DSL',
-                                    language: 'kotlin',
-                                    code: `// DSL configuration
+                            {/* Best Practices */}
+                            <Box id="java-best-practices" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    Best Practices
+                                </Typography>
+                                <List dense>
+                                    <ListItem><ListItemText primary="Prefer profiles for sensible defaults, override selectively" /></ListItem>
+                                    <ListItem><ListItemText primary="Tune maximumSize and expiration based on real traffic" /></ListItem>
+                                    <ListItem><ListItemText primary="Enable statistics in staging, sample in production" /></ListItem>
+                                </List>
+                            </Box>
+                        </Box>
+
+                        {/* Kotlin Configuration Section */}
+                        <Box id="kotlin-configuration" sx={{ mb: 8 }}>
+                            <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                                Kotlin Configuration
+                            </Typography>
+
+                            <Box id="kotlin-dsl" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    DSL Configuration
+                                </Typography>
+                                <CodeTabs
+                                    tabs={[
+                                        {
+                                            id: 'dsl-basic',
+                                            label: 'Basic DSL',
+                                            language: 'kotlin',
+                                            code: `// DSL configuration
 val cache = createCache<String, User> {
     maximumSize(1000L)
     expireAfterWrite(Duration.ofMinutes(30))
@@ -1598,12 +1638,12 @@ cache["user123"] = User("Alice")
 val user = cache["user123"]
 cache += "user456" to User("Bob")
 cache -= "user123"`
-                                },
-                                {
-                                    id: 'dsl-advanced',
-                                    label: 'Advanced DSL',
-                                    language: 'kotlin',
-                                    code: `// Advanced DSL configuration
+                                        },
+                                        {
+                                            id: 'dsl-advanced',
+                                            label: 'Advanced DSL',
+                                            language: 'kotlin',
+                                            code: `// Advanced DSL configuration
 val cache = createCache<String, ApiResponse> {
     maximumSize(500L)
     expireAfterAccess(Duration.ofMinutes(10))
@@ -1618,29 +1658,47 @@ val cache = createCache<String, ApiResponse> {
             logger.info("Evicted $key due to $reason")
         }
     })`
-                                }
-                            ]}
-                        />
-                    </Box>
-                </Box>
+                                        }
+                                    ]}
+                                />
+                            </Box>
 
-                {/* Spring Boot Configuration Section */}
-                <Box id="spring-boot-configuration" sx={{ mb: 8 }}>
-                    <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
-                        Spring Boot Configuration
-                    </Typography>
+                            <Box id="kotlin-coroutines" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    Coroutine Support
+                                </Typography>
+                                <Typography variant="body1" sx={{ mb: 2 }}>
+                                    Use suspending functions and Flows for non-blocking cache operations.
+                                </Typography>
+                            </Box>
 
-                    <Box id="spring-annotations" sx={{ mb: 6 }}>
-                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
-                            Annotations
-                        </Typography>
-                        <CodeTabs
-                            tabs={[
-                                {
-                                    id: 'cacheable',
-                                    label: '@JCacheXCacheable',
-                                    language: 'java',
-                                    code: `@Service
+                            <Box id="kotlin-operators" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    Operator Overloading
+                                </Typography>
+                                <Typography variant="body1">
+                                    Idiomatic operators like cache["key"] and += are provided by Kotlin extensions.
+                                </Typography>
+                            </Box>
+                        </Box>
+
+                        {/* Spring Boot Configuration Section */}
+                        <Box id="spring-boot-configuration" sx={{ mb: 8 }}>
+                            <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+                                Spring Boot Configuration
+                            </Typography>
+
+                            <Box id="spring-annotations" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    Annotations
+                                </Typography>
+                                <CodeTabs
+                                    tabs={[
+                                        {
+                                            id: 'cacheable',
+                                            label: '@JCacheXCacheable',
+                                            language: 'java',
+                                            code: `@Service
 public class UserService {
 
     @JCacheXCacheable(cacheName = "users")
@@ -1657,12 +1715,12 @@ public class UserService {
         return buildUserProfile(userId);
     }
 }`
-                                },
-                                {
-                                    id: 'evict',
-                                    label: '@JCacheXCacheEvict',
-                                    language: 'java',
-                                    code: `@Service
+                                        },
+                                        {
+                                            id: 'evict',
+                                            label: '@JCacheXCacheEvict',
+                                            language: 'java',
+                                            code: `@Service
 public class UserService {
 
     @JCacheXCacheEvict(cacheName = "users", key = "#user.id")
@@ -1675,34 +1733,52 @@ public class UserService {
         userRepository.deleteAll();
     }
 }`
-                                }
-                            ]}
-                        />
-                    </Box>
-                </Box>
+                                        }
+                                    ]}
+                                />
+                            </Box>
 
-                {/* Footer */}
-                <Box sx={{ textAlign: 'center', mt: 8, pt: 4, borderTop: 1, borderColor: 'divider' }}>
-                    <Typography variant="body2" color="text.secondary">
-                        JCacheX Documentation - Built with ❤️ for modern Java and Kotlin applications
-                    </Typography>
-                    <Box sx={{ mt: 2 }}>
-                        <Button
-                            startIcon={<GitHubIcon />}
-                            href="https://github.com/dhruv1110/JCacheX"
-                            target="_blank"
-                            variant="outlined"
-                            sx={{ mr: 2 }}
-                        >
-                            GitHub
-                        </Button>
-                        <Button
-                            startIcon={<LinkIcon />}
-                            href="/examples"
-                            variant="outlined"
-                        >
-                            Examples
-                        </Button>
+                            <Box id="spring-properties" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    Properties Configuration
+                                </Typography>
+                                <Typography variant="body1">
+                                    Configure profiles and cache settings via application.yml or application.properties under the <code>jcachex</code> namespace.
+                                </Typography>
+                            </Box>
+
+                            <Box id="spring-auto-configuration" sx={{ mb: 6 }}>
+                                <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                                    Auto Configuration
+                                </Typography>
+                                <Typography variant="body1">
+                                    Include the <code>jcachex-spring</code> dependency and enable caching. The cache manager and profiles are auto-configured for you.
+                                </Typography>
+                            </Box>
+                        </Box>
+
+                        {/* Footer */}
+                        <Box sx={{ textAlign: 'center', mt: 8, pt: 4, borderTop: 1, borderColor: 'divider' }}>
+                            <Typography variant="body2" color="text.secondary">
+                                JCacheX Documentation - Built with ❤️ for modern Java and Kotlin applications
+                            </Typography>
+                            <Box sx={{ mt: 2 }}>
+                                <Button
+                                    startIcon={<GitHubIcon />}
+                                    href="https://github.com/dhruv1110/JCacheX"
+                                    target="_blank"
+                                    variant="outlined"
+                                    sx={{ mr: 2 }}
+                                >
+                                    GitHub
+                                </Button>
+                                <Button
+                                    startIcon={<LinkIcon />}
+                                    href="/examples"
+                                    variant="outlined"
+                                >
+                                    Examples
+                                </Button>
                     </Box>
                 </Box>
             </Container>
