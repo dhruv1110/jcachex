@@ -195,40 +195,106 @@ const DocumentationPage: React.FC = () => {
     const kotlinExtensions = [
         {
             name: 'Operator Overloading',
-            description: 'Array-like syntax for cache operations',
+            description: 'Array-like syntax and idiomatic operators',
             examples: [
                 'cache["key"] = value',
                 'val value = cache["key"]',
                 'cache += "key" to value',
-                'cache -= "key"'
+                'cache -= "key"',
+                'if ("key" in cache) { /* ... */ }'
             ]
         },
         {
-            name: 'Coroutine Support',
-            description: 'Suspending functions for async operations',
+            name: 'Coroutine & Async Support',
+            description: 'Suspending helpers and Deferred wrappers',
             examples: [
-                'cache.getOrPut("key") { suspendingFunction() }',
-                'cache.getDeferred("key", scope)',
-                'cache.putAsync("key", value)'
+                'val v = cache.getOrPut("key") { suspendingCompute() }',
+                'val d1 = cache.getDeferred("key", scope)  // Deferred<V?>',
+                'val d2 = cache.putDeferred("key", value, scope)',
+                'val d3 = cache.removeDeferred("key", scope)',
+                'val d4 = cache.clearDeferred(scope)',
+                'val v2 = cache.getOrPutAsync("key") { k -> suspendingCompute(k) }'
             ]
         },
         {
-            name: 'Collection Operations',
-            description: 'Collection-like operations for filtering and mapping',
+            name: 'Collection & Bulk Operations',
+            description: 'Filter, map, group, and batch operations',
             examples: [
+                'cache.filterKeys { it.startsWith("user:") }',
                 'cache.filterValues { it.isActive }',
-                'cache.mapValues { it.toUpperCase() }',
-                'cache.forEach { key, value -> ... }'
+                'cache.mapValues { it.toDTO() }',
+                'cache.mapKeys { it.removePrefix("user:") }',
+                'cache.getAll(listOf("k1","k2"))',
+                'cache.getAllPresent(listOf("k1","k2"))',
+                'cache.find { k, v -> v.priority > 5 }',
+                'cache.groupBy { k, v -> v.segment }',
+                'cache.partition { k, v -> v.isHot }',
+                'cache.putAll(mapOf("a" to 1, "b" to 2))',
+                'cache.removeAll(listOf("a","b"))',
+                'cache.retainAll(listOf("keep1","keep2"))',
+                'cache.removeIf { k, v -> v.isExpired }',
+                'cache.forEach { k, v -> log(k to v) }'
             ]
         },
         {
-            name: 'DSL Configuration',
-            description: 'Kotlin DSL for fluent configuration',
+            name: 'DSL & Profile Builders',
+            description: 'Fluent creation with profiles and smart defaults',
             examples: [
                 'val cache = createCache<String, User> {',
-                '    maximumSize(1000L)',
+                '    maximumSize(1000)',
                 '    expireAfterWrite(Duration.ofMinutes(30))',
-                '}'
+                '}',
+                'val pCache = createCacheWithProfile<String, User>(ProfileName.READ_HEAVY) {',
+                '    maximumSize(2000)',
+                '}',
+                'val read = createReadHeavyCache<String, User> { maximumSize(10_000) }',
+                'val write = createWriteHeavyCache<String, Counter> { maximumSize(5_000) }',
+                'val perf = createHighPerformanceCache<String, Session> { maximumSize(50_000) }',
+                'val mem  = createMemoryEfficientCache<String, Blob> { maximumSize(1_000) }',
+                'val api  = createApiCache<String, ApiResponse> { }',
+                'val cmp  = createComputeCache<String, Result> { }',
+                'val ml   = createMachineLearningCache<String, FeatureVec> { }',
+                'val ull  = createUltraLowLatencyCache<String, Tick> { }',
+                'val hw   = createHardwareOptimizedCache<String, Frame> { }'
+            ]
+        },
+        {
+            name: 'Safe Operations (Result)',
+            description: 'Non-throwing ops that return Result types',
+            examples: [
+                'cache.safeGet("k").onSuccess { v -> println(v) }',
+                'cache.getOrNull("k").getOrNull()',
+                'cache.putOrNull("k", v).onFailure { log(it) }',
+                'cache.removeOrNull("k").getOrNull()',
+                'cache.ifContains("k") { v -> use(v) }',
+                'cache.ifNotContains("k") { initialize() }'
+            ]
+        },
+        {
+            name: 'Statistics Helpers',
+            description: 'Convenient formatting and metrics access',
+            examples: [
+                'val s = cache.stats()',
+                'println(s.formatted())',
+                'println("hitRate=%2.2f%%".format(s.hitRatePercent()))',
+                'println("avgLoad=%2.2fms".format(s.averageLoadTimeMillis()))',
+                'println(cache.statsString())'
+            ]
+        },
+        {
+            name: 'Utility Helpers',
+            description: 'Compute/merge/replace, batch, timing, summaries',
+            examples: [
+                'cache.computeIfAbsent("k") { load(k) }',
+                'cache.computeIfPresent("k") { k, v -> v.tune() }',
+                'cache.compute("k") { k, v -> v ?: bootstrap(k) }',
+                'cache.merge("k", v) { old, cur -> combine(old, cur) }',
+                'cache.replace("k", v)',
+                'cache.replace("k", old, new)',
+                'cache.replaceAll { k, v -> v.normalize() }',
+                'cache.batch { put("a",1); put("b",2) }',
+                'val (result, nanos) = cache.measureTime { get("k") }',
+                'println(cache.summary())'
             ]
         }
     ];
@@ -1567,6 +1633,33 @@ CompletableFuture<String> result = cache.getAsync("key1")
                             ]}
                         />
                     </Box>
+
+                    {/* Advanced Features */}
+                    <Box id="java-advanced-features" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            Advanced Features
+                        </Typography>
+                        <Typography variant="body1" sx={{ mb: 2 }}>
+                            Customize loaders, listeners, and eviction strategies for production usage.
+                        </Typography>
+                        <List dense>
+                            <ListItem><ListItemText primary="Custom CacheLoader for lazy population" /></ListItem>
+                            <ListItem><ListItemText primary="Event listeners for evictions and updates" /></ListItem>
+                            <ListItem><ListItemText primary="Weight-based and TTL-based eviction" /></ListItem>
+                        </List>
+                    </Box>
+
+                    {/* Best Practices */}
+                    <Box id="java-best-practices" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            Best Practices
+                        </Typography>
+                        <List dense>
+                            <ListItem><ListItemText primary="Prefer profiles for sensible defaults, override selectively" /></ListItem>
+                            <ListItem><ListItemText primary="Tune maximumSize and expiration based on real traffic" /></ListItem>
+                            <ListItem><ListItemText primary="Enable statistics in staging, sample in production" /></ListItem>
+                        </List>
+                    </Box>
                 </Box>
 
                 {/* Kotlin Configuration Section */}
@@ -1621,6 +1714,24 @@ val cache = createCache<String, ApiResponse> {
                                 }
                             ]}
                         />
+                    </Box>
+
+                    <Box id="kotlin-coroutines" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            Coroutine Support
+                        </Typography>
+                        <Typography variant="body1" sx={{ mb: 2 }}>
+                            Use suspending functions and Flows for non-blocking cache operations.
+                        </Typography>
+                    </Box>
+
+                    <Box id="kotlin-operators" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            Operator Overloading
+                        </Typography>
+                        <Typography variant="body1">
+                            Idiomatic operators like cache["key"] and += are provided by Kotlin extensions.
+                        </Typography>
                     </Box>
                 </Box>
 
@@ -1678,6 +1789,24 @@ public class UserService {
                                 }
                             ]}
                         />
+                    </Box>
+
+                    <Box id="spring-properties" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            Properties Configuration
+                        </Typography>
+                        <Typography variant="body1">
+                            Configure profiles and cache settings via application.yml or application.properties under the <code>jcachex</code> namespace.
+                        </Typography>
+                    </Box>
+
+                    <Box id="spring-auto-configuration" sx={{ mb: 6 }}>
+                        <Typography variant="h4" component="h3" gutterBottom sx={{ fontWeight: 600, mb: 3 }}>
+                            Auto Configuration
+                        </Typography>
+                        <Typography variant="body1">
+                            Include the <code>jcachex-spring</code> dependency and enable caching. The cache manager and profiles are auto-configured for you.
+                        </Typography>
                     </Box>
                 </Box>
 

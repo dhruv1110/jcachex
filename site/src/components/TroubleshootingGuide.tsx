@@ -44,6 +44,7 @@ import {
 } from '@mui/icons-material';
 import CodeTabs from './CodeTabs';
 import Layout from './Layout';
+import { Link as RouterLink } from 'react-router-dom';
 
 interface TroubleshootingGuideProps {
     showDiagnostics?: boolean;
@@ -553,6 +554,9 @@ public class CacheAlerting {
                 {/* Common Issues Tab */}
                 {selectedTab === 0 && (
                     <Box>
+                        <Box id="troubleshooting-performance" />
+                        <Box id="troubleshooting-memory" />
+                        <Box id="troubleshooting-configuration" />
                         <Typography variant="h6" gutterBottom>
                             Common Issues & Solutions
                         </Typography>
@@ -598,6 +602,9 @@ public class CacheAlerting {
                 {/* Diagnostics Tab */}
                 {selectedTab === 1 && (
                     <Box>
+                        <Box id="troubleshooting-tools" />
+                        <Box id="troubleshooting-metrics" />
+                        <Box id="troubleshooting-profiling" />
                         <Typography variant="h6" gutterBottom>
                             Performance Diagnostics
                         </Typography>
@@ -750,6 +757,9 @@ public class CacheAlerting {
                 {/* Monitoring Tab */}
                 {selectedTab === 2 && (
                     <Box>
+                        <Box id="troubleshooting-health" />
+                        <Box id="troubleshooting-alerts" />
+                        <Box id="troubleshooting-logging" />
                         <Typography variant="h6" gutterBottom>
                             Monitoring & Observability
                         </Typography>
@@ -768,6 +778,9 @@ public class CacheAlerting {
                 {/* Performance Tab */}
                 {selectedTab === 3 && (
                     <Box>
+                        <Box id="troubleshooting-tuning" />
+                        <Box id="troubleshooting-best-practices" />
+                        <Box id="troubleshooting-scaling" />
                         <Typography variant="h6" gutterBottom>
                             Performance Optimization
                         </Typography>

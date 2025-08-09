@@ -6,7 +6,7 @@ import { MetaTags, Breadcrumbs } from './SEO';
 import CodeTabs from './CodeTabs';
 import { CodeTab, Feature, Resource } from '../types';
 import Layout from './Layout';
-import { Container, Typography } from '@mui/material';
+import { Container, Typography, Box } from '@mui/material';
 import {
     Settings as SettingsIcon,
     Build as BuildIcon,
@@ -430,9 +430,9 @@ public class CacheMetrics implements MeterBinder {
             title: 'Setup',
             icon: <SettingsIcon />,
             children: [
-                { id: 'spring-installation', title: 'Installation', icon: <BuildIcon /> },
-                { id: 'spring-configuration', title: 'Configuration', icon: <SettingsIcon /> },
-                { id: 'spring-auto-config', title: 'Auto-Configuration', icon: <CheckIcon /> }
+                { id: 'maven', title: 'Installation', icon: <BuildIcon /> },
+                { id: 'enable-caching', title: 'Enable Caching', icon: <SettingsIcon /> },
+                { id: 'service-caching', title: 'Add Caching to Services', icon: <CheckIcon /> }
             ]
         },
         {
@@ -440,9 +440,7 @@ public class CacheMetrics implements MeterBinder {
             title: 'Usage',
             icon: <ApiIcon />,
             children: [
-                { id: 'spring-annotations', title: 'Annotations', icon: <ExtensionIcon /> },
-                { id: 'spring-profiles', title: 'Profiles', icon: <RocketIcon /> },
-                { id: 'spring-cache-manager', title: 'Cache Manager', icon: <SettingsIcon /> }
+                { id: 'spring-annotations', title: 'Annotations', icon: <ExtensionIcon /> }
             ]
         },
         {
@@ -450,9 +448,9 @@ public class CacheMetrics implements MeterBinder {
             title: 'Monitoring',
             icon: <MonitorIcon />,
             children: [
-                { id: 'spring-actuator', title: 'Actuator', icon: <AnalyticsIcon /> },
-                { id: 'spring-metrics', title: 'Metrics', icon: <MonitorIcon /> },
-                { id: 'spring-health', title: 'Health Checks', icon: <SecurityIcon /> }
+                { id: 'health-endpoint', title: 'Health', icon: <AnalyticsIcon /> },
+                { id: 'metrics-endpoint', title: 'Metrics', icon: <MonitorIcon /> },
+                { id: 'management-controller', title: 'Management API', icon: <SecurityIcon /> }
             ]
         },
         {
@@ -460,9 +458,8 @@ public class CacheMetrics implements MeterBinder {
             title: 'Examples',
             icon: <InfoIcon />,
             children: [
-                { id: 'spring-basic', title: 'Basic Usage', icon: <BuildIcon /> },
-                { id: 'spring-advanced', title: 'Advanced', icon: <ExtensionIcon /> },
-                { id: 'spring-production', title: 'Production', icon: <RocketIcon /> }
+                { id: 'rest-controller', title: 'REST API', icon: <BuildIcon /> },
+                { id: 'security-service', title: 'Security/Session', icon: <ExtensionIcon /> }
             ]
         }
     ];
@@ -542,6 +539,7 @@ public class CacheMetrics implements MeterBinder {
                 {/* Step-by-Step Setup */}
                 <Section padding="lg">
                     <div className="setup-guide">
+                        <Box id="maven" />
                         <h2 className="section-title">📋 Step-by-Step Setup</h2>
                         <p className="section-description">
                             Follow these steps to add enterprise-grade caching to your Spring Boot application.
@@ -616,7 +614,7 @@ public class CacheMetrics implements MeterBinder {
                             <div className="step">
                                 <div className="step-header">
                                     <span className="step-number">2</span>
-                                    <h3 className="step-title">Enable Caching in Your Application</h3>
+                                    <h3 className="step-title"><span id="enable-caching">Enable Caching in Your Application</span></h3>
                                 </div>
                                 <div className="step-content">
                                     <p>
@@ -660,7 +658,7 @@ public class DemoApplication {
                             <div className="step">
                                 <div className="step-header">
                                     <span className="step-number">3</span>
-                                    <h3 className="step-title">Add Caching to Your Services</h3>
+                                    <h3 className="step-title"><span id="service-caching">Add Caching to Your Services</span></h3>
                                 </div>
                                 <div className="step-content">
                                     <p>
@@ -846,6 +844,18 @@ spring.cache.type=jcachex`
                     </div>
                 </Section>
 
+                {/* Annotations Section */}
+                <Section padding="lg">
+                    <Box id="spring-annotations" />
+                    <div className="annotations-guide">
+                        <h2 className="section-title">🧩 Annotations</h2>
+                        <p className="section-description">
+                            Use annotations to declaratively cache method results and manage cache entries.
+                        </p>
+                        <CodeTabs tabs={annotationTabs} />
+                    </div>
+                </Section>
+
                 {/* Real-World Spring Boot Examples */}
                 <Section padding="lg">
                     <div className="examples-section">
@@ -857,7 +867,7 @@ spring.cache.type=jcachex`
 
                         <div className="example-categories">
                             <div className="example-category">
-                                <h3>📊 REST API with Database Caching</h3>
+                                <h3 id="rest-controller">📊 REST API with Database Caching</h3>
                                 <p>Complete example of a REST controller with optimized database caching:</p>
                                 <CodeTabs tabs={[
                                     {
@@ -990,7 +1000,7 @@ public class ProductService {
                             </div>
 
                             <div className="example-category">
-                                <h3>🔐 Security & Session Caching</h3>
+                                <h3 id="security-service">🔐 Security & Session Caching</h3>
                                 <p>Optimize authentication and session management with intelligent caching:</p>
                                 <CodeTabs tabs={[
                                     {
@@ -1111,7 +1121,7 @@ public class SessionCacheService {
 
                         <div className="monitoring-examples">
                             <div className="monitoring-category">
-                                <h3>Health Checks</h3>
+                                <h3 id="health-endpoint">Health Checks</h3>
                                 <p>Automatic health indicators show cache status:</p>
                                 <CodeTabs tabs={[
                                     {
@@ -1147,7 +1157,7 @@ public class SessionCacheService {
                             </div>
 
                             <div className="monitoring-category">
-                                <h3>Cache Metrics</h3>
+                                <h3 id="metrics-endpoint">Cache Metrics</h3>
                                 <p>Detailed performance metrics via Micrometer:</p>
                                 <CodeTabs tabs={[
                                     {
@@ -1180,7 +1190,7 @@ public class SessionCacheService {
                             </div>
 
                             <div className="monitoring-category">
-                                <h3>Custom Management Endpoint</h3>
+                                <h3 id="management-controller">Custom Management Endpoint</h3>
                                 <p>Create custom endpoints for cache management:</p>
                                 <CodeTabs tabs={[
                                     {
