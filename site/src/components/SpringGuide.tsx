@@ -39,10 +39,10 @@ const SpringGuide: React.FC = () => {
             label: 'Maven',
             language: 'xml',
             code: `<dependencies>
-    <!-- JCacheX Spring Boot Starter -->
+    <!-- JCacheX Spring Boot Integration -->
     <dependency>
         <groupId>io.github.dhruv1110</groupId>
-        <artifactId>jcachex-spring-boot-starter</artifactId>
+        <artifactId>jcachex-spring</artifactId>
         <version>${version}</version>
     </dependency>
 
@@ -64,8 +64,8 @@ const SpringGuide: React.FC = () => {
             label: 'Gradle',
             language: 'gradle',
             code: `dependencies {
-    // JCacheX Spring Boot Starter
-    implementation 'io.github.dhruv1110:jcachex-spring-boot-starter:${version}'
+    // JCacheX Spring Boot Integration
+    implementation 'io.github.dhruv1110:jcachex-spring:${version}'
 
     // Spring Boot Starter Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -84,65 +84,26 @@ const SpringGuide: React.FC = () => {
             code: `# JCacheX Spring Boot Configuration
 jcachex:
   enabled: true
-  auto-create-caches: true
-  enable-statistics: true
-  enable-jmx: true
-
-  # Profile-based cache configurations
-  profiles:
-    read-heavy:
-      maximum-size: 10000
-      expire-after-access-seconds: 1800  # 30 minutes
-      eviction-strategy: LFU
-      record-stats: true
-
-    write-heavy:
-      maximum-size: 5000
-      expire-after-write-seconds: 300   # 5 minutes
-      eviction-strategy: LRU
-      record-stats: true
-
-    high-performance:
-      maximum-size: 50000
-      expire-after-access-seconds: 3600  # 1 hour
-      eviction-strategy: LRU
-      record-stats: true
-
-  # Named cache configurations with profiles
+  autoCreateCaches: true
+  default:
+    maximumSize: 1000
+    expireAfterSeconds: 600
+    enableStatistics: true
   caches:
     users:
-      profile: read-heavy
-      maximum-size: 5000
-      expire-after-write-seconds: 3600  # 1 hour
+      profile: READ_HEAVY
+      maximumSize: 1000
+      expireAfterSeconds: 300
 
-    products:
-      profile: high-performance
-      maximum-size: 10000
-      expire-after-write-seconds: 7200  # 2 hours
-
-    sessions:
-      profile: write-heavy
-      maximum-size: 50000
-      expire-after-access-seconds: 1800  # 30 minutes
-
-# Spring Boot Actuator Configuration
+# Spring Boot Actuator Configuration (optional)
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,caches,jcachex
+        include: health,info,metrics,caches
   endpoint:
     health:
-      show-details: always
-    caches:
-      enabled: true
-
-# Application Configuration
-spring:
-  application:
-    name: jcachex-spring-demo
-  cache:
-    type: jcachex  # Use JCacheX as the cache provider`
+      show-details: always`
         },
         {
             id: 'properties',
@@ -150,47 +111,21 @@ spring:
             language: 'properties',
             code: `# JCacheX Spring Boot Configuration
 jcachex.enabled=true
-jcachex.auto-create-caches=true
-jcachex.enable-statistics=true
-jcachex.enable-jmx=true
+jcachex.autoCreateCaches=true
+jcachex.default.maximumSize=1000
+jcachex.default.expireAfterSeconds=600
+jcachex.default.enableStatistics=true
 
-# Profile-based cache configurations
-jcachex.profiles.read-heavy.maximum-size=10000
-jcachex.profiles.read-heavy.expire-after-access-seconds=1800
-jcachex.profiles.read-heavy.eviction-strategy=LFU
-jcachex.profiles.read-heavy.record-stats=true
+jcachex.caches.users.profile=READ_HEAVY
+jcachex.caches.users.maximumSize=1000
+jcachex.caches.users.expireAfterSeconds=300
 
-jcachex.profiles.write-heavy.maximum-size=5000
-jcachex.profiles.write-heavy.expire-after-write-seconds=300
-jcachex.profiles.write-heavy.eviction-strategy=LRU
-jcachex.profiles.write-heavy.record-stats=true
-
-jcachex.profiles.high-performance.maximum-size=50000
-jcachex.profiles.high-performance.expire-after-access-seconds=3600
-jcachex.profiles.high-performance.eviction-strategy=LRU
-jcachex.profiles.high-performance.record-stats=true
-
-# Named cache configurations with profiles
-jcachex.caches.users.profile=read-heavy
-jcachex.caches.users.maximum-size=5000
-jcachex.caches.users.expire-after-write-seconds=3600
-
-jcachex.caches.products.profile=high-performance
-jcachex.caches.products.maximum-size=10000
-jcachex.caches.products.expire-after-write-seconds=7200
-
-jcachex.caches.sessions.profile=write-heavy
-jcachex.caches.sessions.maximum-size=50000
-jcachex.caches.sessions.expire-after-access-seconds=1800
-
-# Spring Boot Actuator
-management.endpoints.web.exposure.include=health,info,metrics,caches,jcachex
+# Spring Boot Actuator (optional)
+management.endpoints.web.exposure.include=health,info,metrics,caches
 management.endpoint.health.show-details=always
-management.endpoint.caches.enabled=true
 
 # Application
-spring.application.name=jcachex-spring-demo
-spring.cache.type=jcachex`
+spring.application.name=jcachex-spring-demo`
         }
     ];
 
@@ -307,52 +242,13 @@ public class UserController {
 @EnableCaching
 public class CacheConfiguration {
 
-    @Bean
-    @Primary
-    public CacheManager cacheManager() {
-        return new JCacheXCacheManager();
-    }
-
-    @Bean
-    public JCacheXCacheFactory cacheFactory() {
-        return new JCacheXCacheFactory();
-    }
-
-    // Profile-based cache configuration
-    @Bean("readHeavyCache")
-    public Cache<String, Object> readHeavyCache() {
-        return JCacheXBuilder.forReadHeavyWorkload()
-            .maximumSize(10000)
-            .expireAfterAccess(Duration.ofMinutes(30))
-            .recordStats()
-            .build();
-    }
-
-    @Bean("writeHeavyCache")
-    public Cache<String, Object> writeHeavyCache() {
-        return JCacheXBuilder.forWriteHeavyWorkload()
-            .maximumSize(5000)
-            .expireAfterWrite(Duration.ofMinutes(5))
-            .recordStats()
-            .build();
-    }
-
-    @Bean("highPerformanceCache")
-    public Cache<String, Object> highPerformanceCache() {
-        return JCacheXBuilder.forHighPerformance()
-            .maximumSize(50000)
-            .expireAfterAccess(Duration.ofHours(1))
-            .recordStats()
-            .build();
-    }
-
-    // Custom cache with specific profile
-    @Bean("customCache")
-    public Cache<String, Object> customCache() {
-        return JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
+    // Example of a bean-defined cache alongside properties-created caches
+    @Bean("userCache")
+    public Cache<String, User> userCache() {
+        return JCacheXBuilder.create()
             .maximumSize(1000)
             .expireAfterWrite(Duration.ofMinutes(30))
-            .recordStats()
+            .recordStats(true)
             .build();
     }
 }`
@@ -669,10 +565,10 @@ public class CacheMetrics implements MeterBinder {
                                             label: 'Maven',
                                             language: 'xml',
                                             code: `<dependencies>
-    <!-- JCacheX Spring Boot Starter -->
+    <!-- JCacheX Spring Integration -->
     <dependency>
         <groupId>io.github.dhruv1110</groupId>
-        <artifactId>jcachex-spring-boot-starter</artifactId>
+        <artifactId>jcachex-spring</artifactId>
         <version>${version}</version>
     </dependency>
 
@@ -694,8 +590,8 @@ public class CacheMetrics implements MeterBinder {
                                             label: 'Gradle',
                                             language: 'groovy',
                                             code: `dependencies {
-    // JCacheX Spring Boot Starter
-    implementation 'io.github.dhruv1110:jcachex-spring-boot-starter:${version}'
+    // JCacheX Spring Integration
+    implementation 'io.github.dhruv1110:jcachex-spring:${version}'
 
     // Spring Boot Web (if building web app)
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -706,10 +602,10 @@ public class CacheMetrics implements MeterBinder {
                                         }
                                     ]} />
                                     <div className="step-explanation">
-                                        <h4>💡 What you get with the starter:</h4>
+                                        <h4>💡 What you get with the integration:</h4>
                                         <ul>
-                                            <li><strong>Auto-configuration</strong>: JCacheX is automatically configured and ready to use</li>
-                                            <li><strong>Spring integration</strong>: Works seamlessly with @Cacheable, @CacheEvict, etc.</li>
+                                            <li><strong>Auto-configuration</strong>: JCacheX integrates with Spring’s caching abstraction</li>
+                                            <li><strong>Spring integration</strong>: Works with @Cacheable, @CacheEvict, etc.</li>
                                             <li><strong>Health checks</strong>: Automatic health indicators for monitoring</li>
                                             <li><strong>Metrics</strong>: Cache statistics exposed to Micrometer/Actuator</li>
                                         </ul>
