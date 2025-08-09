@@ -92,7 +92,7 @@ const FAQ_DATA: FAQ[] = [
     {
         id: 'profile-based-spring-integration',
         question: 'How do profiles work with Spring Boot integration?',
-        answer: 'Spring Boot integration supports profile-based configuration through @JCacheXCacheable(cacheName = "users", profile = "READ_HEAVY") annotations. You can configure profiles in application.yml under jcachex.profiles section, and the auto-configuration automatically applies profile optimizations. Named caches can specify their profile for automatic optimization.',
+        answer: 'Spring Boot integration supports profile-based configuration through @JCacheXCacheable(cacheName = "users", profile = "READ_HEAVY") annotations. You can define caches in application.yml under the jcachex.caches section (with jcachex.enabled and jcachex.autoCreateCaches), and the auto-configuration creates them and applies defaults. Named caches can specify their profile for automatic optimization.',
         category: 'Integration'
     },
     {
@@ -128,7 +128,7 @@ const FAQ_DATA: FAQ[] = [
     {
         id: 'spring-boot-integration',
         question: 'How does JCacheX integrate with Spring Boot?',
-        answer: 'JCacheX provides seamless Spring Boot integration with profile-based auto-configuration. Use @JCacheXCacheable(cacheName = "users", profile = "READ_HEAVY") annotations, configure profiles in application.yml, and get automatic actuator endpoints. The starter dependency includes profile-based health checks and metrics. Simply add the starter and configure profiles for optimal performance.',
+        answer: 'JCacheX provides Spring Boot integration with auto-configuration. Use @JCacheXCacheable(cacheName = "users", profile = "READ_HEAVY") annotations, and define caches in application.yml (jcachex.enabled=true, jcachex.autoCreateCaches=true). Actuator exposure is optional. Add the jcachex-spring dependency and configure caches for optimal performance.',
         category: 'Integration'
     },
     {
