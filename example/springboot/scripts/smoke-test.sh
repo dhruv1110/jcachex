@@ -12,7 +12,6 @@ pushd "$ROOT_DIR" >/dev/null
 
 # Ensure log directory exists
 mkdir -p "$(dirname "$LOG_FILE")"
-
 # Start app in background (use --no-daemon for isolation)
 ./gradlew --no-daemon :example:springboot:bootRun --args="--server.port=$PORT" -x javadoc -x dokkaJavadoc -x dokkaHtml >"$LOG_FILE" 2>&1 &
 APP_PID=$!
