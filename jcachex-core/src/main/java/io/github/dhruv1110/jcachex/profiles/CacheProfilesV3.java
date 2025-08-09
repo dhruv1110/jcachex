@@ -2,6 +2,8 @@ package io.github.dhruv1110.jcachex.profiles;
 
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.impl.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simplified and standardized cache profiles using the new ProfileRegistry
@@ -69,6 +71,8 @@ import io.github.dhruv1110.jcachex.impl.*;
  */
 public final class CacheProfilesV3 {
 
+        private static final Logger logger = LoggerFactory.getLogger(CacheProfilesV3.class);
+
         private CacheProfilesV3() {
                 // Utility class - no instances
         }
@@ -82,7 +86,7 @@ public final class CacheProfilesV3 {
          * </p>
          */
         static {
-                System.out.println(ProfileConstants.LOG_PROFILE_INIT_START);
+                logger.info(ProfileConstants.LOG_PROFILE_INIT_START);
 
                 // Core Profiles - covering 80% of use cases
                 createCoreProfiles();
@@ -95,7 +99,7 @@ public final class CacheProfilesV3 {
 
                 // Avoid circular dependency - don't call ProfileRegistry methods during
                 // initialization
-                System.out.println("Cache profile system initialized successfully");
+                logger.info("Cache profile system initialized successfully");
         }
 
         /**
