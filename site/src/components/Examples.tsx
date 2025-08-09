@@ -146,10 +146,6 @@ const Examples: React.FC = () => {
     return (
         <Layout sidebarConfig={sidebarConfig}>
             <MetaTags seo={seoData} />
-            <Breadcrumbs items={[
-                { label: 'Home', path: '/' },
-                { label: 'Examples', path: '/examples', current: true }
-            ]} />
 
             <Container
                 maxWidth={false}

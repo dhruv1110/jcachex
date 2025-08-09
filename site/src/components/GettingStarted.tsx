@@ -321,10 +321,6 @@ jcachex:
 
     return (
         <Layout sidebarConfig={sidebarConfig}>
-            <Breadcrumbs items={[
-                { label: 'Home', path: '/' },
-                { label: 'Getting Started', path: '/getting-started', current: true }
-            ]} />
 
             <Container
                 maxWidth="lg"

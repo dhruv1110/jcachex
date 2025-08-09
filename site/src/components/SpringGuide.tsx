@@ -485,10 +485,6 @@ public class CacheMetrics implements MeterBinder {
                 }}
             >
                 <MetaTags seo={seoData} />
-                <Breadcrumbs items={[
-                    { label: 'Home', path: '/' },
-                    { label: 'Spring Boot', path: '/spring', current: true }
-                ]} />
 
                 {/* Header */}
                 <Section padding="lg" centered className="jcx-surface">
