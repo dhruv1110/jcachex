@@ -193,9 +193,11 @@ const Footer: React.FC = () => {
                     <Typography variant="body2" color="grey.400">
                         © {currentYear} JCacheX. Released under the MIT License.
                     </Typography>
-                    <Typography variant="body2" color="grey.400">
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                        <Typography variant="body2" color="grey.400">
                         Built with ❤️ for the Java community
-                    </Typography>
+                        </Typography>
+                    </Box>
                 </Box>
             </Container>
         </Box>

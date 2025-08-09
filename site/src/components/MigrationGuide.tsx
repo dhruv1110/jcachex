@@ -527,7 +527,7 @@ public class JCacheXUserService {
                 </Typography>
 
                 {/* Migration Type Selection */}
-                <Paper sx={{ mb: 3 }}>
+                <Paper className="jcx-surface" sx={{ mb: 3 }}>
                     <Tabs
                         value={selectedMigration}
                         onChange={(_, value) => setSelectedMigration(value)}
@@ -548,7 +548,7 @@ public class JCacheXUserService {
 
                 {/* Benefits Overview */}
                 {showBenefits && (
-                    <Paper sx={{ p: 3, mb: 3 }}>
+                    <Paper className="jcx-surface" sx={{ p: 3, mb: 3 }}>
                         <Typography variant="h6" gutterBottom>
                             Migration Benefits
                         </Typography>
@@ -571,7 +571,7 @@ public class JCacheXUserService {
                 )}
 
                 {/* Migration Steps */}
-                <Paper sx={{ p: 3 }}>
+                <Paper className="jcx-surface" sx={{ p: 3 }}>
                     <Typography variant="h6" gutterBottom>
                         Migration Steps
                     </Typography>
@@ -605,7 +605,7 @@ public class JCacheXUserService {
                         ))}
                     </Stepper>
                     {activeStep === migrationSteps[selectedMigration].length && (
-                        <Paper square elevation={0} sx={{ p: 3 }}>
+                        <Paper square elevation={0} className="jcx-surface" sx={{ p: 3 }}>
                             <Typography variant="h6" gutterBottom>
                                 Migration Complete! 🎉
                             </Typography>
@@ -623,7 +623,7 @@ public class JCacheXUserService {
                 </Paper>
 
                 {/* Code Examples */}
-                <Paper sx={{ p: 3, mt: 3 }}>
+                <Paper className="jcx-surface" sx={{ p: 3, mt: 3 }}>
                     <Typography variant="h6" gutterBottom>
                         Complete Migration Examples
                     </Typography>

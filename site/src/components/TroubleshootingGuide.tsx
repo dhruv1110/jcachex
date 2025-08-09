@@ -561,8 +561,8 @@ public class CacheAlerting {
                             Common Issues & Solutions
                         </Typography>
                         {commonIssues.map((category, categoryIndex) => (
-                            <Paper key={categoryIndex} sx={{ mb: 2 }}>
-                                <Box sx={{ p: 2, bgcolor: 'grey.50', display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Paper key={categoryIndex} className="jcx-surface" sx={{ mb: 2 }}>
+                                <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                                     {category.icon}
                                     <Typography variant="h6">{category.category}</Typography>
                                 </Box>
