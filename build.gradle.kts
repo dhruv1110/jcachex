@@ -166,6 +166,23 @@ subprojects {
 
         // Ensure JaCoCo uses the same JDK as the test execution
         jvmArgs("-XX:+EnableDynamicAgentLoading")
+
+        // Run tests in parallel forks (JVM processes)
+        // Use half of available processors to balance CPU and memory usage
+        maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+
+        // Enable JUnit 5 parallel execution within a fork by default
+        systemProperty("junit.jupiter.execution.parallel.enabled", "true")
+        systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
+        systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "concurrent")
+        systemProperty("junit.jupiter.execution.parallel.config.strategy", "dynamic")
+
+        // For Spring module, disable JUnit parallelism to avoid context races
+        if (project.name == "jcachex-spring") {
+            systemProperty("junit.jupiter.execution.parallel.enabled", "false")
+            systemProperty("junit.jupiter.execution.parallel.mode.default", "same_thread")
+            systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "same_thread")
+        }
     }
 
     tasks.jacocoTestReport {
@@ -407,7 +424,7 @@ project(":jcachex-core") {
         implementation("org.slf4j:slf4j-api:1.7.36")
 
         // Testing
-        testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
         testImplementation("org.mockito:mockito-core:4.11.0") {
             // Force version to maintain Java 8 compatibility
             version {
@@ -436,7 +453,7 @@ project(":jcachex-kotlin") {
 
         // Testing
         testImplementation("org.jetbrains.kotlin:kotlin-test")
-        testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
         testImplementation("org.mockito:mockito-core:4.11.0") {
             version {
                 strictly("4.11.0")
@@ -464,7 +481,7 @@ project(":jcachex-spring") {
         implementation("org.springframework.boot:spring-boot-configuration-processor:2.7.18")
 
         // Testing
-        testImplementation("org.junit.jupiter:junit-jupiter:5.10.1")
+        testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
         testImplementation("org.springframework.boot:spring-boot-starter-test:2.7.18")
         testImplementation("org.mockito:mockito-core:4.11.0") {
             version {
