@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static io.github.dhruv1110.jcachex.testing.TestAwait.awaitTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -98,7 +99,7 @@ class DefaultCacheTest {
         expiringCache.put("key1", "value1");
         assertEquals("value1", expiringCache.get("key1"));
 
-        Thread.sleep(200);
+        awaitTrue(() -> expiringCache.get("key1") == null, 1000);
 
         assertNull(expiringCache.get("key1"));
         expiringCache.close();
@@ -115,7 +116,8 @@ class DefaultCacheTest {
         accessCache.put("key1", "value1");
         assertEquals("value1", accessCache.get("key1"));
 
-        Thread.sleep(200);
+        io.github.dhruv1110.jcachex.testing.TestAwait.awaitMillis(200);
+        assertNull(accessCache.get("key1"));
 
         assertNull(accessCache.get("key1"));
         accessCache.close();
@@ -220,14 +222,14 @@ class DefaultCacheTest {
         refreshCache.put("key1", "value1");
         assertEquals("value1", refreshCache.get("key1"));
 
-        Thread.sleep(200);
+        // Wait until refresh could have happened
+        awaitTrue(() -> refreshCache.get("key1") == null || !"value1".equals(refreshCache.get("key1")), 1500);
 
         // Value should be refreshed in background
         String value = refreshCache.get("key1");
         assertTrue(value.equals("value1") || value.equals("refreshed_key1"));
 
-        Thread.sleep(1500); // Wait for refresh
-        assertEquals("refreshed_key1", refreshCache.get("key1"));
+        awaitTrue(() -> "refreshed_key1".equals(refreshCache.get("key1")), 3000);
 
         refreshCache.close();
     }

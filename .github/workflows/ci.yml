@@ -23,6 +23,29 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Run tests and generate coverage
+      run: ./gradlew test jacocoTestReport
+
+    - name: Upload test results to Codecov
+      if: ${{ always() }}
+      uses: codecov/test-results-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: |
+          **/build/test-results/test/*.xml
+          **/build/test-results/test/**/*.xml
+
+    - name: Run code quality checks
+      run: |
+        ./gradlew detekt
+        ./gradlew ktlintCheck
+
+    - name: Build project
+      run: ./gradlew build -x test
+
     - name: Set up JDK 11 for documentation
       uses: actions/setup-java@v4
       with:
@@ -30,22 +53,8 @@ jobs:
         distribution: 'temurin'
         cache: gradle
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-
-    - name: Run tests and generate coverage
-      run: ./gradlew test jacocoTestReport
-
-    - name: Run code quality checks
-      run: |
-        ./gradlew detekt
-        ./gradlew ktlintCheck
-
     - name: Generate documentation coverage
       run: ./gradlew allDocumentationCoverage
-
-    - name: Build project
-      run: ./gradlew build -x test
 
     - name: Generate and verify documentation
       env:
@@ -87,6 +96,7 @@ jobs:
         echo "✅ All javadoc JARs verified successfully!"
 
     - name: Upload coverage to Codecov
+      if: ${{ always() }}
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
@@ -101,13 +111,14 @@ jobs:
       with:
         name: test-results
         path: |
+          **/build/test-results/
           **/build/reports/tests/
           **/build/reports/jacoco/
           **/build/reports/detekt/
           **/build/reports/documentation/
 
     - name: Comment PR with coverage
-      if: github.event_name == 'pull_request'
+      if: ${{ always() && github.event_name == 'pull_request' }}
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
