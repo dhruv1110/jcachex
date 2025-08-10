@@ -1,13 +1,11 @@
+@file:Suppress("ktlint:standard:function-naming", "WildcardImport", "ktlint:standard:no-wildcard-imports")
+
 package io.github.dhruv1110.jcachex.kotlin
 
 import io.github.dhruv1110.jcachex.Cache
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -21,7 +19,7 @@ class CacheExtensionsTest {
     @BeforeEach
     fun setUp() {
         cache =
-            createUnifiedCache {
+            createCache {
                 maximumSize(100)
                 expireAfterWrite(Duration.ofMinutes(5))
                 recordStats(true)
@@ -31,11 +29,10 @@ class CacheExtensionsTest {
     @Test
     fun `test DSL cache creation`() {
         val testCache =
-            createUnifiedCache<String, Int> {
+            createCache<String, String> {
                 maximumSize(50)
                 recordStats(true)
             }
-
         assertNotNull(testCache)
         assertEquals(0, testCache.size())
         assertTrue(testCache.isEmpty())

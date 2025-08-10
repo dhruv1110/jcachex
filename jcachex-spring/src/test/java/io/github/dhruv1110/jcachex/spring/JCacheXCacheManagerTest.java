@@ -1,9 +1,9 @@
 package io.github.dhruv1110.jcachex.spring;
 
 import io.github.dhruv1110.jcachex.Cache;
+import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
 import io.github.dhruv1110.jcachex.spring.core.JCacheXCacheManager;
 import io.github.dhruv1110.jcachex.spring.core.JCacheXSpringCache;
-import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

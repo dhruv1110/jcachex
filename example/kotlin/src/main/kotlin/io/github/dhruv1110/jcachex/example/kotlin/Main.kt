@@ -1,13 +1,11 @@
 package io.github.dhruv1110.jcachex.example.kotlin
 
-import io.github.dhruv1110.jcachex.kotlin.*
 import io.github.dhruv1110.jcachex.JCacheXBuilder
 import io.github.dhruv1110.jcachex.kotlin.*
 import io.github.dhruv1110.jcachex.profiles.ProfileRegistry
-import io.github.dhruv1110.jcachex.CacheEventListener
-import kotlinx.coroutines.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import java.time.Duration
-import kotlin.random.Random
 
 /**
  * Sample data classes for demonstration

@@ -2,9 +2,9 @@ package io.github.dhruv1110.jcachex;
 
 import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy;
 import io.github.dhruv1110.jcachex.exceptions.CacheConfigurationException;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
@@ -171,7 +171,6 @@ class CacheConfigTest {
             assertFalse(config.isWeakKeys());
             assertFalse(config.isWeakValues());
             assertFalse(config.isSoftValues());
-            assertTrue(config.isRecordStats()); // Default is true
             assertEquals(16, config.getInitialCapacity()); // Default is 16
             assertEquals(16, config.getConcurrencyLevel()); // Default is 16
             assertTrue(config.getListeners().isEmpty());

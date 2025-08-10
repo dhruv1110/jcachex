@@ -1,0 +1,33 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: jcachex-kubernetes-example
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    io.github.dhruv1110.jcachex: INFO
+    root: INFO
+
+# JCacheX Distributed Cache Configuration
+jcachex:
+  distributed:
+    enabled: true
+    communication:
+      tcp:
+        port: 8081  # Use different port from web server
+    discovery:
+      kubernetes:
+        namespace: default
+        service-name: jcachex-cluster
+        enabled: true

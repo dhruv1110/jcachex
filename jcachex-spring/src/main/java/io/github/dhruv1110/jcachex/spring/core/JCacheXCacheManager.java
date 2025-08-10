@@ -3,7 +3,6 @@ package io.github.dhruv1110.jcachex.spring.core;
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.JCacheXBuilder;
-import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import io.github.dhruv1110.jcachex.profiles.CacheProfile;
 import io.github.dhruv1110.jcachex.profiles.ProfileRegistry;
 import io.github.dhruv1110.jcachex.spring.configuration.JCacheXProperties;
@@ -251,6 +250,21 @@ public class JCacheXCacheManager implements CacheManager {
             return springCache.getJCacheXCache();
         }
         return null;
+    }
+
+    /**
+     * Registers a pre-built JCacheX cache instance with this manager under the
+     * given name.
+     * If a cache with the same name exists it will be replaced.
+     *
+     * @param name  cache name
+     * @param cache native JCacheX cache
+     */
+    public void registerCache(String name, Cache<Object, Object> cache) {
+        if (name == null || cache == null) {
+            return;
+        }
+        caches.put(name, new JCacheXSpringCache(name, cache, allowNullValues));
     }
 
     /**

@@ -458,7 +458,6 @@ public class JCacheXUserService {
             title: 'From Caffeine',
             icon: <SwapIcon />,
             children: [
-                { id: 'migration-caffeine-comparison', title: 'Comparison', icon: <CodeIcon /> },
                 { id: 'migration-caffeine-steps', title: 'Steps', icon: <SwapIcon /> },
                 { id: 'migration-caffeine-performance', title: 'Performance', icon: <SpeedIcon /> }
             ]
@@ -468,7 +467,6 @@ public class JCacheXUserService {
             title: 'From Redis',
             icon: <CodeIcon />,
             children: [
-                { id: 'migration-redis-comparison', title: 'Comparison', icon: <CodeIcon /> },
                 { id: 'migration-redis-steps', title: 'Steps', icon: <SwapIcon /> },
                 { id: 'migration-redis-benefits', title: 'Benefits', icon: <SpeedIcon /> }
             ]
@@ -515,6 +513,11 @@ public class JCacheXUserService {
                     minHeight: { xs: 'calc(100vh - 80px)', md: 'auto' }, // Ensure full height on mobile
                 }}
             >
+                {/* Anchor containers for sidebar */}
+                <Box id="migration-from-caffeine" />
+                <Box id="migration-from-redis" />
+                <Box id="migration-from-guava" />
+                <Box id="migration-best-practices" />
                 <Typography variant="h2" component="h1" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1, fontWeight: 700, mb: 2 }}>
                     <SwapIcon color="primary" />
                     Migration Guide
@@ -524,7 +527,7 @@ public class JCacheXUserService {
                 </Typography>
 
                 {/* Migration Type Selection */}
-                <Paper sx={{ mb: 3 }}>
+                <Paper className="jcx-surface" sx={{ mb: 3 }}>
                     <Tabs
                         value={selectedMigration}
                         onChange={(_, value) => setSelectedMigration(value)}
@@ -545,7 +548,7 @@ public class JCacheXUserService {
 
                 {/* Benefits Overview */}
                 {showBenefits && (
-                    <Paper sx={{ p: 3, mb: 3 }}>
+                    <Paper className="jcx-surface" sx={{ p: 3, mb: 3 }}>
                         <Typography variant="h6" gutterBottom>
                             Migration Benefits
                         </Typography>
@@ -568,7 +571,7 @@ public class JCacheXUserService {
                 )}
 
                 {/* Migration Steps */}
-                <Paper sx={{ p: 3 }}>
+                <Paper className="jcx-surface" sx={{ p: 3 }}>
                     <Typography variant="h6" gutterBottom>
                         Migration Steps
                     </Typography>
@@ -602,7 +605,7 @@ public class JCacheXUserService {
                         ))}
                     </Stepper>
                     {activeStep === migrationSteps[selectedMigration].length && (
-                        <Paper square elevation={0} sx={{ p: 3 }}>
+                        <Paper square elevation={0} className="jcx-surface" sx={{ p: 3 }}>
                             <Typography variant="h6" gutterBottom>
                                 Migration Complete! 🎉
                             </Typography>
@@ -620,7 +623,7 @@ public class JCacheXUserService {
                 </Paper>
 
                 {/* Code Examples */}
-                <Paper sx={{ p: 3, mt: 3 }}>
+                <Paper className="jcx-surface" sx={{ p: 3, mt: 3 }}>
                     <Typography variant="h6" gutterBottom>
                         Complete Migration Examples
                     </Typography>

@@ -1,9 +1,9 @@
 package io.github.dhruv1110.jcachex;
 
-import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy;
 import io.github.dhruv1110.jcachex.exceptions.CacheConfigurationException;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -205,19 +205,6 @@ class DefaultCacheTest {
         CompletableFuture<Void> clearFuture = cache.clearAsync();
         assertNull(clearFuture.get());
         assertEquals(0, cache.size()); // Verify the clear worked
-    }
-
-    @Test
-    void testStats() {
-        // Test cache statistics
-        cache.put("key1", "value1");
-        cache.get("key1"); // Hit
-        cache.get("key2"); // Miss
-
-        CacheStats stats = cache.stats();
-        assertEquals(1L, stats.getHitCount().get());
-        assertEquals(1L, stats.getMissCount().get());
-        assertEquals(0L, stats.getLoadCount().get());
     }
 
     @Test

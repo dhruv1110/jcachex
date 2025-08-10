@@ -71,6 +71,7 @@ public class AdvancedJCacheXBuilderExample {
         Cache<String, String> fastCache = JCacheXBuilder.forHighPerformance()
                 .name("high-performance")
                 .maximumSize(10000L)
+                // Statistics are opt-in; enable explicitly when demonstrating metrics
                 .recordStats(true)
                 .build();
 

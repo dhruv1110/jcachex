@@ -6,6 +6,7 @@ body {
         sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    /* Inherit MUI theme background for dark mode; fallback to our token if needed */
+    background: var(--jcx-hero-bg, #0f172a);
     overflow-x: hidden;
 }

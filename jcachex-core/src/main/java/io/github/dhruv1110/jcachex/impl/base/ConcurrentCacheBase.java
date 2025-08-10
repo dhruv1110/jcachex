@@ -9,11 +9,13 @@ import io.github.dhruv1110.jcachex.eviction.LRUEvictionStrategy;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
 /**
@@ -40,6 +42,8 @@ public abstract class ConcurrentCacheBase<K, V> extends DataBackedCacheBase<K, V
 
     // Scheduled executor for cleanup and refresh operations
     protected final ScheduledExecutorService scheduler;
+    // Track tasks scheduled by this cache so we can cancel them on close
+    private final List<ScheduledFuture<?>> scheduledTasks = new ArrayList<>();
 
     // Size and weight tracking
     protected final AtomicLong currentSize;
@@ -68,12 +72,8 @@ public abstract class ConcurrentCacheBase<K, V> extends DataBackedCacheBase<K, V
             stripes[i] = new ReentrantReadWriteLock();
         }
 
-        // Initialize scheduler
-        this.scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread thread = new Thread(r, "jcachex-scheduler");
-            thread.setDaemon(true);
-            return thread;
-        });
+        // Initialize scheduler (shared)
+        this.scheduler = io.github.dhruv1110.jcachex.internal.util.SchedulerProvider.get();
 
         // Initialize size and weight tracking
         this.currentSize = new AtomicLong(0);
@@ -494,16 +494,18 @@ public abstract class ConcurrentCacheBase<K, V> extends DataBackedCacheBase<K, V
      * Schedule periodic cleanup of expired entries.
      */
     protected void scheduleCleanup() {
-        scheduler.scheduleAtFixedRate(this::cleanupExpiredEntries,
+        ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(this::cleanupExpiredEntries,
                 CLEANUP_INTERVAL_SECONDS, CLEANUP_INTERVAL_SECONDS, TimeUnit.SECONDS);
+        recordScheduledTask(future);
     }
 
     /**
      * Schedule refresh operations for entries.
      */
     protected void scheduleRefresh() {
-        scheduler.scheduleAtFixedRate(this::refreshEntries,
+        ScheduledFuture<?> future = scheduler.scheduleAtFixedRate(this::refreshEntries,
                 REFRESH_INTERVAL_SECONDS, REFRESH_INTERVAL_SECONDS, TimeUnit.SECONDS);
+        recordScheduledTask(future);
     }
 
     /**
@@ -533,16 +535,25 @@ public abstract class ConcurrentCacheBase<K, V> extends DataBackedCacheBase<K, V
      * Shutdown the cache and clean up resources.
      */
     public void shutdown() {
-        if (scheduler != null && !scheduler.isShutdown()) {
-            scheduler.shutdown();
-            try {
-                if (!scheduler.awaitTermination(60, TimeUnit.SECONDS)) {
-                    scheduler.shutdownNow();
+        // Cancel only tasks scheduled by this cache
+        synchronized (scheduledTasks) {
+            for (ScheduledFuture<?> future : scheduledTasks) {
+                if (future != null && !future.isCancelled()) {
+                    future.cancel(true);
                 }
-            } catch (InterruptedException e) {
-                scheduler.shutdownNow();
-                Thread.currentThread().interrupt();
             }
+            scheduledTasks.clear();
+        }
+    }
+
+    /**
+     * Records a scheduled task for later cancellation when this cache is closed.
+     */
+    protected void recordScheduledTask(ScheduledFuture<?> future) {
+        if (future == null)
+            return;
+        synchronized (scheduledTasks) {
+            scheduledTasks.add(future);
         }
     }
 

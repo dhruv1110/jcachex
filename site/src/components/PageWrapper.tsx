@@ -27,8 +27,8 @@ const PageWrapper: React.FC<PageWrapperProps> = ({
     // Create SEO data from props with defaults
     const finalSeoData = {
         title: title || 'JCacheX - High-Performance Java Caching Library',
-        description: description || 'JCacheX is a high-performance, feature-rich Java caching library with async support, Spring integration, distributed caching, and advanced eviction strategies.',
-        keywords: processedKeywords || ['Java cache', 'caching library', 'high performance', 'Spring integration'],
+        description: description || 'JCacheX is a high-performance Java caching library with Kotlin cache APIs, in-memory cache for Java, and distributed caching on Kubernetes with Spring integration.',
+        keywords: processedKeywords || ['Java caching library', 'Kotlin cache API', 'in-memory cache Java', 'distributed caching Kubernetes', 'Spring cache', 'JCache', 'Java cache in-memory'],
         canonical: `https://dhruv1110.github.io/jcachex${window.location.pathname}`,
         type: 'website' as const,
         author: 'JCacheX Team'

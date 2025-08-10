@@ -5,23 +5,12 @@ import io.github.dhruv1110.jcachex.CacheConfig;
 import io.github.dhruv1110.jcachex.CacheStats;
 import io.github.dhruv1110.jcachex.internal.util.CacheCommonOperations;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.function.Function;
-import java.util.Set;
+import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Map;
-import java.util.AbstractMap;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.time.Instant;
-import java.time.Duration;
+import java.util.Set;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Specialized write-heavy cache implementation optimized for write-intensive
@@ -52,6 +41,9 @@ public final class WriteHeavyOptimizedCache<K, V> implements Cache<K, V> {
     // Asynchronous write processing
     private final ScheduledExecutorService writeExecutor;
     private final WriteProcessor<K, V> writeProcessor;
+
+    // Synchronization for write processing and state mutations
+    private final Object writeProcessLock = new Object();
 
     // Configuration
     private static final int WRITE_BUFFER_SIZE = 1024;
@@ -180,14 +172,16 @@ public final class WriteHeavyOptimizedCache<K, V> implements Cache<K, V> {
 
     @Override
     public final void clear() {
-        // Flush all pending writes first
-        writeProcessor.processWrites();
+        synchronized (writeProcessLock) {
+            // Flush all pending writes first
+            writeProcessor.processWritesLocked();
 
-        // Clear all data structures
-        data.clear();
-        writeBuffer.clear();
-        writeBatcher.clear();
-        writeCoalescer.clear();
+            // Clear all data structures
+            data.clear();
+            writeBuffer.clear();
+            writeBatcher.clear();
+            writeCoalescer.clear();
+        }
     }
 
     @Override
@@ -277,7 +271,9 @@ public final class WriteHeavyOptimizedCache<K, V> implements Cache<K, V> {
      * Flush all pending writes to main storage.
      */
     public final void flushWrites() {
-        writeProcessor.processWrites();
+        synchronized (writeProcessLock) {
+            writeProcessor.processWritesLocked();
+        }
     }
 
     /**
@@ -499,6 +495,13 @@ public final class WriteHeavyOptimizedCache<K, V> implements Cache<K, V> {
         }
 
         final void processWrites() {
+            synchronized (cache.writeProcessLock) {
+                processWritesLocked();
+            }
+        }
+
+        // Must be called with cache.writeProcessLock held
+        final void processWritesLocked() {
             // Drain write buffer
             Map<K, V> bufferedWrites = cache.writeBuffer.drainAll();
 

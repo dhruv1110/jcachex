@@ -1,1 +1,64 @@
-// No custom styles needed - everything handled by Material UI
+/* Theme tokens and common utilities */
+:root {
+    /* Accent gradient stops (editable) */
+    --jcx-accent-start: #60a5fa;
+    /* blue-400 */
+    --jcx-accent-end: #a78bfa;
+    /* violet-400 */
+
+    /* Hero background gradient (editable) */
+    --jcx-hero-bg: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(2, 6, 23, 0.6) 100%);
+
+    /* Surface and borders (dark) */
+    --jcx-surface: #1e293b;
+    --jcx-border: rgba(255, 255, 255, 0.08);
+    --jcx-divider: rgba(255, 255, 255, 0.06);
+
+    /* Text (dark) */
+    --jcx-text-primary: #f1f5f9;
+    --jcx-text-secondary: #94a3b8;
+}
+
+/* Utility classes */
+.jcx-hero-bg {
+    background: var(--jcx-hero-bg);
+}
+
+.jcx-accent-text {
+    background: linear-gradient(135deg, var(--jcx-accent-start) 0%, var(--jcx-accent-end) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.jcx-surface {
+    background-color: var(--jcx-surface);
+    border: 1px solid var(--jcx-border);
+}
+
+.jcx-divider {
+    border-top: 1px solid var(--jcx-divider);
+}
+
+/* Accessibility: visibly focusable skip link */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.skip-link:focus {
+    position: fixed;
+    left: 16px;
+    top: 16px;
+    width: auto;
+    height: auto;
+    background: #111827;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    z-index: 2000;
+}

@@ -193,18 +193,19 @@ val profileCache = createCacheWithProfile<String, Data>(ProfileName.HIGH_PERFORM
             description: 'Configuration-based cache setup',
             profile: 'SPRING_BOOT',
             performance: 'Auto-configuration',
-            code: `# application.yml
+            code: `# application.yml (auto-created caches via properties)
 jcachex:
+  enabled: true
+  autoCreateCaches: true
+  default:
+    maximumSize: 1000
+    expireAfterSeconds: 600
+    enableStatistics: true
   caches:
     users:
       profile: READ_HEAVY
-      maximumSize: 5000
-    sessions:
-      profile: SESSION_CACHE
-      maximumSize: 2000
-    products:
-      profile: HIGH_PERFORMANCE
-      maximumSize: 10000`
+      maximumSize: 1000
+      expireAfterSeconds: 300`
         }
     ];
 
@@ -320,10 +321,6 @@ jcachex:
 
     return (
         <Layout sidebarConfig={sidebarConfig}>
-            <Breadcrumbs items={[
-                { label: 'Home', path: '/' },
-                { label: 'Getting Started', path: '/getting-started', current: true }
-            ]} />
 
             <Container
                 maxWidth="lg"

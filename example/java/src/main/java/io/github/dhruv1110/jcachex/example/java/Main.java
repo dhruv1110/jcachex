@@ -1,9 +1,6 @@
 package io.github.dhruv1110.jcachex.example.java;
 
 import io.github.dhruv1110.jcachex.*;
-import io.github.dhruv1110.jcachex.FrequencySketchType;
-import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
-import io.github.dhruv1110.jcachex.JCacheXBuilder;
 
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;

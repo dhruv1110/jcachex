@@ -3,11 +3,7 @@ package io.github.dhruv1110.jcachex.spring.configuration;
 import org.springframework.util.StringUtils;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Validator for JCacheX cache configurations.

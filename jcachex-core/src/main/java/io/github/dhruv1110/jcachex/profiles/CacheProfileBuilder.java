@@ -2,10 +2,9 @@ package io.github.dhruv1110.jcachex.profiles;
 
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.FrequencySketchType;
+import io.github.dhruv1110.jcachex.eviction.EvictionStrategy;
 import io.github.dhruv1110.jcachex.impl.*;
-import io.github.dhruv1110.jcachex.impl.UltraFastCache;
 
 import java.time.Duration;
 import java.util.function.Function;
@@ -380,8 +379,6 @@ public final class CacheProfileBuilder {
                     return new MLOptimizedCache<>(config);
                 } else if (implementationClass == ProfiledOptimizedCache.class) {
                     return new ProfiledOptimizedCache<>(config);
-                } else if (implementationClass == DefaultDistributedCache.class) {
-                    return new DefaultDistributedCache.Builder<>().cacheConfig((CacheConfig) config).build();
                 } else {
                     // Use constructor reflection as fallback
                     try {

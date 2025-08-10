@@ -81,11 +81,12 @@ const Footer: React.FC = () => {
         <Box
             component="footer"
             sx={{
-                bgcolor: 'grey.900',
-                color: 'grey.100',
+                bgcolor: 'var(--jcx-surface)',
+                color: 'var(--jcx-text-primary)',
                 mt: 'auto',
                 py: 6,
                 zIndex: 10000,
+                borderTop: '1px solid var(--jcx-divider)'
             }}
         >
             <Container maxWidth="lg">
@@ -132,7 +133,7 @@ const Footer: React.FC = () => {
                                 rel="noopener noreferrer"
                                 sx={{
                                     color: 'grey.400',
-                                    bgcolor: 'grey.800',
+                                    bgcolor: 'rgba(255,255,255,0.06)',
                                     '&:hover': {
                                         bgcolor: 'primary.main',
                                         color: 'white',
@@ -179,7 +180,7 @@ const Footer: React.FC = () => {
                 </Box>
 
                 {/* Footer Bottom */}
-                <Divider sx={{ my: 3, borderColor: 'grey.800' }} />
+                <Divider sx={{ my: 3, borderColor: 'var(--jcx-divider)' }} />
                 <Box
                     sx={{
                         display: 'flex',
@@ -192,9 +193,11 @@ const Footer: React.FC = () => {
                     <Typography variant="body2" color="grey.400">
                         © {currentYear} JCacheX. Released under the MIT License.
                     </Typography>
-                    <Typography variant="body2" color="grey.400">
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                        <Typography variant="body2" color="grey.400">
                         Built with ❤️ for the Java community
-                    </Typography>
+                        </Typography>
+                    </Box>
                 </Box>
             </Container>
         </Box>

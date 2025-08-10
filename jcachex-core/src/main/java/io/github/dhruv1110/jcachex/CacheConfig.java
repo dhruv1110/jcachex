@@ -7,10 +7,10 @@ import io.github.dhruv1110.jcachex.exceptions.CacheConfigurationException;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Configuration options for a JCacheX cache instance.
@@ -345,7 +345,7 @@ public class CacheConfig<K, V> {
         private Function<K, V> loader;
         private Function<K, CompletableFuture<V>> asyncLoader;
         private Duration refreshAfterWrite;
-        private boolean recordStats = true;
+        private boolean recordStats = false;
         private int initialCapacity = 16;
         private int concurrencyLevel = 16;
         private String directory;

@@ -2,13 +2,14 @@ package io.github.dhruv1110.jcachex.eviction;
 
 import io.github.dhruv1110.jcachex.CacheEntry;
 import io.github.dhruv1110.jcachex.FrequencySketchType;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.jupiter.api.Assertions.*;
 

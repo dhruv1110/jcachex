@@ -1,6 +1,6 @@
 package io.github.dhruv1110.jcachex;
 
-import io.github.dhruv1110.jcachex.impl.*;
+import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import io.github.dhruv1110.jcachex.profiles.CacheProfile;
 import io.github.dhruv1110.jcachex.profiles.ProfileName;
 import io.github.dhruv1110.jcachex.profiles.ProfileRegistry;
@@ -40,7 +40,7 @@ import java.util.function.Function;
  * <h2>Usage Examples:</h2>
  *
  * <h3>Profile-Based Creation (Recommended):</h3>
- * 
+ *
  * <pre>{@code
  * // Using ProfileName enum for type safety
  * Cache<String, User> userCache = JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
@@ -57,7 +57,7 @@ import java.util.function.Function;
  * }</pre>
  *
  * <h3>Smart Defaults (When unsure):</h3>
- * 
+ *
  * <pre>{@code
  * // Let JCacheX choose the best profile based on workload characteristics
  * Cache<String, Data> smartCache = JCacheXBuilder.withSmartDefaults()
@@ -71,7 +71,7 @@ import java.util.function.Function;
  * }</pre>
  *
  * <h3>Simple Cases:</h3>
- * 
+ *
  * <pre>{@code
  * // Minimal configuration - uses DEFAULT profile
  * Cache<String, String> simpleCache = JCacheXBuilder.create()
@@ -285,17 +285,6 @@ public final class JCacheXBuilder<K, V> {
         return fromProfile(ProfileName.HARDWARE_OPTIMIZED);
     }
 
-    /**
-     * Creates a builder optimized for distributed caching environments.
-     * Uses DISTRIBUTED profile with cluster-aware optimizations.
-     *
-     * @param <K> the key type
-     * @param <V> the value type
-     * @return a pre-configured builder
-     */
-    public static <K, V> JCacheXBuilder<K, V> forDistributedCaching() {
-        return fromProfile(ProfileName.DISTRIBUTED);
-    }
 
     // ===== CONFIGURATION METHODS =====
 
@@ -506,17 +495,17 @@ public final class JCacheXBuilder<K, V> {
      * Applies profile defaults only for values that haven't been explicitly set.
      */
     private void applyProfileDefaults(CacheConfig<K, V> preProfileConfig) {
-        // Apply eviction strategy from profile
-        configBuilder.evictionStrategy(profile.getEvictionStrategy());
+        // Apply eviction strategy from profile only if user didn't set one
+        if (preProfileConfig.getEvictionStrategy() == null) {
+            configBuilder.evictionStrategy(profile.getEvictionStrategy());
+        }
 
         // For critical configurable values, don't override if they were set
         if (preProfileConfig.getMaximumSize() != null) {
-            // User explicitly set maximumSize, preserve it
             configBuilder.maximumSize(preProfileConfig.getMaximumSize());
         }
 
         if (preProfileConfig.isRecordStats()) {
-            // User explicitly set recordStats, preserve it
             configBuilder.recordStats(preProfileConfig.isRecordStats());
         }
 

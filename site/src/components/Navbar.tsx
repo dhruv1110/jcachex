@@ -39,11 +39,12 @@ const Navbar: React.FC = () => {
     };
 
     const navigationLinks = [
-        { label: 'Documentation', path: '/docs' },
+        { label: 'Docs', path: '/docs' },
         { label: 'Examples', path: '/examples' },
         { label: 'Spring', path: '/spring' },
-        { label: 'Migration', path: '/migration' },
+        { label: 'Performance', path: '/performance' },
         { label: 'Troubleshooting', path: '/troubleshooting' },
+        { label: 'Migration', path: '/migration' },
         { label: 'FAQ', path: '/faq' },
     ];
 
@@ -53,7 +54,7 @@ const Navbar: React.FC = () => {
                 <Typography variant="h6" component="div">
                     JCacheX
                 </Typography>
-                <IconButton onClick={handleDrawerToggle}>
+                <IconButton onClick={handleDrawerToggle} aria-label="Close menu">
                     <CloseIcon />
                 </IconButton>
             </Box>
@@ -170,7 +171,7 @@ const Navbar: React.FC = () => {
                     {isMobile && (
                         <IconButton
                             color="inherit"
-                            aria-label="open drawer"
+                            aria-label="Open navigation menu"
                             edge="end"
                             onClick={handleDrawerToggle}
                             sx={{ ml: 'auto' }}

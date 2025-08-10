@@ -6,10 +6,9 @@ import io.github.dhruv1110.jcachex.CacheEntry;
 import io.github.dhruv1110.jcachex.CacheStats;
 import io.github.dhruv1110.jcachex.internal.util.ConfigurationProvider;
 
+import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
-import java.time.Instant;
 
 /**
  * Abstract base class for all cache implementations providing common
