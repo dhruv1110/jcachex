@@ -36,6 +36,12 @@ jobs:
     - name: Run tests and generate coverage
       run: ./gradlew test jacocoTestReport
 
+    - name: Upload test results to Codecov
+      if: ${{ !cancelled() }}
+      uses: codecov/test-results-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+
     - name: Run code quality checks
       run: |
         ./gradlew detekt
@@ -101,6 +107,7 @@ jobs:
       with:
         name: test-results
         path: |
+          **/build/test-results/
           **/build/reports/tests/
           **/build/reports/jacoco/
           **/build/reports/detekt/
