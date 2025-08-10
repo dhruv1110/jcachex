@@ -221,7 +221,7 @@ Add the JCacheX Spring Boot starter:
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-spring</artifactId>
-    <version>0.1.18</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -581,13 +581,13 @@ jcachex/
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-core</artifactId>
-    <version>0.1.18</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
 #### Gradle
 ```gradle
-implementation 'io.github.dhruv1110:jcachex-core:0.1.18'
+implementation 'io.github.dhruv1110:jcachex-core:2.0.1'
 ```
 
 ### Hello World Example
