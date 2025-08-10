@@ -226,7 +226,7 @@ const PerformanceBenchmarks: React.FC = () => {
     return (
         <Layout>
             <PageWrapper>
-                <Section padding="xl">
+                <Section padding="xl" className="jcx-surface">
                     <Box sx={{ textAlign: 'center', mb: 4 }}>
                         <Typography variant="h2" gutterBottom>
                             <SpeedIcon sx={{ mr: 2, fontSize: 'inherit', color: 'primary.main' }} />
@@ -237,7 +237,7 @@ const PerformanceBenchmarks: React.FC = () => {
                         </Typography>
                     </Box>
 
-                    <Alert severity="success" sx={{ mb: 4 }}>
+                    <Alert severity="success" sx={{ mb: 4, backgroundColor: 'rgba(34,197,94,0.08)', color: 'success.main', border: theme => `1px solid ${theme.palette.success.main}22` }}>
                         <AlertTitle>🚀 Performance Breakthrough - July 2025</AlertTitle>
                         <Typography variant="body2">
                             <strong>JCacheX-ZeroCopy achieves 501.1M ops/sec</strong> with 98.4% scaling efficiency<br />
@@ -247,7 +247,7 @@ const PerformanceBenchmarks: React.FC = () => {
                     </Alert>
                 </Section>
 
-                <Section padding="xl">
+                <Section padding="xl" className="jcx-surface">
                     <Box sx={{ mb: 4 }}>
                         <Tabs value={currentTab} onChange={handleTabChange} centered>
                             <Tab label="Profile Performance" />
@@ -276,7 +276,7 @@ const PerformanceBenchmarks: React.FC = () => {
                                 </Typography>
                                 <Grid container spacing={2}>
                                     <Grid size={{ xs: 12, md: 4 }}>
-                                        <Paper sx={{ p: 2, backgroundColor: '#e8f5e8' }}>
+                                        <Paper className="jcx-surface" sx={{ p: 2 }}>
                                             <Typography variant="h6" color="success.main">
                                                 🏆 Throughput Champion
                                             </Typography>
@@ -288,7 +288,7 @@ const PerformanceBenchmarks: React.FC = () => {
                                         </Paper>
                                     </Grid>
                                     <Grid size={{ xs: 12, md: 4 }}>
-                                        <Paper sx={{ p: 2, backgroundColor: '#e3f2fd' }}>
+                                        <Paper className="jcx-surface" sx={{ p: 2 }}>
                                             <Typography variant="h6" color="primary.main">
                                                 ⚡ Scaling Excellence
                                             </Typography>
@@ -300,7 +300,7 @@ const PerformanceBenchmarks: React.FC = () => {
                                         </Paper>
                                     </Grid>
                                     <Grid size={{ xs: 12, md: 4 }}>
-                                        <Paper sx={{ p: 2, backgroundColor: '#f3e5f5' }}>
+                                        <Paper className="jcx-surface" sx={{ p: 2 }}>
                                             <Typography variant="h6" color="secondary.main">
                                                 🎯 Balanced Performance
                                             </Typography>
@@ -335,7 +335,7 @@ const PerformanceBenchmarks: React.FC = () => {
                                 </Typography>
                                 <Grid container spacing={2}>
                                     <Grid size={{ xs: 12, md: 6 }}>
-                                        <Paper sx={{ p: 2, backgroundColor: '#ffebee' }}>
+                                        <Paper className="jcx-surface" sx={{ p: 2 }}>
                                             <Typography variant="h6" color="error.main">
                                                 🔥 Extreme Thread Performance
                                             </Typography>
@@ -347,7 +347,7 @@ const PerformanceBenchmarks: React.FC = () => {
                                         </Paper>
                                     </Grid>
                                     <Grid size={{ xs: 12, md: 6 }}>
-                                        <Paper sx={{ p: 2, backgroundColor: '#fff3e0' }}>
+                                        <Paper className="jcx-surface" sx={{ p: 2 }}>
                                             <Typography variant="h6" color="warning.main">
                                                 💪 Multi-Condition Resilience
                                             </Typography>
@@ -382,7 +382,7 @@ const PerformanceBenchmarks: React.FC = () => {
                                 </Typography>
                                 <Grid container spacing={2}>
                                     <Grid size={{ xs: 12, md: 4 }}>
-                                        <Paper sx={{ p: 2, backgroundColor: '#e8f5e8' }}>
+                                        <Paper className="jcx-surface" sx={{ p: 2 }}>
                                             <Typography variant="h6" color="success.main">
                                                 🏃 Sustained Excellence
                                             </Typography>
@@ -394,7 +394,7 @@ const PerformanceBenchmarks: React.FC = () => {
                                         </Paper>
                                     </Grid>
                                     <Grid size={{ xs: 12, md: 4 }}>
-                                        <Paper sx={{ p: 2, backgroundColor: '#e3f2fd' }}>
+                                        <Paper className="jcx-surface" sx={{ p: 2 }}>
                                             <Typography variant="h6" color="primary.main">
                                                 🧠 Memory Efficiency
                                             </Typography>
@@ -406,7 +406,7 @@ const PerformanceBenchmarks: React.FC = () => {
                                         </Paper>
                                     </Grid>
                                     <Grid size={{ xs: 12, md: 4 }}>
-                                        <Paper sx={{ p: 2, backgroundColor: '#f3e5f5' }}>
+                                        <Paper className="jcx-surface" sx={{ p: 2 }}>
                                             <Typography variant="h6" color="secondary.main">
                                                 🔄 Stability Assurance
                                             </Typography>
@@ -431,7 +431,7 @@ const PerformanceBenchmarks: React.FC = () => {
 
                             <Grid container spacing={4}>
                                 <Grid size={{ xs: 12, md: 6 }}>
-                                    <Paper sx={{ p: 3 }}>
+                                    <Paper className="jcx-surface" sx={{ p: 3 }}>
                                         <Typography variant="h6" gutterBottom>
                                             🏆 Category Leaders
                                         </Typography>
@@ -452,7 +452,7 @@ const PerformanceBenchmarks: React.FC = () => {
                                 </Grid>
 
                                 <Grid size={{ xs: 12, md: 6 }}>
-                                    <Paper sx={{ p: 3 }}>
+                                    <Paper className="jcx-surface" sx={{ p: 3 }}>
                                         <Typography variant="h6" gutterBottom>
                                             🎯 Optimization Opportunities
                                         </Typography>
@@ -473,7 +473,7 @@ const PerformanceBenchmarks: React.FC = () => {
                                 </Grid>
 
                                 <Grid size={{ xs: 12 }}>
-                                    <Paper sx={{ p: 3 }}>
+                                    <Paper className="jcx-surface" sx={{ p: 3 }}>
                                         <Typography variant="h6" gutterBottom>
                                             Benchmark Methodology
                                         </Typography>

@@ -2,18 +2,9 @@
 
 <div align="center">
 
-[![CI](https://github.com/dhruv1110/JCacheX/workflows/CI/badge.svg)](https://github.com/dhruv1110/JCacheX/actions)
-[![codecov](https://codecov.io/gh/dhruv1110/JCacheX/branch/main/graph/badge.svg)](https://codecov.io/gh/dhruv1110/JCacheX)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=dhruv1110_jcachex&metric=alert_status)](https://sonarcloud.io/project/overview?id=dhruv1110_jcachex)
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.dhruv1110/jcachex-core)](https://maven-badges.herokuapp.com/maven-central/io.github.dhruv1110/jcachex-core)
-[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://dhruv1110.github.io/jcachex/)
-[![javadoc](https://javadoc.io/badge2/io.github.dhruv1110/jcachex-core/javadoc.svg)](https://javadoc.io/doc/io.github.dhruv1110/jcachex-core)
+**High‑performance Java caching** — profile‑based, from in‑memory to distributed (Kubernetes), with Kotlin DSL and Spring Boot integration.
 
-**High-performance caching library for Java applications**
-
-*Profile-based • Local to distributed • Zero code changes*
-
-[**Get Started**](#quick-start) • [**Documentation**](https://dhruv1110.github.io/jcachex/) • [**Examples**](example/) • [**Star this repo**](https://github.com/dhruv1110/jcachex)
+[Getting Started](#quick-start) • [Docs](https://dhruv1110.github.io/jcachex/) • [Examples](example/) • [Benchmarks](benchmarks/) • [Star ★](https://github.com/dhruv1110/jcachex)
 
 </div>
 
@@ -21,272 +12,77 @@
 
 ## Why JCacheX?
 
-**Stop choosing between simple caching and enterprise features.** JCacheX provides a unified solution that grows with your application using intelligent cache profiles.
+- **Profile‑based simplicity**: one‑liners for common workloads (READ_HEAVY, WRITE_HEAVY, API, SESSION, ZERO_COPY)
+- **Production‑ready**: async loaders, rich stats, listeners, health/metrics
+- **Evolves with you**: same API from local in‑memory to distributed on Kubernetes
+- **Developer‑friendly**: fluent Java API, idiomatic Kotlin DSL, Spring annotations
 
-```java
-// Start with a profile that matches your use case
-Cache<String, User> cache = JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
-    .name("users")
-    .maximumSize(1000L)
-    .build();
-
-// Scale to distributed with the same API
-Cache<String, User> cache = JCacheXBuilder.forDistributedCaching()
-    .name("users")
-    .maximumSize(1000L)
-    .build();
-```
-
-### The Problem
-- **HashMap**: Fast but limited (no TTL, no eviction, not thread-safe)
-- **Caffeine**: Great locally but doesn't scale to distributed
-- **Redis**: Powerful but requires infrastructure and network calls
-- **Existing solutions**: Force you to choose between simplicity OR enterprise features
-
-### The Solution
-**JCacheX bridges the gap** with intelligent cache profiles that automatically configure optimal settings for your specific use case.
-
----
-
-## Performance Benchmarks
-
-<table>
-<tr>
-<td align="center"><strong>501M+ ops/sec</strong><br/>JCacheX-ZeroCopy</td>
-<td align="center"><strong>98.4% efficiency</strong><br/>CPU scaling</td>
-<td align="center"><strong>7.1μs latency</strong><br/>GET operations</td>
-<td align="center"><strong>Enterprise-ready</strong><br/>Stress tested</td>
-</tr>
-</table>
-
-### 🚀 **JCacheX Profile Performance**
-
-**Ultra-High Performance Profiles:**
-```
-Profile                 | Peak Throughput | Scaling Efficiency | Use Case
-JCacheX-ZeroCopy       | 501.1M ops/sec  | 98.4% (4 threads)  | Ultra-high throughput
-JCacheX-WriteHeavy     | 224.6M ops/sec  | 97.2% (4 threads)  | Write-intensive workloads
-JCacheX-HighPerformance| 198.4M ops/sec  | 82.9% (4 threads)  | Balanced performance
-```
-
-**Specialized Performance Profiles:**
-```
-Profile                    | Throughput     | Efficiency | Optimization Focus
-JCacheX-ReadHeavy         | 22.6M ops/sec  | 93.7%     | Read-intensive (80%+ reads)
-JCacheX-HardwareOptimized | 143.9M ops/sec | 80.6%     | CPU-specific features
-JCacheX-MemoryEfficient   | 31.0M ops/sec  | 23.7%     | Memory-constrained environments
-```
-
-**Latency Performance:**
-```
-Profile                 | GET Latency | PUT Latency | Performance Rating
-JCacheX-WriteHeavy     | 7.1μs       | 4.3μs       | ⭐⭐⭐⭐⭐
-JCacheX-HighPerformance| 7.2μs       | 4.2μs       | ⭐⭐⭐⭐⭐
-JCacheX-ZeroCopy       | 8.9μs       | 5.0μs       | ⭐⭐⭐⭐
-```
-
-> **Benchmark Environment**: Apple M1 Pro, 10 cores, 32GB RAM, OpenJDK 21
-> **Methodology**: JMH framework, 5 warmup/10 measurement iterations, 3 forks
-> **Full Results**: See [benchmarks/](benchmarks/) directory for complete analysis
+> Deep benchmarks, profiles and trade‑offs are on the website to keep this README focused.
 
 ---
 
 ## Quick Start
 
-### 1. Add Dependency
+---
+
+### 1) Install
+Use the latest version from Maven Central (see badge):
+
 ```xml
 <dependency>
-    <groupId>io.github.dhruv1110</groupId>
-    <artifactId>jcachex-core</artifactId>
-    <version>0.1.18</version>
+  <groupId>io.github.dhruv1110</groupId>
+  <artifactId>jcachex-core</artifactId>
+  <version>2.0.1</version>
 </dependency>
 ```
 
-### 2. Choose Your Cache Pattern
+```gradle
+implementation "io.github.dhruv1110:jcachex-core:2.0.1"
+```
 
-## 🎯 Easy-to-Use Examples
+Optional modules: `jcachex-spring` (Spring Boot), `jcachex-kotlin` (Kotlin DSL).
 
-### **1. Profile-Based Creation (Type Safe)**
+### 2) Create a cache (Java)
 ```java
-// Using ProfileName enum for compile-time safety
-Cache<String, User> userCache = JCacheXBuilder.fromProfile(ProfileName.READ_HEAVY)
+Cache<String, User> cache = JCacheXBuilder.forReadHeavyWorkload()
     .name("users")
     .maximumSize(1000L)
     .build();
+
+cache.put("user:123", new User("Alice"));
+User u = cache.get("user:123");
+System.out.println(cache.stats());
 ```
 
-### **2. Convenience Methods (One-liner Creation)**
-```java
-// Read-heavy workloads (80%+ reads)
-Cache<String, User> users = JCacheXBuilder.forReadHeavyWorkload()
-    .name("users").maximumSize(1000L).build();
-
-// Write-heavy workloads (50%+ writes)
-Cache<String, Session> sessions = JCacheXBuilder.forWriteHeavyWorkload()
-    .name("sessions").maximumSize(2000L).build();
-
-// Memory-constrained environments
-Cache<String, Data> memCache = JCacheXBuilder.forMemoryConstrainedEnvironment()
-    .name("memory-cache").maximumSize(100L).build();
-
-// All 12 profiles supported with convenience methods
-```
-
-### **3. Smart Defaults (Automatic Selection)**
-```java
-// Let JCacheX choose optimal profile based on workload characteristics
-Cache<String, Data> smartCache = JCacheXBuilder.withSmartDefaults()
-    .workloadCharacteristics(WorkloadCharacteristics.builder()
-        .readToWriteRatio(8.0) // Read-heavy
-        .accessPattern(WorkloadCharacteristics.AccessPattern.TEMPORAL_LOCALITY)
-        .build())
-    .build();
-```
-
-### **4. Kotlin DSL Integration**
+### 3) Kotlin DSL
 ```kotlin
-// Convenience methods with DSL
-val readHeavyCache = createReadHeavyCache {
-    name("products")
-    maximumSize(5000L)
+val users = createReadHeavyCache<String, User> {
+    name("users"); maximumSize(1000)
 }
-
-val sessionCache = createSessionCache {
-    name("sessions")
-    maximumSize(2000L)
-}
-
-// All 12 profiles supported
+users["user:1"] = User("Alice")
+println(users.stats().hitRate())
 ```
 
-### **5. Spring Boot Integration**
-```yaml
-# Configuration-based
-jcachex:
-  caches:
-    users:
-      profile: READ_HEAVY
-      maximumSize: 5000
-```
-
-### 3. See It Work
+### 4) Spring Boot (annotations)
 ```java
-// Check performance
-CacheStats stats = cache.stats();
-System.out.println("Hit rate: " + (stats.hitRate() * 100) + "%");
-// Output: Hit rate: 94.7%
+@JCacheXCacheable(cacheName = "users", profile = "READ_HEAVY")
+public User findUser(String id) { return repo.findById(id); }
 ```
 
----
-
-## Cache Profiles
-
-JCacheX uses intelligent profiles to automatically configure optimal cache settings for your specific use case. No more guessing about eviction strategies, initial capacities, or concurrency levels.
-
-### Core Profiles (Most Common)
-
-| Profile | Best For | Eviction Strategy | Default Size | Memory Usage |
-|---------|----------|-------------------|--------------|--------------|
-| **DEFAULT** | General-purpose caching | TinyWindowLFU | 1,000 | Medium |
-| **READ_HEAVY** | 80%+ read operations | Enhanced LFU | 1,000 | Medium |
-| **WRITE_HEAVY** | 50%+ write operations | Enhanced LRU | 1,000 | Medium |
-| **MEMORY_EFFICIENT** | Memory-constrained environments | LRU | 100 | Low |
-| **HIGH_PERFORMANCE** | Maximum throughput | Enhanced LFU | 10,000 | High |
-
-### Specialized Profiles
-
-| Profile | Best For | Eviction Strategy | Default Size | TTL |
-|---------|----------|-------------------|--------------|-----|
-| **SESSION_CACHE** | User session storage | LRU | 2,000 | 30 min |
-| **API_CACHE** | External API responses | TinyWindowLFU | 500 | 15 min |
-| **COMPUTE_CACHE** | Expensive computations | Enhanced LFU | 1,000 | 2 hours |
-
-### Advanced Profiles
-
-| Profile | Best For | Eviction Strategy | Default Size | Special Features |
-|---------|----------|-------------------|--------------|------------------|
-| **ML_OPTIMIZED** | Machine learning workloads | Enhanced LRU | 500 | Predictive caching |
-| **ZERO_COPY** | Ultra-low latency (HFT) | LRU | 10,000 | Direct memory buffers |
-| **HARDWARE_OPTIMIZED** | CPU-intensive workloads | Enhanced LRU | 1,000 | SIMD optimizations |
-| **DISTRIBUTED** | Multi-node clustering | Enhanced LRU | 5,000 | Network-aware |
-
-### Profile Tradeoffs
-
-| Aspect | Core Profiles | Specialized Profiles | Advanced Profiles |
-|--------|---------------|---------------------|-------------------|
-| **Setup Complexity** | Simple | Simple | Moderate |
-| **Performance** | High | High | Very High |
-| **Memory Usage** | Configurable | Optimized | Highly Optimized |
-| **Features** | Standard | Use-case specific | Cutting-edge |
-| **Stability** | Production-ready | Production-ready | Beta/Experimental |
-| **Learning Curve** | Low | Low | Medium |
+More: [Examples](example/) • [Spring Guide](https://dhruv1110.github.io/jcachex/spring)
 
 ---
 
-## Key Features
+## Distributed on Kubernetes
+Same API, pod‑aware discovery and consistent hashing for clusters. See the website’s Kubernetes section and `example/distributed/kubernetes`.
 
-<table>
-<tr>
-<td>
+---
 
-**High Performance**
-- Sub-microsecond latency
-- 50M+ operations/second
-- Lock-free algorithms
-- Minimal GC pressure
-
-</td>
-<td>
-
-**Async Operations**
-- CompletableFuture support
-- Kotlin coroutines
-- Non-blocking operations
-- Reactive compatibility
-
-</td>
-</tr>
-<tr>
-<td>
-
-**Smart Eviction**
-- LRU, LFU, FIFO, TTL
-- Weight-based eviction
-- Composite strategies
-- Custom algorithms
-
-</td>
-<td>
-
-**Profile-Based**
-- 12 built-in profiles
-- Automatic optimization
-- Use-case specific tuning
-- Custom profile creation
-
-</td>
-</tr>
-<tr>
-<td>
-
-**Production Ready**
-- Comprehensive metrics
-- Circuit breaker support
-- Cache warming strategies
-- Event-driven architecture
-
-</td>
-<td>
-
-**Developer Friendly**
-- Fluent API design
-- Kotlin DSL support
-- Spring Boot integration
-- Comprehensive documentation
-
-</td>
-</tr>
-</table>
+## Links
+- Website & Docs: https://dhruv1110.github.io/jcachex/
+- API Reference (Javadoc): https://javadoc.io/doc/io.github.dhruv1110/jcachex-core
+- Examples: `example/` • Benchmarks: `benchmarks/`
+- Troubleshooting & Migration: see website navigation
 
 ---
 
@@ -425,7 +221,7 @@ Add the JCacheX Spring Boot starter:
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-spring</artifactId>
-    <version>0.1.18</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
@@ -785,13 +581,13 @@ jcachex/
 <dependency>
     <groupId>io.github.dhruv1110</groupId>
     <artifactId>jcachex-core</artifactId>
-    <version>0.1.18</version>
+    <version>2.0.1</version>
 </dependency>
 ```
 
 #### Gradle
 ```gradle
-implementation 'io.github.dhruv1110:jcachex-core:0.1.18'
+implementation 'io.github.dhruv1110:jcachex-core:2.0.1'
 ```
 
 ### Hello World Example
@@ -853,10 +649,10 @@ Cache<String, User> monitoredCache = JCacheXBuilder.forReadHeavyWorkload()
 
 ## Documentation
 
-- **[API Reference](https://javadoc.io/doc/io.github.dhruv1110/jcachex-core)** - Complete API documentation
-- **[User Guide](https://dhruv1110.github.io/jcachex/)** - Comprehensive user guide
-- **[Examples](example/)** - Real-world examples
-- **[Performance](benchmarks/)** - Detailed benchmarks
+- **[API Reference](https://javadoc.io/doc/io.github.dhruv1110/jcachex-core)**
+- **[User Guide](https://dhruv1110.github.io/jcachex/)**
+- **[Examples](example/)**
+- **[Performance](benchmarks/)**
 
 ---
 
@@ -882,8 +678,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**[⭐ Star this repo](https://github.com/dhruv1110/jcachex)** if you find JCacheX useful!
-
-Made with ❤️ by [Dhruv](https://github.com/dhruv1110)
+If JCacheX helps you, **please star the repo**. Thanks!
 
 </div>

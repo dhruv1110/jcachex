@@ -34,7 +34,6 @@ const App: React.FC = () => {
                     <Route path="/performance" element={<PerformanceBenchmarks />} />
                     <Route path="/benchmarks" element={<PerformanceBenchmarks />} />
                     <Route path="/docs" element={<DocumentationPage />} />
-                    <Route path="/documentation" element={<DocumentationPage />} />
                     <Route path="/docs/getting-started" element={<GettingStarted />} />
                     <Route path="/docs/examples" element={<ExamplesPage />} />
                     <Route path="/docs/spring" element={<SpringGuide />} />

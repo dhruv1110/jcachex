@@ -34,12 +34,12 @@ interface CodeTabsProps {
 
 // Performance metrics for different code examples
 const PERFORMANCE_METRICS: { [key: string]: string } = {
-    'thirty-second': '7.9ns GET, Production-ready defaults',
-    'five-minute': '11.5ns GET, Automatic optimization',
-    'production-ready': '11.5ns GET, Full monitoring',
-    'java': '11.5ns GET, Zero configuration',
-    'kotlin': '11.5ns GET, DSL optimized',
-    'spring': '11.5ns GET, Auto-configured',
+    'thirty-second': '7.9ns GET (ZeroCopy), production-tuned',
+    'five-minute': 'Profile-optimized setup',
+    'production-ready': 'Monitoring & resilience enabled',
+    'java': 'Low-latency defaults',
+    'kotlin': 'DSL-optimized API',
+    'spring': 'Auto-config via jcachex-spring',
     'ecommerce': '11.5ns GET, Multi-layer caching',
     'api-gateway': '5min TTL, Circuit breaker enabled',
     'session-management': '30min TTL, High throughput',
@@ -145,7 +145,7 @@ const CodeTabs: React.FC<CodeTabsProps> = ({
         >
             {/* Enhanced Header with Performance Metrics */}
             <Box sx={{
-                bgcolor: 'grey.50',
+                bgcolor: 'rgba(255,255,255,0.03)',
                 borderBottom: `1px solid ${theme.palette.divider}`,
                 p: 2,
                 display: 'flex',
@@ -158,6 +158,7 @@ const CodeTabs: React.FC<CodeTabsProps> = ({
                     <Tabs
                         value={activeTab}
                         onChange={handleTabChange}
+                        aria-label="Example code tabs"
                         sx={{
                             minHeight: 36,
                             '& .MuiTab-root': {
@@ -184,9 +185,9 @@ const CodeTabs: React.FC<CodeTabsProps> = ({
                         {tabs.map((tab, index) => (
                             <Tab
                                 key={tab.id}
+                                aria-controls={`code-tabpanel-${index}`}
                                 label={tab.label}
                                 id={`code-tab-${index}`}
-                                aria-controls={`code-tabpanel-${index}`}
                             />
                         ))}
                     </Tabs>
@@ -217,21 +218,6 @@ const CodeTabs: React.FC<CodeTabsProps> = ({
                             </IconButton>
                         </Tooltip>
                     )}
-
-                    {showTryOnlineButtons && tryOnlineUrl && (
-                        <Tooltip title="Try this example online">
-                            <Button
-                                onClick={() => handleTryOnline(currentTab.id)}
-                                startIcon={<PlayIcon />}
-                                endIcon={<OpenInNewIcon />}
-                                variant="outlined"
-                                size="small"
-                                sx={{ textTransform: 'none' }}
-                            >
-                                Try Online
-                            </Button>
-                        </Tooltip>
-                    )}
                 </Stack>
             </Box>
 
@@ -244,7 +230,7 @@ const CodeTabs: React.FC<CodeTabsProps> = ({
                     id={`code-tabpanel-${index}`}
                     aria-labelledby={`code-tab-${index}`}
                     sx={{
-                        bgcolor: '#f8fafc',
+                        bgcolor: 'rgba(15,23,42,0.5)',
                         maxHeight: '500px',
                         overflow: 'auto',
                         position: 'relative',
@@ -256,7 +242,7 @@ const CodeTabs: React.FC<CodeTabsProps> = ({
                             fontSize: '14px',
                             lineHeight: 1.6,
                             fontFamily: 'Monaco, Menlo, "Ubuntu Mono", Consolas, monospace',
-                            color: '#334155'
+                            color: '#e2e8f0'
                         },
                         '& code': {
                             fontFamily: 'inherit',
@@ -265,15 +251,15 @@ const CodeTabs: React.FC<CodeTabsProps> = ({
                             color: 'inherit'
                         },
                         // Enhanced syntax highlighting
-                        '& .token.comment': { color: '#64748b', fontStyle: 'italic' },
-                        '& .token.keyword': { color: '#7c3aed', fontWeight: 600 },
-                        '& .token.string': { color: '#059669' },
-                        '& .token.number': { color: '#dc2626' },
-                        '& .token.class-name': { color: '#2563eb' },
-                        '& .token.function': { color: '#7c2d12' },
-                        '& .token.operator': { color: '#374151' },
-                        '& .token.punctuation': { color: '#6b7280' },
-                        '& .token.annotation': { color: '#9333ea' },
+                        '& .token.comment': { color: '#94a3b8', fontStyle: 'italic' },
+                        '& .token.keyword': { color: '#a78bfa', fontWeight: 600 },
+                        '& .token.string': { color: '#34d399' },
+                        '& .token.number': { color: '#f87171' },
+                        '& .token.class-name': { color: '#60a5fa' },
+                        '& .token.function': { color: '#fbbf24' },
+                        '& .token.operator': { color: '#cbd5e1' },
+                        '& .token.punctuation': { color: '#94a3b8' },
+                        '& .token.annotation': { color: '#c084fc' },
 
                         // Interactive hover effects for explanations
                         ...(interactive && {
@@ -293,14 +279,14 @@ const CodeTabs: React.FC<CodeTabsProps> = ({
                             height: '8px'
                         },
                         '&::-webkit-scrollbar-track': {
-                            background: theme.palette.grey[100],
+                            background: 'rgba(255,255,255,0.06)',
                             borderRadius: '4px'
                         },
                         '&::-webkit-scrollbar-thumb': {
-                            background: theme.palette.grey[400],
+                            background: 'rgba(255,255,255,0.24)',
                             borderRadius: '4px',
                             '&:hover': {
-                                background: theme.palette.grey[500]
+                                background: 'rgba(255,255,255,0.32)'
                             }
                         }
                     }}
@@ -317,11 +303,7 @@ const CodeTabs: React.FC<CodeTabsProps> = ({
 
             {/* Code Explanation Section */}
             {interactive && currentTab && CODE_EXPLANATIONS[currentTab.id] && (
-                <Box sx={{
-                    p: 2,
-                    bgcolor: 'grey.50',
-                    borderTop: `1px solid ${theme.palette.divider}`
-                }}>
+                <Box sx={{ p: 2, bgcolor: 'rgba(255,255,255,0.03)', borderTop: `1px solid ${theme.palette.divider}` }}>
                     <Typography variant="subtitle2" sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                         <InfoIcon fontSize="small" />
                         Code Explanation

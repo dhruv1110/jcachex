@@ -269,21 +269,6 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
             return new NodeUpdateResult(allAffectedRanges, allAffectedNodes);
         }
 
-        public synchronized Set<String> getAllNodes() {
-            return new HashSet<>(nodeToVNodes.keySet());
-        }
-
-        public synchronized int getVirtualNodeCount() {
-            return ring.size();
-        }
-
-        public synchronized Map<String, Integer> getNodeDistribution() {
-            Map<String, Integer> distribution = new HashMap<>();
-            for (String nodeId : nodeToVNodes.keySet()) {
-                distribution.put(nodeId, nodeToVNodes.get(nodeId).size());
-            }
-            return distribution;
-        }
 
         private long hash(String input) {
             // Using FNV-1a hash for better distribution
@@ -379,36 +364,6 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
             logger.warning("Failed to get key " + key + ": " + e.getMessage());
             return null;
         }
-    }
-
-    public CompletableFuture<Void> addNode(String nodeAddress) {
-        return CompletableFuture.runAsync(() -> {
-            String nodeId = "manual-" + nodeAddress.hashCode();
-
-            // Parse address and port
-            String[] parts = nodeAddress.split(":");
-            String address = parts[0];
-            int port = parts.length > 1 ? Integer.parseInt(parts[1]) : 8080;
-
-            clusterNodes.put(nodeId, new NodeInfo(nodeId, address + ":" + port, NodeStatus.HEALTHY,
-                    System.currentTimeMillis(), java.util.Collections.emptySet()));
-            healthyNodes.add(nodeId);
-            hashRing.addNode(nodeId);
-            topologyVersion.incrementAndGet();
-
-            logger.info("Manually added node: " + nodeId + " at " + nodeAddress);
-        }, distributionExecutor);
-    }
-
-    public CompletableFuture<Void> removeNode(String nodeId) {
-        return CompletableFuture.runAsync(() -> {
-            clusterNodes.remove(nodeId);
-            healthyNodes.remove(nodeId);
-            hashRing.removeNode(nodeId);
-            topologyVersion.incrementAndGet();
-
-            logger.info("Removed node: " + nodeId);
-        }, distributionExecutor);
     }
 
     /**
@@ -719,11 +674,6 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
             logger.warning("Failed to remove from remote node " + nodeAddress + ": " + e.getMessage());
         }
         return null;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected V parseValue(String valueStr) {
-        return (V) valueStr;
     }
 
     // ============= Abstract Builder =============

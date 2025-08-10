@@ -26,36 +26,30 @@ The primary interface for all cache operations.
 
 ```java
 public interface Cache<K, V> {
-    // Synchronous operations
+    // Core operations
     V get(K key);
     void put(K key, V value);
-    void invalidate(K key);
-    void invalidateAll();
+    V remove(K key);
+    void clear();
 
-    // Asynchronous operations
+    // Queries
+    long size();
+    boolean containsKey(K key);
+    Set<K> keys();
+    Collection<V> values();
+    Set<Map.Entry<K, V>> entries();
+
+    // Statistics
+    CacheStats stats();
+
+    // Async operations
     CompletableFuture<V> getAsync(K key);
     CompletableFuture<Void> putAsync(K key, V value);
-    CompletableFuture<Void> invalidateAsync(K key);
+    CompletableFuture<V> removeAsync(K key);
+    CompletableFuture<Void> clearAsync();
 
-    // Bulk operations
-    Map<K, V> getAll(Iterable<K> keys);
-    void putAll(Map<K, V> map);
-    void invalidateAll(Iterable<K> keys);
-
-    // Conditional operations
-    V getIfPresent(K key);
-    void putIfAbsent(K key, V value);
-    boolean replace(K key, V oldValue, V newValue);
-    V replace(K key, V value);
-    boolean remove(K key, V value);
-
-    // Statistics and monitoring
-    CacheStats stats();
-    long size();
-    void cleanUp();
-
-    // Lifecycle
-    void close();
+    // Configuration
+    CacheConfig<K, V> config();
 }
 ```
 
@@ -107,17 +101,14 @@ userFuture.thenAccept(user -> {
 });
 ```
 
-#### `Map<K, V> getAll(Iterable<K> keys)`
-Retrieves multiple values from the cache.
+#### `V remove(K key)`
+Removes a mapping and returns the previous value if present.
 
-- **Parameters**: `keys` - collection of cache keys
-- **Returns**: Map of found key-value pairs
+#### `void clear()`
+Removes all mappings from the cache.
 
-```java
-// Example usage
-List<String> keys = Arrays.asList("user1", "user2", "user3");
-Map<String, User> users = userCache.getAll(keys);
-```
+#### Async variants
+All core operations have async counterparts: `putAsync`, `getAsync`, `removeAsync`, `clearAsync`.
 
 ---
 
@@ -207,40 +198,9 @@ CacheConfig<String, User> config = CacheConfig.<String, User>builder()
 
 ## 📊 **Statistics API**
 
-### CacheStats Interface
+### CacheStats Class
 
-Provides comprehensive statistics about cache performance.
-
-```java
-public interface CacheStats {
-    // Hit/miss statistics
-    long hitCount();
-    long missCount();
-    long requestCount();
-    double hitRate();
-    double missRate();
-
-    // Load statistics
-    long loadCount();
-    long loadSuccessCount();
-    long loadFailureCount();
-    double averageLoadTime();
-    double loadFailureRate();
-
-    // Eviction statistics
-    long evictionCount();
-    long evictionWeight();
-
-    // Size statistics
-    long approximateSize();
-    long estimatedSize();
-
-    // Utility methods
-    CacheStats minus(CacheStats other);
-    CacheStats plus(CacheStats other);
-    String toString();
-}
-```
+JCacheX provides a thread-safe `CacheStats` class with hit/miss counters, eviction count, load counts and timing, plus helpers like `hitRate()`, `missRate()`, `averageLoadTime()`, `snapshot()`, and `reset()`. See the detailed API in the Monitoring API section below.
 
 ### Statistics Usage
 
@@ -637,7 +597,7 @@ CompletableFuture<User> userFuture = cache.getAsync("user123");
 
 CompletableFuture<Void> putFuture = cache.putAsync("user123", user);
 
-CompletableFuture<Void> invalidateFuture = cache.invalidateAsync("user123");
+CompletableFuture<User> removed = cache.removeAsync("user123");
 
 // Combine async operations
 CompletableFuture<String> result = userFuture

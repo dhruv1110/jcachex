@@ -8,7 +8,9 @@ import org.springframework.cache.annotation.EnableCaching;
  * This minimal configuration enables JCacheX auto-configuration and Spring
  * caching.
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration.class
+})
 @EnableCaching
 public class TestConfiguration {
     // This class serves as the main configuration for test contexts

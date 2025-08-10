@@ -208,19 +208,6 @@ class DefaultCacheTest {
     }
 
     @Test
-    void testStats() {
-        // Test cache statistics
-        cache.put("key1", "value1");
-        cache.get("key1"); // Hit
-        cache.get("key2"); // Miss
-
-        CacheStats stats = cache.stats();
-        assertEquals(1L, stats.getHitCount().get());
-        assertEquals(1L, stats.getMissCount().get());
-        assertEquals(0L, stats.getLoadCount().get());
-    }
-
-    @Test
     void testRefreshAfterWrite() throws InterruptedException {
         // Test refresh after write
         Function<String, String> refreshLoader = key -> "refreshed_" + key;

@@ -52,7 +52,7 @@ jobs:
       id: current_version
       run: |
         # Get the latest tag, or default to 0.0.0 if no tags exist
-        LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+        LATEST_TAG=$(git tag --list "v*" --merged HEAD --sort=-v:refname | head -n1 2>/dev/null || echo "v0.0.0")
         # Remove 'v' prefix if present
         CURRENT_VERSION=${LATEST_TAG#v}
 

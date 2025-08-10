@@ -3,10 +3,7 @@ package io.github.dhruv1110.jcachex.spring;
 import io.github.dhruv1110.jcachex.Cache;
 import io.github.dhruv1110.jcachex.CacheStats;
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.CacheManager;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -18,9 +15,6 @@ import static org.junit.jupiter.api.Assertions.*;
  * Abstract base class for JCacheX Spring integration tests.
  * Provides common utilities and setup for testing cache functionality.
  */
-@SpringBootTest(classes = TestConfiguration.class)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@ActiveProfiles("test")
 public abstract class AbstractJCacheXSpringTest {
 
     @org.springframework.beans.factory.annotation.Autowired

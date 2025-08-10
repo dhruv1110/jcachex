@@ -31,6 +31,7 @@ import {
 } from '@mui/icons-material';
 import type { FAQ } from '../types';
 import { Section } from './common';
+// Anchor containers for sidebar need actual ids in the DOM. Add a top-level id wrappers for categories.
 import Layout from './Layout';
 import { Breadcrumbs } from './SEO';
 
@@ -92,7 +93,7 @@ const FAQ_DATA: FAQ[] = [
     {
         id: 'profile-based-spring-integration',
         question: 'How do profiles work with Spring Boot integration?',
-        answer: 'Spring Boot integration supports profile-based configuration through @JCacheXCacheable(cacheName = "users", profile = "READ_HEAVY") annotations. You can configure profiles in application.yml under jcachex.profiles section, and the auto-configuration automatically applies profile optimizations. Named caches can specify their profile for automatic optimization.',
+        answer: 'Spring Boot integration supports profile-based configuration through @JCacheXCacheable(cacheName = "users", profile = "READ_HEAVY") annotations. You can define caches in application.yml under the jcachex.caches section (with jcachex.enabled and jcachex.autoCreateCaches), and the auto-configuration creates them and applies defaults. Named caches can specify their profile for automatic optimization.',
         category: 'Integration'
     },
     {
@@ -128,7 +129,7 @@ const FAQ_DATA: FAQ[] = [
     {
         id: 'spring-boot-integration',
         question: 'How does JCacheX integrate with Spring Boot?',
-        answer: 'JCacheX provides seamless Spring Boot integration with profile-based auto-configuration. Use @JCacheXCacheable(cacheName = "users", profile = "READ_HEAVY") annotations, configure profiles in application.yml, and get automatic actuator endpoints. The starter dependency includes profile-based health checks and metrics. Simply add the starter and configure profiles for optimal performance.',
+        answer: 'JCacheX provides Spring Boot integration with auto-configuration. Use @JCacheXCacheable(cacheName = "users", profile = "READ_HEAVY") annotations, and define caches in application.yml (jcachex.enabled=true, jcachex.autoCreateCaches=true). Actuator exposure is optional. Add the jcachex-spring dependency and configure caches for optimal performance.',
         category: 'Integration'
     },
     {
@@ -223,9 +224,9 @@ const FAQPage: React.FC = () => {
             title: 'General',
             icon: <InfoIcon />,
             children: [
-                { id: 'faq-what-is-jcachex', title: 'What is JCacheX?', icon: <InfoIcon /> },
-                { id: 'faq-why-choose-jcachex', title: 'Why Choose JCacheX?', icon: <InfoIcon /> },
-                { id: 'faq-performance', title: 'Performance', icon: <SpeedIcon /> }
+                { id: 'what-is-jcachex', title: 'What is JCacheX?', icon: <InfoIcon /> },
+                { id: 'why-choose-jcachex', title: 'Why Choose JCacheX?', icon: <InfoIcon /> },
+                { id: 'profile-performance-differences', title: 'Performance', icon: <SpeedIcon /> }
             ]
         },
         {
@@ -233,9 +234,9 @@ const FAQPage: React.FC = () => {
             title: 'Builder Patterns',
             icon: <BuildIcon />,
             children: [
-                { id: 'faq-jcachex-builder', title: 'JCacheXBuilder', icon: <BuildIcon /> },
-                { id: 'faq-profile-selection', title: 'Profile Selection', icon: <SettingsIcon /> },
-                { id: 'faq-convenience-methods', title: 'Convenience Methods', icon: <CodeIcon /> }
+                { id: 'jcachex-builder-patterns', title: 'JCacheXBuilder', icon: <BuildIcon /> },
+                { id: 'profile-selection-guide', title: 'Profile Selection', icon: <SettingsIcon /> },
+                { id: 'one-liner-cache-creation', title: 'Convenience Methods', icon: <CodeIcon /> }
             ]
         },
         {
@@ -243,9 +244,9 @@ const FAQPage: React.FC = () => {
             title: 'Integration',
             icon: <ExtensionIcon />,
             children: [
-                { id: 'faq-spring-boot', title: 'Spring Boot', icon: <ExtensionIcon /> },
-                { id: 'faq-kotlin', title: 'Kotlin', icon: <CodeIcon /> },
-                { id: 'faq-migration', title: 'Migration', icon: <SettingsIcon /> }
+                { id: 'spring-boot-integration', title: 'Spring Boot', icon: <ExtensionIcon /> },
+                { id: 'custom-profile-creation', title: 'Kotlin/Custom', icon: <CodeIcon /> },
+                { id: 'migration-from-old-builders', title: 'Migration', icon: <SettingsIcon /> }
             ]
         },
         {
@@ -253,9 +254,9 @@ const FAQPage: React.FC = () => {
             title: 'Troubleshooting',
             icon: <SettingsIcon />,
             children: [
-                { id: 'faq-common-issues', title: 'Common Issues', icon: <InfoIcon /> },
-                { id: 'faq-performance-tuning', title: 'Performance Tuning', icon: <SpeedIcon /> },
-                { id: 'faq-support', title: 'Support', icon: <ChatIcon /> }
+                { id: 'troubleshooting', title: 'Common Issues', icon: <InfoIcon /> },
+                { id: 'profile-monitoring', title: 'Performance Tuning', icon: <SpeedIcon /> },
+                { id: 'enterprise-support', title: 'Support', icon: <ChatIcon /> }
             ]
         }
     ];
@@ -344,6 +345,10 @@ const FAQPage: React.FC = () => {
                 </Paper>
 
                 {/* FAQ Items */}
+                <Box id="faq-general" sx={{ mb: 2 }} />
+                <Box id="faq-builder" sx={{ mb: 2 }} />
+                <Box id="faq-integration" sx={{ mb: 2 }} />
+                <Box id="faq-troubleshooting" sx={{ mb: 2 }} />
                 <Box sx={{ mb: 6 }}>
                     {filteredFAQs.length === 0 ? (
                         <Paper sx={{ p: 4, textAlign: 'center' }}>

@@ -6,6 +6,7 @@ import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import io.github.dhruv1110.jcachex.spring.core.JCacheXCacheFactory;
 import io.github.dhruv1110.jcachex.spring.core.JCacheXCacheManager;
 import io.github.dhruv1110.jcachex.spring.utilities.EvictionStrategyFactory;
+import io.github.dhruv1110.jcachex.spring.aop.JCacheXAnnotationsAspect;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -140,16 +141,9 @@ public class JCacheXAutoConfiguration {
         this.properties = properties;
     }
 
-    /**
-     * Provides the JCacheX properties with the expected bean name.
-     *
-     * @return the JCacheX properties
-     */
-    @Bean("jcacheXProperties")
-    @Primary
-    public JCacheXProperties jcacheXProperties() {
-        return this.properties;
-    }
+    // Do not declare an explicit JCacheXProperties bean; it's already provided by
+    // @EnableConfigurationProperties(JCacheXProperties.class). Declaring another
+    // bean here causes NoUniqueBeanDefinitionException in tests.
 
     /**
      * Creates the primary JCacheX cache manager.
@@ -236,6 +230,21 @@ public class JCacheXAutoConfiguration {
     @ConditionalOnMissingBean(CacheConfigurationValidator.class)
     public CacheConfigurationValidator cacheConfigurationValidator() {
         return new CacheConfigurationValidator();
+    }
+
+    /**
+     * Registers the AOP aspect that powers @JCacheXCacheable/@JCacheXCacheEvict if
+     * Spring AOP is present.
+     */
+    @Bean
+    @ConditionalOnClass(name = {
+            "org.aspectj.lang.annotation.Aspect",
+            "org.springframework.aop.framework.autoproxy.AbstractAutoProxyCreator"
+    })
+    @ConditionalOnMissingBean(JCacheXAnnotationsAspect.class)
+    public JCacheXAnnotationsAspect jcacheXAnnotationsAspect(
+            org.springframework.beans.factory.BeanFactory beanFactory) {
+        return new JCacheXAnnotationsAspect(jcacheXCacheManager(), beanFactory);
     }
 
     /**

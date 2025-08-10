@@ -88,8 +88,8 @@ public abstract class AbstractCommunicationProtocol<K, V> implements Communicati
     public CompletableFuture<CommunicationResult<V>> sendGet(String nodeAddress, K key) {
         CacheOperationRequest request = new CacheOperationRequest(OperationType.GET, serializeObject(key), null);
         return sendRequest(nodeAddress, request).thenApply(response -> {
-            if (response.isSuccess() && response.getResult() != null) {
-                V value = deserializeObject(response.getResult());
+            if (response.isSuccess()) {
+                V value = response.getResult() != null ? deserializeObject(response.getResult()) : null;
                 return CommunicationResult.<V>success(value, response.getLatency());
             } else {
                 return CommunicationResult.<V>failure(response.getErrorMessage(), response.getError());

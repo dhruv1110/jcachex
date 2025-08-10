@@ -46,6 +46,7 @@ dependencies {
     // Minimal Spring Framework dependencies (compatible with Spring 4.3+)
     compileOnly("org.springframework:spring-context:4.3.30.RELEASE")
     compileOnly("org.springframework:spring-aop:4.3.30.RELEASE")
+    compileOnly("org.aspectj:aspectjrt:1.9.21")
     compileOnly("org.springframework:spring-beans:4.3.30.RELEASE")
     compileOnly("org.springframework:spring-core:4.3.30.RELEASE")
 
@@ -77,6 +78,8 @@ dependencies {
     testImplementation("org.springframework:spring-test:4.3.30.RELEASE")
     testImplementation("org.springframework.boot:spring-boot-test:1.5.22.RELEASE")
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure:1.5.22.RELEASE")
+    testImplementation("org.springframework:spring-aop:4.3.30.RELEASE")
+    testImplementation("org.aspectj:aspectjrt:1.9.21")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.hamcrest:hamcrest:2.2")
     testImplementation("org.mockito:mockito-core:3.12.4")

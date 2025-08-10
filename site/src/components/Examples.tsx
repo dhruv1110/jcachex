@@ -113,8 +113,8 @@ const Examples: React.FC = () => {
             title: 'Kotlin Examples',
             icon: <ExtensionIcon />,
             children: [
-                { id: 'extensions-usage', title: 'Extensions Usage', icon: <ExtensionIcon /> },
-                { id: 'coroutines-support', title: 'Coroutines Support', icon: <CloudSyncIcon /> },
+                { id: 'kotlin-extensions', title: 'Extensions Usage', icon: <ExtensionIcon /> },
+                { id: 'coroutines-cache', title: 'Coroutines Support', icon: <CloudSyncIcon /> },
             ],
         },
         {
@@ -122,9 +122,9 @@ const Examples: React.FC = () => {
             title: 'Spring Boot Examples',
             icon: <SpeedIcon />,
             children: [
-                { id: 'spring-jpa', title: 'Spring JPA', icon: <StorageIcon /> },
-                { id: 'rest-api', title: 'Rest API', icon: <ApiIcon /> },
-                { id: 'heavy-computation-process', title: 'Heavy Computation Process', icon: <ComputerIcon /> },
+                { id: 'spring-jpa-cache', title: 'Spring JPA', icon: <StorageIcon /> },
+                { id: 'rest-api-cache', title: 'Rest API', icon: <ApiIcon /> },
+                { id: 'heavy-computation-cache', title: 'Heavy Computation Process', icon: <ComputerIcon /> },
             ],
         },
     ];
@@ -146,10 +146,6 @@ const Examples: React.FC = () => {
     return (
         <Layout sidebarConfig={sidebarConfig}>
             <MetaTags seo={seoData} />
-            <Breadcrumbs items={[
-                { label: 'Home', path: '/' },
-                { label: 'Examples', path: '/examples', current: true }
-            ]} />
 
             <Container
                 maxWidth={false}
@@ -568,98 +564,102 @@ const Examples: React.FC = () => {
                 </Box>
 
                 {/* Extensions Usage */}
-                <EnhancedCard
-                    header={{
-                        icon: <ExtensionIcon />,
-                        title: "Kotlin Extensions",
-                        subtitle: "Idiomatic Kotlin extensions for JCacheX providing a more fluent API.",
-                        bgColor: "primary.main"
-                    }}
-                    description="Leverage Kotlin's language features for a more expressive and concise caching API. Enjoy null safety, extension functions, and seamless integration with Kotlin collections."
-                    features={{
-                        leftTitle: "Language Features",
-                        leftIcon: <CheckCircleIcon />,
-                        leftItems: [
-                            ExampleCardInfoItem(<ExtensionIcon />, "Extension Functions", "Add cache operations directly to your types"),
-                            ExampleCardInfoItem(<SchoolIcon />, "Type Inference", "No need to specify types explicitly"),
-                            ExampleCardInfoItem(<AccountTreeIcon />, "Collection Support", "Work with lists, sets, and maps natively"),
-                            ExampleCardInfoItem(<ShieldIcon />, "Null Safety", "Avoid null pointer exceptions with safe calls")
-                        ],
-                        rightTitle: "Developer Experience",
-                        rightIcon: <TrendingUpIcon />,
-                        rightItems: [
-                            ExampleCardInfoItem(<ExtensionIcon />, "Intuitive API", "Natural Kotlin syntax feels familiar"),
-                            ExampleCardInfoItem(<LightbulbIcon />, "IDE Support", "Full IntelliJ IDEA autocomplete and refactoring"),
-                            ExampleCardInfoItem(<TransformIcon />, "Null Safety", "Kotlin's null safety prevents runtime errors"),
-                            ExampleCardInfoItem(<FlashOnIcon />, "Concise Code", "Reduce boilerplate with smart defaults")
-                        ],
-                        rightBgColor: "secondary.50"
-                    }}
-                    footer={{
-                        chips: [
-                            { icon: <ExtensionIcon />, label: "Kotlin Native", color: "primary" },
-                            { icon: <SchoolIcon />, label: "Developer Friendly", color: "secondary" },
-                            { icon: <ShieldIcon />, label: "Type Safe", color: "success" }
-                        ],
-                        performanceText: "🎯 Idiomatic Kotlin experience"
-                    }}
-                />
+                <Box id="kotlin-extensions" sx={{ mb: 6 }}>
+                    <EnhancedCard
+                        header={{
+                            icon: <ExtensionIcon />,
+                            title: "Kotlin Extensions",
+                            subtitle: "Idiomatic Kotlin extensions for JCacheX providing a more fluent API.",
+                            bgColor: "primary.main"
+                        }}
+                        description="Leverage Kotlin's language features for a more expressive and concise caching API. Enjoy null safety, extension functions, and seamless integration with Kotlin collections."
+                        features={{
+                            leftTitle: "Language Features",
+                            leftIcon: <CheckCircleIcon />,
+                            leftItems: [
+                                ExampleCardInfoItem(<ExtensionIcon />, "Extension Functions", "Add cache operations directly to your types"),
+                                ExampleCardInfoItem(<SchoolIcon />, "Type Inference", "No need to specify types explicitly"),
+                                ExampleCardInfoItem(<AccountTreeIcon />, "Collection Support", "Work with lists, sets, and maps natively"),
+                                ExampleCardInfoItem(<ShieldIcon />, "Null Safety", "Avoid null pointer exceptions with safe calls")
+                            ],
+                            rightTitle: "Developer Experience",
+                            rightIcon: <TrendingUpIcon />,
+                            rightItems: [
+                                ExampleCardInfoItem(<ExtensionIcon />, "Intuitive API", "Natural Kotlin syntax feels familiar"),
+                                ExampleCardInfoItem(<LightbulbIcon />, "IDE Support", "Full IntelliJ IDEA autocomplete and refactoring"),
+                                ExampleCardInfoItem(<TransformIcon />, "Null Safety", "Kotlin's null safety prevents runtime errors"),
+                                ExampleCardInfoItem(<FlashOnIcon />, "Concise Code", "Reduce boilerplate with smart defaults")
+                            ],
+                            rightBgColor: "secondary.50"
+                        }}
+                        footer={{
+                            chips: [
+                                { icon: <ExtensionIcon />, label: "Kotlin Native", color: "primary" },
+                                { icon: <SchoolIcon />, label: "Developer Friendly", color: "secondary" },
+                                { icon: <ShieldIcon />, label: "Type Safe", color: "success" }
+                            ],
+                            performanceText: "🎯 Idiomatic Kotlin experience"
+                        }}
+                    />
 
-                <CodeTabs tabs={[
-                    {
-                        id: 'kotlin-extensions',
-                        label: 'Kotlin Extensions',
-                        language: 'kotlin',
-                        code: EXTENSIONS_EXAMPLE
-                    }
-                ]} />
+                    <CodeTabs tabs={[
+                        {
+                            id: 'kotlin-extensions',
+                            label: 'Kotlin Extensions',
+                            language: 'kotlin',
+                            code: EXTENSIONS_EXAMPLE
+                        }
+                    ]} />
+                </Box>
 
                 {/* Coroutines Support */}
-                <EnhancedCard
-                    header={{
-                        icon: <CloudSyncIcon />,
-                        title: "Coroutines Integration",
-                        subtitle: "Seamless async operations with structured concurrency",
-                        bgColor: "success.main"
-                    }}
-                    description="Harness the power of Kotlin coroutines for truly asynchronous caching operations. Perfect for reactive applications that need non-blocking I/O with structured concurrency and cancellation support."
-                    features={{
-                        leftTitle: "Async Features",
-                        leftIcon: <CheckCircleIcon />,
-                        leftItems: [
-                            ExampleCardInfoItem(<SyncIcon />, "Suspend Functions", "Non-blocking cache operations with suspend/resume"),
-                            ExampleCardInfoItem(<TimelineIcon />, "Flow-based Events", "Reactive streams for cache events and updates"),
-                            ExampleCardInfoItem(<AccountTreeIcon />, "Structured Concurrency", "Hierarchical task management with scopes"),
-                            ExampleCardInfoItem(<DeleteIcon />, "Cancellation Support", "Cooperative cancellation for long-running operations")
-                        ],
-                        rightTitle: "Performance Benefits",
-                        rightIcon: <TrendingUpIcon />,
-                        rightItems: [
-                            ExampleCardInfoItem(<FlashOnIcon />, "Non-blocking I/O", "Threads never block waiting for cache operations"),
-                            ExampleCardInfoItem(<DataUsageIcon />, "Resource Efficiency", "Handle thousands of concurrent operations"),
-                            ExampleCardInfoItem(<ShieldIcon />, "Exception Safety", "Structured exception handling with coroutines"),
-                            ExampleCardInfoItem(<InsightsIcon />, "Backpressure Control", "Flow-based backpressure for high-load scenarios")
-                        ],
-                        rightBgColor: "success.50"
-                    }}
-                    footer={{
-                        chips: [
-                            { icon: <CloudSyncIcon />, label: "Coroutines Ready", color: "primary" },
-                            { icon: <FlashOnIcon />, label: "Non-blocking", color: "success" },
-                            { icon: <AccountTreeIcon />, label: "Structured", color: "info" }
-                        ],
-                        performanceText: "⚡ Truly reactive caching"
-                    }}
-                />
+                <Box id="coroutines-cache" sx={{ mb: 6 }}>
+                    <EnhancedCard
+                        header={{
+                            icon: <CloudSyncIcon />,
+                            title: "Coroutines Integration",
+                            subtitle: "Seamless async operations with structured concurrency",
+                            bgColor: "success.main"
+                        }}
+                        description="Harness the power of Kotlin coroutines for truly asynchronous caching operations. Perfect for reactive applications that need non-blocking I/O with structured concurrency and cancellation support."
+                        features={{
+                            leftTitle: "Async Features",
+                            leftIcon: <CheckCircleIcon />,
+                            leftItems: [
+                                ExampleCardInfoItem(<SyncIcon />, "Suspend Functions", "Non-blocking cache operations with suspend/resume"),
+                                ExampleCardInfoItem(<TimelineIcon />, "Flow-based Events", "Reactive streams for cache events and updates"),
+                                ExampleCardInfoItem(<AccountTreeIcon />, "Structured Concurrency", "Hierarchical task management with scopes"),
+                                ExampleCardInfoItem(<DeleteIcon />, "Cancellation Support", "Cooperative cancellation for long-running operations")
+                            ],
+                            rightTitle: "Performance Benefits",
+                            rightIcon: <TrendingUpIcon />,
+                            rightItems: [
+                                ExampleCardInfoItem(<FlashOnIcon />, "Non-blocking I/O", "Threads never block waiting for cache operations"),
+                                ExampleCardInfoItem(<DataUsageIcon />, "Resource Efficiency", "Handle thousands of concurrent operations"),
+                                ExampleCardInfoItem(<ShieldIcon />, "Exception Safety", "Structured exception handling with coroutines"),
+                                ExampleCardInfoItem(<InsightsIcon />, "Backpressure Control", "Flow-based backpressure for high-load scenarios")
+                            ],
+                            rightBgColor: "success.50"
+                        }}
+                        footer={{
+                            chips: [
+                                { icon: <CloudSyncIcon />, label: "Coroutines Ready", color: "primary" },
+                                { icon: <FlashOnIcon />, label: "Non-blocking", color: "success" },
+                                { icon: <AccountTreeIcon />, label: "Structured", color: "info" }
+                            ],
+                            performanceText: "⚡ Truly reactive caching"
+                        }}
+                    />
 
-                <CodeTabs tabs={[
-                    {
-                        id: 'coroutines-cache',
-                        label: 'Coroutines Cache',
-                        language: 'kotlin',
-                        code: COROUTINES_EXAMPLE
-                    }
-                ]} />
+                    <CodeTabs tabs={[
+                        {
+                            id: 'coroutines-cache',
+                            label: 'Coroutines Cache',
+                            language: 'kotlin',
+                            code: COROUTINES_EXAMPLE
+                        }
+                    ]} />
+                </Box>
 
                 {/* Spring Boot Examples Section */}
                 <Box id="springboot-examples" sx={{ mb: 8, mt: 8 }}>
@@ -673,145 +673,151 @@ const Examples: React.FC = () => {
                 </Box>
 
                 {/* Spring JPA */}
-                <EnhancedCard
-                    header={{
-                        icon: <StorageIcon />,
-                        title: "Spring JPA Integration",
-                        subtitle: "Seamless database caching with Spring Data JPA",
-                        bgColor: "success.main"
-                    }}
-                    description="Supercharge your Spring Data JPA applications with intelligent caching. Reduce database load, improve response times, and scale your application effortlessly with automatic cache management."
-                    features={{
-                        leftTitle: "JPA Features",
-                        leftIcon: <CheckCircleIcon />,
-                        leftItems: [
-                            ExampleCardInfoItem(<StorageIcon />, "Repository-level Caching", "Automatic caching for repository methods"),
-                            ExampleCardInfoItem(<QueryStatsIcon />, "Query Result Caching", "Cache complex JPQL and native SQL queries"),
-                            ExampleCardInfoItem(<AccountTreeIcon />, "Entity-level Management", "Individual entity caching with relationships"),
-                            ExampleCardInfoItem(<SyncIcon />, "Transactional Operations", "Cache operations within database transactions")
-                        ],
-                        rightTitle: "Database Benefits",
-                        rightIcon: <TrendingUpIcon />,
-                        rightItems: [
-                            ExampleCardInfoItem(<FlashOnIcon />, "Reduced DB Load", "Minimize database queries and connection usage"),
-                            ExampleCardInfoItem(<SpeedIcon />, "Faster Response Times", "Serve cached data without database roundtrips"),
-                            ExampleCardInfoItem(<ShieldIcon />, "Automatic Invalidation", "Smart cache eviction on entity updates"),
-                            ExampleCardInfoItem(<InsightsIcon />, "Relationship Caching", "Intelligent caching of entity associations")
-                        ],
-                        rightBgColor: "success.50"
-                    }}
-                    footer={{
-                        chips: [
-                            { icon: <StorageIcon />, label: "JPA Ready", color: "primary" },
-                            { icon: <SpeedIcon />, label: "Spring Boot", color: "success" },
-                            { icon: <SettingsIcon />, label: "Auto-config", color: "info" }
-                        ],
-                        performanceText: "🏎️ Database performance boost"
-                    }}
-                />
+                <Box id="spring-jpa-cache" sx={{ mb: 6 }}>
+                    <EnhancedCard
+                        header={{
+                            icon: <StorageIcon />,
+                            title: "Spring JPA Integration",
+                            subtitle: "Seamless database caching with Spring Data JPA",
+                            bgColor: "success.main"
+                        }}
+                        description="Supercharge your Spring Data JPA applications with intelligent caching. Reduce database load, improve response times, and scale your application effortlessly with automatic cache management."
+                        features={{
+                            leftTitle: "JPA Features",
+                            leftIcon: <CheckCircleIcon />,
+                            leftItems: [
+                                ExampleCardInfoItem(<StorageIcon />, "Repository-level Caching", "Automatic caching for repository methods"),
+                                ExampleCardInfoItem(<QueryStatsIcon />, "Query Result Caching", "Cache complex JPQL and native SQL queries"),
+                                ExampleCardInfoItem(<AccountTreeIcon />, "Entity-level Management", "Individual entity caching with relationships"),
+                                ExampleCardInfoItem(<SyncIcon />, "Transactional Operations", "Cache operations within database transactions")
+                            ],
+                            rightTitle: "Database Benefits",
+                            rightIcon: <TrendingUpIcon />,
+                            rightItems: [
+                                ExampleCardInfoItem(<FlashOnIcon />, "Reduced DB Load", "Minimize database queries and connection usage"),
+                                ExampleCardInfoItem(<SpeedIcon />, "Faster Response Times", "Serve cached data without database roundtrips"),
+                                ExampleCardInfoItem(<ShieldIcon />, "Automatic Invalidation", "Smart cache eviction on entity updates"),
+                                ExampleCardInfoItem(<InsightsIcon />, "Relationship Caching", "Intelligent caching of entity associations")
+                            ],
+                            rightBgColor: "success.50"
+                        }}
+                        footer={{
+                            chips: [
+                                { icon: <StorageIcon />, label: "JPA Ready", color: "primary" },
+                                { icon: <SpeedIcon />, label: "Spring Boot", color: "success" },
+                                { icon: <SettingsIcon />, label: "Auto-config", color: "info" }
+                            ],
+                            performanceText: "🏎️ Database performance boost"
+                        }}
+                    />
 
-                <CodeTabs tabs={[
-                    {
-                        id: 'spring-jpa-cache',
-                        label: 'Spring JPA Cache',
-                        language: 'java',
-                        code: SPRING_JPA_EXAMPLE
-                    }
-                ]} />
+                    <CodeTabs tabs={[
+                        {
+                            id: 'spring-jpa-cache',
+                            label: 'Spring JPA Cache',
+                            language: 'java',
+                            code: SPRING_JPA_EXAMPLE
+                        }
+                    ]} />
+                </Box>
 
                 {/* Rest API */}
-                <EnhancedCard
-                    header={{
-                        icon: <ApiIcon />,
-                        title: "REST API Caching",
-                        subtitle: "Optimize API performance and reduce external service calls",
-                        bgColor: "primary.main"
-                    }}
-                    description="Enhance your REST API performance by caching responses, reducing latency, and minimizing external service dependencies. Perfect for high-traffic applications with frequent API calls."
-                    features={{
-                        leftTitle: "Core Features",
-                        leftIcon: <CheckCircleIcon />,
-                        leftItems: [
-                            ExampleCardInfoItem(<HttpIcon />, "HTTP Response Caching", "Cache GET/POST responses with TTL control"),
-                            ExampleCardInfoItem(<PublicIcon />, "External API Caching", "Cache third-party API responses intelligently"),
-                            ExampleCardInfoItem(<SettingsIcon />, "Request-Level Control", "Fine-grained cache control per endpoint"),
-                            ExampleCardInfoItem(<DeleteIcon />, "Smart Invalidation", "Automatic cache invalidation strategies")
-                        ],
-                        rightTitle: "Performance Benefits",
-                        rightIcon: <TrendingUpIcon />,
-                        rightItems: [
-                            ExampleCardInfoItem(<FlashOnIcon />, "Faster Response Times", "Reduce latency by up to 90% for cached responses"),
-                            ExampleCardInfoItem(<ShieldIcon />, "Reduced External Dependencies", "Minimize risk of third-party service failures"),
-                            ExampleCardInfoItem(<DataUsageIcon />, "Lower Bandwidth Usage", "Reduce network traffic and API costs"),
-                            ExampleCardInfoItem(<TrendingUpIcon />, "Better Scalability", "Handle more concurrent requests efficiently")
-                        ],
-                        rightBgColor: "success.50"
-                    }}
-                    footer={{
-                        chips: [
-                            { icon: <StarIcon />, label: "Production Ready", color: "primary" },
-                            { icon: <CloudIcon />, label: "Microservices", color: "secondary" },
-                            { icon: <SpeedIcon />, label: "High Performance", color: "success" },
-                            { icon: <SecurityIcon />, label: "Enterprise Grade", color: "info" }
-                        ]
-                    }}
-                />
+                <Box id="rest-api-cache" sx={{ mb: 6 }}>
+                    <EnhancedCard
+                        header={{
+                            icon: <ApiIcon />,
+                            title: "REST API Caching",
+                            subtitle: "Optimize API performance and reduce external service calls",
+                            bgColor: "primary.main"
+                        }}
+                        description="Enhance your REST API performance by caching responses, reducing latency, and minimizing external service dependencies. Perfect for high-traffic applications with frequent API calls."
+                        features={{
+                            leftTitle: "Core Features",
+                            leftIcon: <CheckCircleIcon />,
+                            leftItems: [
+                                ExampleCardInfoItem(<HttpIcon />, "HTTP Response Caching", "Cache GET/POST responses with TTL control"),
+                                ExampleCardInfoItem(<PublicIcon />, "External API Caching", "Cache third-party API responses intelligently"),
+                                ExampleCardInfoItem(<SettingsIcon />, "Request-Level Control", "Fine-grained cache control per endpoint"),
+                                ExampleCardInfoItem(<DeleteIcon />, "Smart Invalidation", "Automatic cache invalidation strategies")
+                            ],
+                            rightTitle: "Performance Benefits",
+                            rightIcon: <TrendingUpIcon />,
+                            rightItems: [
+                                ExampleCardInfoItem(<FlashOnIcon />, "Faster Response Times", "Reduce latency by up to 90% for cached responses"),
+                                ExampleCardInfoItem(<ShieldIcon />, "Reduced External Dependencies", "Minimize risk of third-party service failures"),
+                                ExampleCardInfoItem(<DataUsageIcon />, "Lower Bandwidth Usage", "Reduce network traffic and API costs"),
+                                ExampleCardInfoItem(<TrendingUpIcon />, "Better Scalability", "Handle more concurrent requests efficiently")
+                            ],
+                            rightBgColor: "success.50"
+                        }}
+                        footer={{
+                            chips: [
+                                { icon: <StarIcon />, label: "Production Ready", color: "primary" },
+                                { icon: <CloudIcon />, label: "Microservices", color: "secondary" },
+                                { icon: <SpeedIcon />, label: "High Performance", color: "success" },
+                                { icon: <SecurityIcon />, label: "Enterprise Grade", color: "info" }
+                            ]
+                        }}
+                    />
 
-                <CodeTabs tabs={[
-                    {
-                        id: 'rest-api-cache',
-                        label: 'REST API Cache',
-                        language: 'java',
-                        code: REST_API_EXAMPLE
-                    }
-                ]} />
+                    <CodeTabs tabs={[
+                        {
+                            id: 'rest-api-cache',
+                            label: 'REST API Cache',
+                            language: 'java',
+                            code: REST_API_EXAMPLE
+                        }
+                    ]} />
+                </Box>
 
                 {/* Heavy Computation Process */}
-                <EnhancedCard
-                    header={{
-                        icon: <ComputerIcon />,
-                        title: "Heavy Computation Caching",
-                        subtitle: "Cache expensive computations and long-running processes",
-                        bgColor: "secondary.main"
-                    }}
-                    description="Transform your application performance by caching results of expensive computations, complex algorithms, and resource-intensive operations. Essential for applications with heavy computational workloads."
-                    features={{
-                        leftTitle: "Computation Types",
-                        leftIcon: <CheckCircleIcon />,
-                        leftItems: [
-                            ExampleCardInfoItem(<CalculateIcon />, "Mathematical Computations", "Complex algorithms, statistical analysis, matrix operations"),
-                            ExampleCardInfoItem(<DataUsageIcon />, "Data Processing", "Large dataset transformations, aggregations, analytics"),
-                            ExampleCardInfoItem(<AssessmentIcon />, "Report Generation", "Complex reports, dashboards, business intelligence"),
-                            ExampleCardInfoItem(<PsychologyIcon />, "ML Predictions", "Machine learning inference, model predictions")
-                        ],
-                        rightTitle: "Smart Optimizations",
-                        rightIcon: <LightbulbIcon />,
-                        rightItems: [
-                            ExampleCardInfoItem(<TimerIcon />, "Intelligent TTL", "Adaptive expiration based on computation cost"),
-                            ExampleCardInfoItem(<MemoryIcon />, "Memory Optimization", "Efficient storage for large computation results"),
-                            ExampleCardInfoItem(<SyncIcon />, "Async Processing", "Non-blocking computation with future-based caching"),
-                            ExampleCardInfoItem(<InsightsIcon />, "Usage Analytics", "Monitor hit rates and computation savings")
-                        ],
-                        rightBgColor: "warning.50"
-                    }}
-                    footer={{
-                        chips: [
-                            { icon: <FlashOnIcon />, label: "Performance Critical", color: "primary" },
-                            { icon: <SmartToyIcon />, label: "AI/ML Ready", color: "secondary" },
-                            { icon: <EngineeringIcon />, label: "Scientific Computing", color: "success" }
-                        ],
-                        performanceText: "💡 Save up to 95% computation time"
-                    }}
-                />
+                <Box id="heavy-computation-cache" sx={{ mb: 6 }}>
+                    <EnhancedCard
+                        header={{
+                            icon: <ComputerIcon />,
+                            title: "Heavy Computation Caching",
+                            subtitle: "Cache expensive computations and long-running processes",
+                            bgColor: "secondary.main"
+                        }}
+                        description="Transform your application performance by caching results of expensive computations, complex algorithms, and resource-intensive operations. Essential for applications with heavy computational workloads."
+                        features={{
+                            leftTitle: "Computation Types",
+                            leftIcon: <CheckCircleIcon />,
+                            leftItems: [
+                                ExampleCardInfoItem(<CalculateIcon />, "Mathematical Computations", "Complex algorithms, statistical analysis, matrix operations"),
+                                ExampleCardInfoItem(<DataUsageIcon />, "Data Processing", "Large dataset transformations, aggregations, analytics"),
+                                ExampleCardInfoItem(<AssessmentIcon />, "Report Generation", "Complex reports, dashboards, business intelligence"),
+                                ExampleCardInfoItem(<PsychologyIcon />, "ML Predictions", "Machine learning inference, model predictions")
+                            ],
+                            rightTitle: "Smart Optimizations",
+                            rightIcon: <LightbulbIcon />,
+                            rightItems: [
+                                ExampleCardInfoItem(<TimerIcon />, "Intelligent TTL", "Adaptive expiration based on computation cost"),
+                                ExampleCardInfoItem(<MemoryIcon />, "Memory Optimization", "Efficient storage for large computation results"),
+                                ExampleCardInfoItem(<SyncIcon />, "Async Processing", "Non-blocking computation with future-based caching"),
+                                ExampleCardInfoItem(<InsightsIcon />, "Usage Analytics", "Monitor hit rates and computation savings")
+                            ],
+                            rightBgColor: "warning.50"
+                        }}
+                        footer={{
+                            chips: [
+                                { icon: <FlashOnIcon />, label: "Performance Critical", color: "primary" },
+                                { icon: <SmartToyIcon />, label: "AI/ML Ready", color: "secondary" },
+                                { icon: <EngineeringIcon />, label: "Scientific Computing", color: "success" }
+                            ],
+                            performanceText: "💡 Save up to 95% computation time"
+                        }}
+                    />
 
-                <CodeTabs tabs={[
-                    {
-                        id: 'heavy-computation-cache',
-                        label: 'Heavy Computation Cache',
-                        language: 'java',
-                        code: COMPUTATION_SERVICE_EXAMPLE
-                    }
-                ]} />
+                    <CodeTabs tabs={[
+                        {
+                            id: 'heavy-computation-cache',
+                            label: 'Heavy Computation Cache',
+                            language: 'java',
+                            code: COMPUTATION_SERVICE_EXAMPLE
+                        }
+                    ]} />
+                </Box>
 
                 {/* Footer */}
                 <Box sx={{ textAlign: 'center', mt: 8, pt: 4, borderTop: 1, borderColor: 'divider' }}>

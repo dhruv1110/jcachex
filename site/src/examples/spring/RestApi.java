@@ -1,5 +1,5 @@
-import io.github.dhruv1110.jcachex.spring.annotation.JCacheXCacheable;
-import io.github.dhruv1110.jcachex.spring.annotation.JCacheXCacheEvict;
+import io.github.dhruv1110.jcachex.spring.annotations.JCacheXCacheable;
+import io.github.dhruv1110.jcachex.spring.annotations.JCacheXCacheEvict;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.ResponseEntity;

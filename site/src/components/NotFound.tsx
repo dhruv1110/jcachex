@@ -17,10 +17,6 @@ const NotFoundPage: React.FC = () => {
     return (
         <Layout>
             <MetaTags seo={seoData} />
-            <Breadcrumbs items={[
-                { label: 'Home', path: '/' },
-                { label: '404 Error', current: true }
-            ]} />
 
             <Container maxWidth="md" sx={{ py: 8 }}>
                 <Paper
