@@ -477,12 +477,12 @@ project(":jcachex-spring") {
     dependencies {
         implementation(project(":jcachex-core"))
         // Keep Spring dependencies for compilation
-        implementation("org.springframework.boot:spring-boot-starter:2.7.18")
-        implementation("org.springframework.boot:spring-boot-configuration-processor:2.7.18")
+        implementation("org.springframework.boot:spring-boot-starter:3.5.4")
+        implementation("org.springframework.boot:spring-boot-configuration-processor:3.5.4")
 
         // Testing
         testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
-        testImplementation("org.springframework.boot:spring-boot-starter-test:2.7.18")
+        testImplementation("org.springframework.boot:spring-boot-starter-test:3.5.4")
         testImplementation("org.mockito:mockito-core:4.11.0") {
             version {
                 strictly("4.11.0")
