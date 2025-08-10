@@ -1,16 +1,12 @@
 package io.github.dhruv1110.jcachex.distributed.communication;
 
 import io.github.dhruv1110.jcachex.Cache;
-import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -173,12 +169,17 @@ class TcpCommunicationProtocolTest {
     void testMultipleStartStopCycles() throws Exception {
         for (int i = 0; i < 3; i++) {
             // Start
-            tcpProtocol.startServer();
-            Thread.sleep(50);
+            CompletableFuture<Void> startFuture = tcpProtocol.startServer();
+            assertNotNull(startFuture);
+            // Wait until running flag is true (start future does not complete until server stops)
+            long startWaitDeadline = System.currentTimeMillis() + 2000;
+            while (!tcpProtocol.isRunning() && System.currentTimeMillis() < startWaitDeadline) {
+                Thread.sleep(10);
+            }
             assertTrue(tcpProtocol.isRunning());
 
             // Stop
-            tcpProtocol.stopServer().get(1, TimeUnit.SECONDS);
+            tcpProtocol.stopServer().get(2, TimeUnit.SECONDS);
             assertFalse(tcpProtocol.isRunning());
         }
     }
@@ -441,6 +442,7 @@ class TcpCommunicationProtocolTest {
 
         try {
             Map<String, CommunicationProtocol.CommunicationResult<Void>> results = future.get(2, TimeUnit.SECONDS);
+            assertNotNull(results);
             // In CI, this will likely fail due to network restrictions
         } catch (Exception e) {
             // Expected in CI environment
