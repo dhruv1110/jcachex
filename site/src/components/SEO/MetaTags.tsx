@@ -66,6 +66,10 @@ const MetaTags: React.FC<MetaTagsProps> = ({ seo, structuredData }) => {
             <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
             <meta name="googlebot" content="index, follow" />
             <meta name="bingbot" content="index, follow" />
+            {/* Google Search Console verification */}
+            <meta name="google-site-verification" content="NFn0FtAglBbVK3uhW31rwCWLDvk7gZEalCU5JeamGBQ" />
+            {/* Primary query keywords to boost relevancy */}
+            <meta name="keywords" content="Java caching library, Kotlin cache API, in-memory cache Java, distributed caching Kubernetes, Spring cache, JCache, Java cache in-memory" />
 
             {/* Accessibility and Structure */}
             <meta name="rating" content="general" />
