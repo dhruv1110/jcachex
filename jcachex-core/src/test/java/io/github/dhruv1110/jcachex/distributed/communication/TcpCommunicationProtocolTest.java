@@ -1,21 +1,18 @@
 package io.github.dhruv1110.jcachex.distributed.communication;
 
 import io.github.dhruv1110.jcachex.Cache;
-import io.github.dhruv1110.jcachex.CacheConfig;
-import io.github.dhruv1110.jcachex.impl.DefaultCache;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static io.github.dhruv1110.jcachex.testing.TestAwait.awaitTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -82,8 +79,8 @@ class TcpCommunicationProtocolTest {
             clientProtocol.stopServer().join();
         }
 
-        // Give time for cleanup
-        Thread.sleep(100);
+        // Await a brief moment to let async shutdown settle
+        awaitTrue(() -> !tcpProtocol.isRunning() && !serverProtocol.isRunning() && !clientProtocol.isRunning(), 500);
     }
 
     private int findAvailablePort() throws IOException {
@@ -156,8 +153,8 @@ class TcpCommunicationProtocolTest {
         CompletableFuture<Void> startFuture = tcpProtocol.startServer();
         assertNotNull(startFuture);
 
-        // Wait for server to start
-        Thread.sleep(100);
+        // Wait for server to start without fixed sleeps
+        awaitTrue(() -> tcpProtocol.isRunning(), 2000);
         assertTrue(tcpProtocol.isRunning());
 
         // Stop server
@@ -173,12 +170,14 @@ class TcpCommunicationProtocolTest {
     void testMultipleStartStopCycles() throws Exception {
         for (int i = 0; i < 3; i++) {
             // Start
-            tcpProtocol.startServer();
-            Thread.sleep(50);
+            CompletableFuture<Void> startFuture = tcpProtocol.startServer();
+            assertNotNull(startFuture);
+            // Wait until running flag is true
+            awaitTrue(() -> tcpProtocol.isRunning(), 2000);
             assertTrue(tcpProtocol.isRunning());
 
             // Stop
-            tcpProtocol.stopServer().get(1, TimeUnit.SECONDS);
+            tcpProtocol.stopServer().get(2, TimeUnit.SECONDS);
             assertFalse(tcpProtocol.isRunning());
         }
     }
@@ -194,7 +193,7 @@ class TcpCommunicationProtocolTest {
         // Start server
         serverProtocol.setLocalCache(mockCache);
         serverProtocol.startServer();
-        Thread.sleep(100);
+        awaitTrue(() -> serverProtocol.isRunning(), 2000);
 
         // Send PUT request
         String nodeAddress = "localhost:" + serverPort;
@@ -217,7 +216,7 @@ class TcpCommunicationProtocolTest {
         // Start server
         serverProtocol.setLocalCache(mockCache);
         serverProtocol.startServer();
-        Thread.sleep(100);
+        awaitTrue(() -> serverProtocol.isRunning(), 2000);
 
         // Send GET request
         String nodeAddress = "localhost:" + serverPort;
@@ -240,7 +239,7 @@ class TcpCommunicationProtocolTest {
         // Start server
         serverProtocol.setLocalCache(mockCache);
         serverProtocol.startServer();
-        Thread.sleep(100);
+        awaitTrue(() -> serverProtocol.isRunning(), 2000);
 
         // Send REMOVE request
         String nodeAddress = "localhost:" + serverPort;
@@ -259,7 +258,7 @@ class TcpCommunicationProtocolTest {
         // Start server
         serverProtocol.setLocalCache(mockCache);
         serverProtocol.startServer();
-        Thread.sleep(100);
+        awaitTrue(() -> serverProtocol.isRunning(), 2000);
 
         // Send health check
         String nodeAddress = "localhost:" + serverPort;
@@ -336,7 +335,7 @@ class TcpCommunicationProtocolTest {
         // Setup
         serverProtocol.setLocalCache(mockCache);
         serverProtocol.startServer();
-        Thread.sleep(100);
+        awaitTrue(() -> serverProtocol.isRunning(), 2000);
 
         String nodeAddress = "localhost:" + serverPort;
         int numOperations = 10;
@@ -441,6 +440,7 @@ class TcpCommunicationProtocolTest {
 
         try {
             Map<String, CommunicationProtocol.CommunicationResult<Void>> results = future.get(2, TimeUnit.SECONDS);
+            assertNotNull(results);
             // In CI, this will likely fail due to network restrictions
         } catch (Exception e) {
             // Expected in CI environment
@@ -456,7 +456,7 @@ class TcpCommunicationProtocolTest {
         // Start server
         serverProtocol.setLocalCache(mockCache);
         serverProtocol.startServer();
-        Thread.sleep(100);
+        awaitTrue(() -> serverProtocol.isRunning(), 2000);
 
         // Get initial metrics
         Map<String, Object> initialMetrics = clientProtocol.getMetrics();

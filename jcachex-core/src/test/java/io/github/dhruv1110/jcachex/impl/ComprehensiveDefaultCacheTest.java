@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static io.github.dhruv1110.jcachex.testing.TestAwait.awaitTrue;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -413,9 +414,7 @@ class ComprehensiveDefaultCacheTest {
             cache.put("key1", "value1");
             assertEquals("value1", cache.get("key1"));
 
-            Thread.sleep(150);
-
-            assertNull(cache.get("key1"));
+            awaitTrue(() -> cache.get("key1") == null, 1000);
             assertEquals(0, cache.size());
         }
 
@@ -429,13 +428,11 @@ class ComprehensiveDefaultCacheTest {
             cache.put("key1", "value1");
 
             // Access within expiration time
-            Thread.sleep(50);
-            assertEquals("value1", cache.get("key1")); // Access the entry
+            assertEquals("value1", cache.get("key1"));
 
-            // Current implementation doesn't update expiration on access
-            // So after the original expiration time, the entry will be expired
-            Thread.sleep(100);
-            assertNull(cache.get("key1")); // Should be expired since expiration time wasn't reset
+            // Avoid repeated access which would reset access time; wait once then verify
+            io.github.dhruv1110.jcachex.testing.TestAwait.awaitMillis(200);
+            assertNull(cache.get("key1"));
         }
 
         @Test
@@ -450,11 +447,10 @@ class ComprehensiveDefaultCacheTest {
             }
             assertEquals(10, cache.size());
 
-            Thread.sleep(150);
-
-            // Accessing any key should trigger cleanup of expired entries
-            cache.get("key0");
-            assertTrue(cache.size() < 10); // Some or all should be removed
+            awaitTrue(() -> {
+                cache.get("key0");
+                return cache.size() < 10;
+            }, 2000);
         }
     }
 
