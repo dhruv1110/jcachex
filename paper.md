@@ -1,5 +1,5 @@
 ---
-title: 'JCacheX: A High-Performance, Profile-Based Caching Library for the JVM'
+title: 'JCacheX: A High-Performance, Profile-Based Distributed Caching Library for JVM and Kubernetes'
 tags:
   - Java
   - Kotlin
