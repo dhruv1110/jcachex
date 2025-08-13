@@ -8,12 +8,13 @@ tags:
   - distributed systems
   - Kubernetes
 authors:
-  - name: JCacheX Project Contributors
+  - name: Dhruv Patel
+    orcid: 0009-0007-5454-6841
     affiliation: 1
 affiliations:
  - name: Open Source Contributors
    index: 1
-date: 10 August 2025
+date: 12 August 2025
 bibliography: paper.bib
 ---
 
