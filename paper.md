@@ -12,7 +12,7 @@ authors:
     orcid: 0009-0007-5454-6841
     affiliation: 1
 affiliations:
- - name: Open Source Contributors
+ - name: Independent Researcher, USA
    index: 1
 date: 12 August 2025
 bibliography: paper.bib
