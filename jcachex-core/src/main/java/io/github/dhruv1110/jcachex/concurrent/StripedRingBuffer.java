@@ -26,8 +26,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class StripedRingBuffer<E> {
 
     // Initial number of stripes (will grow as needed)
-    private static final int INITIAL_STRIPES = 4;
-    private static final int MAX_STRIPES = 64;
+    private static final int INITIAL_STRIPES = Math.max(4,
+            Integer.highestOneBit(Math.max(1, Runtime.getRuntime().availableProcessors())));
+    private static final int MAX_STRIPES = Math.max(64, INITIAL_STRIPES * 4);
 
     private volatile RingBuffer<E>[] buffers;
     private volatile int stripeMask;
@@ -121,7 +122,7 @@ public class StripedRingBuffer<E> {
             synchronized (this) {
                 // Double-check under lock
                 if (buffers.length == currentStripes && currentStripes < MAX_STRIPES) {
-                    int newStripeCount = Math.min(currentStripes * 2, MAX_STRIPES);
+                    int newStripeCount = Math.min(currentStripes << 1, MAX_STRIPES);
                     RingBuffer<E>[] newBuffers = new RingBuffer[newStripeCount];
 
                     // Copy existing buffers
@@ -136,8 +137,8 @@ public class StripedRingBuffer<E> {
                     stripeMask = newStripeCount - 1;
                     buffers = newBuffers;
 
-                    // Reset contention counter
-                    contentionCounter.set(0);
+                    // Reduce contention counter gradually to avoid frequent expansions
+                    contentionCounter.addAndGet(-currentStripes * 10);
                 }
             }
         }

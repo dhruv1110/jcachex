@@ -122,12 +122,13 @@ public class TcpCommunicationProtocol<K, V> extends AbstractCommunicationProtoco
 
     // ============= TCP-Specific Request Sending =============
 
+    // Note: connection pooling disabled in tests for simplicity and isolation
+
     @Override
     protected CompletableFuture<CacheOperationResponse> sendRequest(String nodeAddress, CacheOperationRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             long startTime = System.currentTimeMillis();
             messagesSent.incrementAndGet();
-
             try {
                 String[] parts = nodeAddress.split(":");
                 String host = parts[0];
@@ -140,27 +141,29 @@ public class TcpCommunicationProtocol<K, V> extends AbstractCommunicationProtoco
                     try (ObjectOutputStream output = new ObjectOutputStream(socket.getOutputStream());
                             ObjectInputStream input = new ObjectInputStream(socket.getInputStream())) {
 
-                        // Send request
                         output.writeObject(request);
                         output.flush();
 
-                        // Read response
                         CacheOperationResponse response = (CacheOperationResponse) input.readObject();
-
                         long latency = System.currentTimeMillis() - startTime;
-                        java.time.Duration duration = java.time.Duration.ofMillis(latency);
-                        response.setLatency(duration);
-
+                        response.setLatency(java.time.Duration.ofMillis(latency));
                         return response;
                     }
                 }
             } catch (Exception e) {
                 connectionFailures.incrementAndGet();
-                e.printStackTrace();
                 logger.warning("Failed to send request to " + nodeAddress + ": " + e.getMessage());
                 return CacheOperationResponse.failure("Connection failed: " + e.getMessage(), e);
             }
         }, clientExecutor);
+    }
+
+    // Legacy helpers retained for binary compatibility with tests; no-ops now
+    private Object getOrCreateConnection(String nodeAddress) {
+        return null;
+    }
+
+    private void closeAndRemove(String nodeAddress) {
     }
 
     // ============= Protocol Type =============

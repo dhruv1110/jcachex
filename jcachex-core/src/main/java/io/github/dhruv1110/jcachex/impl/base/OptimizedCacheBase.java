@@ -40,6 +40,8 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
     // Performance monitoring
     protected final AtomicReference<State> operationState;
     protected final AtomicLong version;
+    // Low-cost operation counter to cheaply sample heavy operations on hot paths
+    protected final AtomicLong operationCounter;
     protected final ReentrantReadWriteLock maintenanceLock;
 
     // Configuration constants
@@ -73,6 +75,7 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
         // Initialize state management
         this.operationState = new AtomicReference<>(State.ACTIVE);
         this.version = new AtomicLong(0);
+        this.operationCounter = new AtomicLong(0);
         this.maintenanceLock = new ReentrantReadWriteLock();
 
         // Schedule performance optimization tasks
@@ -140,8 +143,8 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
         // Create new entry
         CacheEntry<V> newEntry = createCacheEntry(key, value);
 
-        // Update frequency sketch before putting
-        frequencySketch.increment(key);
+        // Update lightweight op counter for sampling decisions (no sketch on write)
+        long op = operationCounter.incrementAndGet();
 
         // Atomic put operation
         CacheEntry<V> oldEntry = data.put(key, newEntry);
@@ -151,29 +154,31 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
             currentWeight.addAndGet(newEntry.getWeight());
         } else {
             currentWeight.addAndGet(newEntry.getWeight() - oldEntry.getWeight());
-            notifyListeners(listener -> listener.onRemove(key, oldEntry.getValue()));
+            if (config.getListeners() != null && !config.getListeners().isEmpty()) {
+                notifyListeners(listener -> listener.onRemove(key, oldEntry.getValue()));
+            }
         }
 
-        // Record access
-        int frequency = frequencySketch.frequency(key);
-        recordAccess(key, AccessType.WRITE, frequency);
+        // Skip access recording on write path to keep burst puts fast
 
-        // Notify listeners
-        notifyListeners(listener -> listener.onPut(key, value));
+        // Notify listeners only if present to avoid lambda allocation
+        if (config.getListeners() != null && !config.getListeners().isEmpty()) {
+            notifyListeners(listener -> listener.onPut(key, value));
+        }
 
-        // Use configured eviction strategy (from parent class) instead of hardcoded
-        // WindowTinyLFU
+        // Use configured eviction strategy update on every write to preserve recency
+        // ordering
         evictionStrategy.update(key, newEntry);
 
-        // Immediately enforce size limit if exceeded
+        // Immediately enforce size limit if exceeded (loop to ensure compliance now)
         while (isSizeLimitReached()) {
             if (shouldAvoidEvictingNewEntries()) {
                 if (!performSingleEviction(key)) {
-                    break; // No more entries to evict
+                    break;
                 }
             } else {
                 if (!performSingleEviction()) {
-                    break; // No more entries to evict
+                    break;
                 }
             }
         }
@@ -285,10 +290,10 @@ public abstract class OptimizedCacheBase<K, V> extends ConcurrentCacheBase<K, V>
      * Schedules eviction using the optimized strategy.
      */
     protected void scheduleEviction() {
-        // Simplified eviction - just perform immediate eviction
+        // Perform looped eviction to ensure size is within limit
         while (isSizeLimitReached()) {
             if (!performSingleEviction()) {
-                break; // No more entries to evict
+                break;
             }
         }
     }

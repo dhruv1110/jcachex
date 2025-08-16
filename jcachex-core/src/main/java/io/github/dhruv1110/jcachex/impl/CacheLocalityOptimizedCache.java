@@ -283,9 +283,9 @@ public final class CacheLocalityOptimizedCache<K, V> implements Cache<K, V> {
     // Cache line aligned counters to prevent false sharing
     private static final class CacheLineAlignedCounters {
         // Hot counters
-        private volatile long hitCount = 0;
-        private volatile long missCount = 0;
-        private volatile long size = 0;
+        private final java.util.concurrent.atomic.LongAdder hitCount = new java.util.concurrent.atomic.LongAdder();
+        private final java.util.concurrent.atomic.LongAdder missCount = new java.util.concurrent.atomic.LongAdder();
+        private final java.util.concurrent.atomic.LongAdder size = new java.util.concurrent.atomic.LongAdder();
 
         // Padding to prevent false sharing
         private final long padding1 = 0;
@@ -298,37 +298,39 @@ public final class CacheLocalityOptimizedCache<K, V> implements Cache<K, V> {
         private final long padding8 = 0;
 
         final void recordHit() {
-            hitCount++;
+            hitCount.increment();
         }
 
         final void recordMiss() {
-            missCount++;
+            missCount.increment();
         }
 
         final long incrementSize() {
-            return ++size;
+            size.increment();
+            return size.longValue();
         }
 
         final long decrementSize() {
-            return --size;
+            size.decrement();
+            return size.longValue();
         }
 
         final long getHitCount() {
-            return hitCount;
+            return hitCount.longValue();
         }
 
         final long getMissCount() {
-            return missCount;
+            return missCount.longValue();
         }
 
         final long getSize() {
-            return size;
+            return size.longValue();
         }
 
         final void reset() {
-            hitCount = 0;
-            missCount = 0;
-            size = 0;
+            hitCount.reset();
+            missCount.reset();
+            size.reset();
         }
     }
 

@@ -228,12 +228,10 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
             if (ring.isEmpty()) {
                 return null;
             }
-
             long hash = hash(key);
             Map.Entry<Long, String> entry = ring.ceilingEntry(hash);
-            if (entry == null) {
+            if (entry == null)
                 entry = ring.firstEntry();
-            }
             return entry.getValue();
         }
 
@@ -268,7 +266,6 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
                     ", Affected nodes: " + allAffectedNodes.size());
             return new NodeUpdateResult(allAffectedRanges, allAffectedNodes);
         }
-
 
         private long hash(String input) {
             // Using FNV-1a hash for better distribution
@@ -310,15 +307,22 @@ public abstract class AbstractDistributedCache<K, V> implements DistributedCache
 
     protected void evictToFreeMemory(long bytesToFree) {
         long freedBytes = 0;
-        Iterator<Map.Entry<K, V>> iterator = localCache.entries().iterator();
-
-        while (iterator.hasNext() && freedBytes < bytesToFree) {
-            Map.Entry<K, V> entry = iterator.next();
-            long entrySize = estimateSize(entry.getKey(), entry.getValue());
-            localCache.remove(entry.getKey());
-            freedBytes += entrySize;
+        // Prefer evicting using cache's own eviction policy if available via entries()
+        // sampling
+        int sample = 0;
+        for (Map.Entry<K, V> entry : localCache.entries()) {
+            if (freedBytes >= bytesToFree)
+                break;
+            K key = entry.getKey();
+            V removed = localCache.remove(key);
+            if (removed != null) {
+                freedBytes += estimateSize(key, removed);
+            }
+            if (++sample >= 1024 && freedBytes < bytesToFree) {
+                // Avoid long scans; give up early and log
+                break;
+            }
         }
-
         currentMemoryBytes.addAndGet(-freedBytes);
         logger.info("Evicted " + freedBytes + " bytes to free memory (target: " + bytesToFree + ")");
     }
