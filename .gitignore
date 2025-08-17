@@ -136,3 +136,4 @@ pubring.gpg
 *#
 /site-backup/
 /benchmarks/benchmark-results/
+/docs/.docusaurus/
