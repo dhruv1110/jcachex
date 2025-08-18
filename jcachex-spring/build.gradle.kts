@@ -44,11 +44,11 @@ dependencies {
     implementation(project(":jcachex-core"))
 
     // Minimal Spring Framework dependencies (compatible with Spring 4.3+)
-    compileOnly("org.springframework:spring-context:4.3.30.RELEASE")
-    compileOnly("org.springframework:spring-aop:4.3.30.RELEASE")
+    compileOnly("org.springframework:spring-context:6.2.10")
+    compileOnly("org.springframework:spring-aop:6.2.10")
     compileOnly("org.aspectj:aspectjrt:1.9.21")
-    compileOnly("org.springframework:spring-beans:4.3.30.RELEASE")
-    compileOnly("org.springframework:spring-core:4.3.30.RELEASE")
+    compileOnly("org.springframework:spring-beans:6.2.10")
+    compileOnly("org.springframework:spring-core:6.2.10")
 
     // Spring Boot auto-configuration (optional, when present)
     compileOnly("org.springframework.boot:spring-boot-autoconfigure:1.5.22.RELEASE")
@@ -75,10 +75,10 @@ dependencies {
     compileOnly("com.fasterxml.jackson.core:jackson-databind:2.9.10")
 
     // Testing dependencies - use older versions compatible with Java 1.8
-    testImplementation("org.springframework:spring-test:4.3.30.RELEASE")
+    testImplementation("org.springframework:spring-test:6.2.10")
     testImplementation("org.springframework.boot:spring-boot-test:1.5.22.RELEASE")
     testImplementation("org.springframework.boot:spring-boot-test-autoconfigure:1.5.22.RELEASE")
-    testImplementation("org.springframework:spring-aop:4.3.30.RELEASE")
+    testImplementation("org.springframework:spring-aop:6.2.10")
     testImplementation("org.aspectj:aspectjrt:1.9.21")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.hamcrest:hamcrest:2.2")
