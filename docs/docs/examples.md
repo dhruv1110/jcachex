@@ -353,6 +353,52 @@ public class StatisticsExample {
 }
 ```
 
+## Distributed Caching Example
+
+### Multi-Node Cache Sharing
+
+```java
+public class DistributedCacheExample {
+    private final Cache<String, Product> productCache;
+    
+    public DistributedCacheExample() {
+        // Use distributed caching profile for multi-node environments
+        this.productCache = JCacheXBuilder.forDistributedCaching()
+            .name("distributed-products")
+            .maximumSize(100000L)
+            .recordStats(true)
+            .build();
+    }
+    
+    public Product getProduct(String id) {
+        // This will work across all service instances
+        Product cached = productCache.get(id);
+        if (cached != null) {
+            return cached;
+        }
+        
+        // Cache miss - load from database
+        Product product = productRepository.findById(id);
+        if (product != null) {
+            // Store in distributed cache - visible to all instances
+            productCache.put(id, product);
+        }
+        
+        return product;
+    }
+    
+    public void updateProduct(String id, Product product) {
+        // Update database
+        productRepository.update(id, product);
+        
+        // Update distributed cache - all instances see the change
+        productCache.put(id, product);
+    }
+}
+```
+
+> **💡 Note**: For complete Kubernetes setup and configuration details, see the **[Distributed Caching section in API Reference](api-reference#distributed-caching)**.
+
 ## Next Steps
 
 Explore more examples in the specific sections:

@@ -153,9 +153,10 @@ Seamless scaling from single node to cluster:
 Cache<String, User> distributedCache = JCacheXBuilder.forDistributedCaching()
     .name("users")
     .maximumSize(5000L)
-    .kubernetesDiscovery()
     .build();
 ```
+
+> **💡 Note**: For detailed Kubernetes setup and configuration, see the **[Distributed Caching section in API Reference](api-reference#distributed-caching)**.
 
 ## Performance Highlights
 
