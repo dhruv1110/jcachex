@@ -169,16 +169,32 @@ class TcpCommunicationProtocolTest {
     @Order(6)
     void testMultipleStartStopCycles() throws Exception {
         for (int i = 0; i < 3; i++) {
-            // Start
-            CompletableFuture<Void> startFuture = tcpProtocol.startServer();
-            assertNotNull(startFuture);
-            // Wait until running flag is true
-            awaitTrue(() -> tcpProtocol.isRunning(), 2000);
-            assertTrue(tcpProtocol.isRunning());
+            // Create a lifecycle listener for this cycle
+            TestServerLifecycleListener lifecycleListener = new TestServerLifecycleListener();
+            tcpProtocol.addLifecycleListener(lifecycleListener);
 
-            // Stop
-            tcpProtocol.stopServer().get(2, TimeUnit.SECONDS);
-            assertFalse(tcpProtocol.isRunning());
+            try {
+                // Start
+                CompletableFuture<Void> startFuture = tcpProtocol.startServer();
+                assertNotNull(startFuture);
+
+                // Wait for server to start using event listener (no timeout needed)
+                assertTrue(lifecycleListener.waitForStart(0), "Server should start successfully");
+                assertTrue(tcpProtocol.isRunning());
+
+                // Stop
+                CompletableFuture<Void> stopFuture = tcpProtocol.stopServer();
+                assertNotNull(stopFuture);
+                stopFuture.get(2, TimeUnit.SECONDS);
+
+                // Wait for server to stop using event listener (no timeout needed)
+                assertTrue(lifecycleListener.waitForStop(0), "Server should stop successfully");
+                assertFalse(tcpProtocol.isRunning());
+
+            } finally {
+                // Clean up listener
+                tcpProtocol.removeLifecycleListener(lifecycleListener);
+            }
         }
     }
 

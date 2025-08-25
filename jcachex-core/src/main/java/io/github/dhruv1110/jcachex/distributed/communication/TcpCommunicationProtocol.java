@@ -7,8 +7,10 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,11 +43,34 @@ public class TcpCommunicationProtocol<K, V> extends AbstractCommunicationProtoco
     private final ExecutorService serverExecutor;
     private final ExecutorService clientExecutor;
     private ServerSocket serverSocket;
+    private final List<ServerLifecycleListener> lifecycleListeners = new CopyOnWriteArrayList<>();
+    private final String serverId;
 
     public TcpCommunicationProtocol(ProtocolConfig config) {
         super(config);
         this.serverExecutor = Executors.newFixedThreadPool(config.getMaxConnections());
         this.clientExecutor = Executors.newCachedThreadPool();
+        this.serverId = "tcp-server-" + System.currentTimeMillis();
+    }
+
+    /**
+     * Adds a lifecycle listener to receive server start/stop notifications.
+     *
+     * @param listener the listener to add
+     */
+    public void addLifecycleListener(ServerLifecycleListener listener) {
+        if (listener != null) {
+            lifecycleListeners.add(listener);
+        }
+    }
+
+    /**
+     * Removes a lifecycle listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeLifecycleListener(ServerLifecycleListener listener) {
+        lifecycleListeners.remove(listener);
     }
 
     // ============= TCP-Specific Server Lifecycle =============
@@ -57,6 +82,15 @@ public class TcpCommunicationProtocol<K, V> extends AbstractCommunicationProtoco
                 serverSocket = new ServerSocket(config.getPort());
                 running.set(true);
                 logger.info("TCP server started on port: " + config.getPort());
+
+                // Notify listeners that server has started
+                lifecycleListeners.forEach(listener -> {
+                    try {
+                        listener.onServerStarted(serverId, config.getPort());
+                    } catch (Exception e) {
+                        logger.warning("Error notifying lifecycle listener: " + e.getMessage());
+                    }
+                });
 
                 while (running.get()) {
                     try {
@@ -70,6 +104,16 @@ public class TcpCommunicationProtocol<K, V> extends AbstractCommunicationProtoco
                 }
             } catch (IOException e) {
                 logger.severe("Failed to start TCP server: " + e.getMessage());
+
+                // Notify listeners that server failed to start
+                lifecycleListeners.forEach(listener -> {
+                    try {
+                        listener.onServerStartFailed(serverId, config.getPort(), e);
+                    } catch (Exception listenerError) {
+                        logger.warning("Error notifying lifecycle listener: " + listenerError.getMessage());
+                    }
+                });
+
                 throw new RuntimeException(e);
             }
         });
@@ -86,8 +130,26 @@ public class TcpCommunicationProtocol<K, V> extends AbstractCommunicationProtoco
                 serverExecutor.shutdown();
                 clientExecutor.shutdown();
                 logger.info("TCP server stopped");
+
+                // Notify listeners that server has stopped
+                lifecycleListeners.forEach(listener -> {
+                    try {
+                        listener.onServerStopped(serverId, config.getPort());
+                    } catch (Exception e) {
+                        logger.warning("Error notifying lifecycle listener: " + e.getMessage());
+                    }
+                });
             } catch (IOException e) {
                 logger.warning("Error stopping TCP server: " + e.getMessage());
+
+                // Notify listeners that server failed to stop gracefully
+                lifecycleListeners.forEach(listener -> {
+                    try {
+                        listener.onServerStopFailed(serverId, config.getPort(), e);
+                    } catch (Exception listenerError) {
+                        logger.warning("Error notifying lifecycle listener: " + listenerError.getMessage());
+                    }
+                });
             }
         });
     }
