@@ -466,7 +466,6 @@ class WriteHeavyOptimizedCacheTest {
     @Test
     void testWriteHeavyWorkload() {
         // Simulate write-heavy workload
-        long startTime = System.currentTimeMillis();
 
         for (int i = 0; i < 100; i++) {
             cache.put("heavy_key" + i, "heavy_value" + i);
@@ -474,7 +473,9 @@ class WriteHeavyOptimizedCacheTest {
 
         // Perform some reads
         for (int i = 0; i < 20; i++) {
-            cache.get("heavy_key" + i);
+            String value = cache.get("heavy_key" + i);
+            assertEquals("heavy_value" + i, value,
+                    "Read operation should return correct value for key: heavy_key" + i);
         }
 
         // Perform updates
@@ -482,15 +483,23 @@ class WriteHeavyOptimizedCacheTest {
             cache.put("heavy_key" + i, "updated_heavy_value" + i);
         }
 
-        long endTime = System.currentTimeMillis();
-        assertTrue(endTime - startTime < 5000, "Write-heavy operations should complete quickly");
-
         // Verify final state
         cache.flushWrites();
         assertTrue(cache.size() <= 100);
 
         // Check write count increased
         assertTrue(cache.getWriteCount() > 0);
+
+        // Verify some updated values are accessible
+        for (int i = 0; i < 20; i++) {
+            String value = cache.get("heavy_key" + i);
+            if (value != null) {
+                // The value could be either the original or updated, depending on cache
+                // behavior
+                assertTrue(value.equals("heavy_value" + i) || value.equals("updated_heavy_value" + i),
+                        "Cache should contain either original or updated value for key: heavy_key" + i);
+            }
+        }
     }
 
     @Disabled

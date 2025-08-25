@@ -29,9 +29,9 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
  */
 public class RingBuffer<E> {
 
-    // Buffer configuration
-    private static final int BUFFER_SIZE = 16; // Must be power of 2
-    private static final int BUFFER_MASK = BUFFER_SIZE - 1;
+    // Ring buffer configuration (instance-scoped for adaptive sizing)
+    private final int bufferSize; // power of two
+    private final int bufferMask;
 
     // Ring buffer for storing elements
     private final AtomicReferenceArray<E> buffer;
@@ -54,7 +54,17 @@ public class RingBuffer<E> {
      * Creates a new ring buffer.
      */
     public RingBuffer() {
-        this.buffer = new AtomicReferenceArray<>(BUFFER_SIZE);
+        // Adaptive default: cores * 32, rounded up to next power of two, min 64
+        int cores = Math.max(1, Runtime.getRuntime().availableProcessors());
+        int target = Math.max(64, cores * 32);
+        int pow2 = 1;
+        while (pow2 < target) {
+            pow2 <<= 1;
+        }
+        this.bufferSize = pow2;
+        this.bufferMask = this.bufferSize - 1;
+
+        this.buffer = new AtomicReferenceArray<>(this.bufferSize);
         this.writeSequence = new AtomicLong(0);
         this.readSequence = new AtomicLong(0);
         this.drainStatus = new AtomicReference<>(DrainStatus.IDLE);
@@ -75,7 +85,7 @@ public class RingBuffer<E> {
         long currentRead = readSequence.get();
 
         // Check if buffer is full
-        if (currentWrite - currentRead >= BUFFER_SIZE) {
+        if (currentWrite - currentRead >= bufferSize) {
             // Buffer is full, signal drain needed
             drainStatus.compareAndSet(DrainStatus.IDLE, DrainStatus.REQUIRED);
             return false;
@@ -83,7 +93,7 @@ public class RingBuffer<E> {
 
         // Try to reserve a slot
         if (writeSequence.compareAndSet(currentWrite, currentWrite + 1)) {
-            int index = (int) (currentWrite & BUFFER_MASK);
+            int index = (int) (currentWrite & bufferMask);
             buffer.set(index, element);
             return true;
         }
@@ -108,8 +118,8 @@ public class RingBuffer<E> {
             long currentWrite = writeSequence.get();
 
             int processed = 0;
-            while (currentRead < currentWrite && processed < BUFFER_SIZE) {
-                int index = (int) (currentRead & BUFFER_MASK);
+            while (currentRead < currentWrite && processed < bufferSize) {
+                int index = (int) (currentRead & bufferMask);
                 E element = buffer.get(index);
 
                 if (element != null) {
@@ -156,7 +166,7 @@ public class RingBuffer<E> {
      * @return true if the buffer is full
      */
     public boolean isFull() {
-        return size() >= BUFFER_SIZE;
+        return size() >= bufferSize;
     }
 
     /**
@@ -172,7 +182,7 @@ public class RingBuffer<E> {
      * Clears all elements from the buffer.
      */
     public void clear() {
-        for (int i = 0; i < BUFFER_SIZE; i++) {
+        for (int i = 0; i < bufferSize; i++) {
             buffer.set(i, null);
         }
         readSequence.set(writeSequence.get());

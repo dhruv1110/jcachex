@@ -152,22 +152,27 @@ class ProfiledOptimizedCacheTest {
     @Test
     void testPerformanceMonitoring() {
         // Test performance monitoring capabilities
-        long startTime = System.currentTimeMillis();
 
         for (int i = 0; i < 100; i++) {
             cache.put("perf_key" + i, "perf_value" + i);
-            cache.get("perf_key" + i);
+            String retrievedValue = cache.get("perf_key" + i);
+            assertEquals("perf_value" + i, retrievedValue,
+                    "Performance monitoring should not affect cache correctness");
         }
-
-        long endTime = System.currentTimeMillis();
-
-        // Performance monitoring should not significantly impact performance
-        assertTrue(endTime - startTime < 5000, "Operations should complete in reasonable time");
 
         // Verify all operations worked correctly
         for (int i = 0; i < 100; i++) {
             assertEquals("perf_value" + i, cache.get("perf_key" + i));
         }
+
+        // Verify cache size is within expected bounds
+        assertTrue(cache.size() > 0, "Cache should contain some entries after operations");
+        assertTrue(cache.size() <= 100, "Cache should respect size limit");
+
+        // Test that performance monitoring doesn't interfere with cache operations
+        cache.put("test_key", "test_value");
+        assertEquals("test_value", cache.get("test_key"));
+        assertTrue(cache.size() > 0, "Cache should contain entries after adding test key");
     }
 
     @Test

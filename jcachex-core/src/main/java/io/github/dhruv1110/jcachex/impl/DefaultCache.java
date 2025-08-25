@@ -32,15 +32,15 @@ import java.util.concurrent.TimeUnit;
 public class DefaultCache<K, V> extends ConcurrentCacheBase<K, V> implements AutoCloseable {
     private static final long REFRESH_INTERVAL_SECONDS = 1L;
 
+    // Use a simple deadline queue to avoid full-map scans on every tick
+    private final java.util.concurrent.ConcurrentSkipListMap<Long, K> refreshDeadlines = new java.util.concurrent.ConcurrentSkipListMap<>();
+
     /**
      * Creates a new DefaultCache with the specified configuration.
      */
     public DefaultCache(CacheConfig<K, V> config) {
         super(config);
-
-        if (config.getRefreshAfterWrite() != null) {
-            scheduleRefresh();
-        }
+        // Parent schedules refresh; we only provide the refreshEntries() implementation
     }
 
     /**
@@ -48,33 +48,48 @@ public class DefaultCache<K, V> extends ConcurrentCacheBase<K, V> implements Aut
      * refresh.
      */
     private void performRefreshOperations() {
-        if (config.getRefreshAfterWrite() != null) {
-            long currentTimeNanos = System.nanoTime();
-            data.forEach((key, entry) -> {
-                long refreshThresholdNanos = entry.getCreationTimeNanos() + config.getRefreshAfterWrite().toNanos();
-                if (currentTimeNanos > refreshThresholdNanos) {
-                    // Refresh asynchronously without blocking
-                    scheduler.execute(() -> {
-                        V newValue = loadValue(key);
-                        if (newValue != null) {
-                            // Replace the old entry with the refreshed value
-                            put(key, newValue);
-                            notifyListeners(listener -> listener.onLoad(key, newValue));
-                        }
-                    });
-                }
-            });
+        if (config.getRefreshAfterWrite() == null) {
+            return;
+        }
+        long now = System.nanoTime();
+        java.util.NavigableMap<Long, K> due = refreshDeadlines.headMap(now, true);
+        if (due.isEmpty()) {
+            return;
+        }
+        java.util.List<java.util.Map.Entry<Long, K>> batch = new java.util.ArrayList<>(Math.min(1024, due.size()));
+        for (java.util.Map.Entry<Long, K> e : due.entrySet()) {
+            batch.add(e);
+            if (batch.size() >= 1024)
+                break;
+        }
+        for (java.util.Map.Entry<Long, K> e : batch) {
+            refreshDeadlines.remove(e.getKey(), e.getValue());
+            K key = e.getValue();
+            CacheEntry<V> entry = data.get(key);
+            if (entry == null)
+                continue;
+            if (needsRefresh(entry, now)) {
+                scheduleEntryRefresh(key);
+            } else if (entry.isExpired()) {
+                removeExpiredEntryDuringRefresh(key, entry);
+            } else {
+                // re-schedule if not yet due
+                long next = entry.getCreationTimeNanos() + config.getRefreshAfterWrite().toNanos();
+                refreshDeadlines.put(next, key);
+            }
         }
     }
 
-    /**
-     * Schedule refresh operations for entries that support refresh.
-     */
-    protected void scheduleRefresh() {
-        scheduler.scheduleAtFixedRate(() -> {
-            long currentTimeNanos = System.nanoTime();
-            data.forEach((key, entry) -> processEntry(key, entry, currentTimeNanos));
-        }, 0, REFRESH_INTERVAL_SECONDS, TimeUnit.SECONDS);
+    // Use parent's scheduler; this method gets called once per tick
+    @Override
+    protected void refreshEntries() {
+        if (config.getRefreshAfterWrite() == null) {
+            return;
+        }
+        long now = System.nanoTime();
+        // Seed deadlines for all entries and handle due ones in this tick
+        data.forEach((key, entry) -> processEntry(key, entry, now));
+        performRefreshOperations();
     }
 
     /**
@@ -85,6 +100,9 @@ public class DefaultCache<K, V> extends ConcurrentCacheBase<K, V> implements Aut
             removeExpiredEntryDuringRefresh(key, entry);
         } else if (needsRefresh(entry, currentTimeNanos)) {
             scheduleEntryRefresh(key);
+        } else if (config.getRefreshAfterWrite() != null) {
+            long deadline = entry.getCreationTimeNanos() + config.getRefreshAfterWrite().toNanos();
+            refreshDeadlines.putIfAbsent(deadline, key);
         }
     }
 

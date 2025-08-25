@@ -56,6 +56,8 @@ public class AccessBuffer<K> {
 
     private final StripedRingBuffer<AccessRecord<K>> accessBuffer;
     private final AtomicLong drainScheduled;
+    // Cheap sampling counter to avoid expensive totalSize() on every record
+    private final AtomicLong recordCounter;
     private final AtomicReference<Thread> drainThread;
 
     // Configuration
@@ -72,6 +74,7 @@ public class AccessBuffer<K> {
     public AccessBuffer(int drainThreshold, long drainIntervalNanos) {
         this.accessBuffer = new StripedRingBuffer<>();
         this.drainScheduled = new AtomicLong(0);
+        this.recordCounter = new AtomicLong(0);
         this.drainThread = new AtomicReference<>();
         this.drainThreshold = drainThreshold;
         this.drainIntervalNanos = drainIntervalNanos;
@@ -94,9 +97,13 @@ public class AccessBuffer<K> {
         AccessRecord<K> record = new AccessRecord<>(key, type, System.nanoTime(), frequency);
         boolean success = accessBuffer.recordAccess(record);
 
-        // Schedule draining if needed
-        if (success && shouldScheduleDrain()) {
-            scheduleDrain();
+        // Schedule draining if needed, using sampling to reduce overhead
+        if (success) {
+            long c = recordCounter.incrementAndGet();
+            // Only perform the heavier check occasionally (every 64th record)
+            if ((c & 63L) == 0L && shouldScheduleDrain()) {
+                scheduleDrain();
+            }
         }
 
         return success;
@@ -117,6 +124,7 @@ public class AccessBuffer<K> {
 
         // Reset drain scheduling
         drainScheduled.set(0);
+        recordCounter.set(0);
 
         return processed;
     }

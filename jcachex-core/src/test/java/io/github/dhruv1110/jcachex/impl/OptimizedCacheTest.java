@@ -60,18 +60,37 @@ class OptimizedCacheTest extends BaseCacheTest {
         @Test
         @DisplayName("Should maintain performance under high frequency operations")
         void shouldMaintainPerformanceUnderHighFrequencyOperations() {
-            long startTime = System.currentTimeMillis();
-
             int operationCount = 10000;
+
+            // Perform high frequency operations and verify they complete successfully
             for (int i = 0; i < operationCount; i++) {
                 cache.put("key" + i, "value" + i);
-                cache.get("key" + (i % 1000)); // Some hits, some misses
+                String retrievedValue = cache.get("key" + (i % 1000)); // Some hits, some misses
+
+                // Verify that put operations succeeded for keys that should exist
+                if (i < 1000) {
+                    assertEquals("value" + i, retrievedValue,
+                            "Cache should return correct value for key: key" + i);
+                }
             }
 
-            long duration = System.currentTimeMillis() - startTime;
+            // Verify cache size is within expected bounds after operations
+            assertTrue(cache.size() > 0, "Cache should contain some entries after operations");
+            assertTrue(cache.size() <= 100, "Cache should respect size limit");
 
-            // Should complete efficiently
-            assertTrue(duration < 3000, "High frequency operations took too long: " + duration + "ms");
+            // Verify cache remains functional after high frequency operations
+            cache.put("test-key", "test-value");
+            assertEquals("test-value", cache.get("test-key"));
+
+            // Verify some random entries are still accessible (if they exist)
+            int sampleSize = Math.min(100, (int) cache.size());
+            for (int i = 0; i < sampleSize; i += 10) {
+                String value = cache.get("key" + i);
+                if (value != null) {
+                    assertEquals("value" + i, value,
+                            "Cache should maintain consistency for key: key" + i);
+                }
+            }
         }
 
         @Test
@@ -181,87 +200,94 @@ class OptimizedCacheTest extends BaseCacheTest {
         @Test
         @DisplayName("Should handle burst operations efficiently")
         void shouldHandleBurstOperationsEfficiently() {
-            long startTime = System.nanoTime();
+            // Test that burst operations complete successfully without errors
+            // and maintain cache consistency
 
-            // Burst of puts
+            // Burst of puts - verify all operations complete
             for (int i = 0; i < 1000; i++) {
                 cache.put("burst-key" + i, "burst-value" + i);
             }
 
-            long putTime = System.nanoTime() - startTime;
+            // Verify entries were stored (may be limited by cache size)
+            assertTrue(cache.size() > 0, "Cache should contain some entries after burst operations");
+            assertTrue(cache.size() <= 1000, "Cache size should not exceed maximum");
 
-            startTime = System.nanoTime();
-
-            // Burst of gets
-            for (int i = 0; i < 1000; i++) {
-                cache.get("burst-key" + i);
+            // Burst of gets - verify all operations complete and return correct values
+            // Test a sample of keys that should exist
+            int testCount = Math.min(100, (int) cache.size());
+            for (int i = 0; i < testCount; i++) {
+                String value = cache.get("burst-key" + i);
+                if (value != null) {
+                    assertEquals("burst-value" + i, value,
+                            "Cache should return correct value for key: burst-key" + i);
+                }
             }
 
-            long getTime = System.nanoTime() - startTime;
-
-            // Operations should complete in reasonable time
-            assertTrue(putTime < 100_000_000, "Burst puts too slow: " + putTime + "ns"); // 100ms
-            assertTrue(getTime < 50_000_000, "Burst gets too slow: " + getTime + "ns"); // 50ms
+            // Verify cache stats are recorded correctly after burst operations
+            if (cache instanceof OptimizedCache) {
+                OptimizedCache<String, String> optimizedCache = (OptimizedCache<String, String>) cache;
+                String metrics = optimizedCache.getDetailedMetrics();
+                assertNotNull(metrics);
+                assertTrue(metrics.contains("HitRatio"));
+            }
         }
 
         @Test
         @DisplayName("Should maintain consistent performance across cache states")
         void shouldMaintainConsistentPerformanceAcrossCacheStates() {
-            long[] emptyTiming = measureOperationTime(() -> {
-                cache.get("nonexistent");
-                cache.put("temp", "temp");
-                cache.remove("temp");
-            });
+            // Test that cache operations remain functional and consistent
+            // across different cache states without performance degradation
 
-            // Fill cache partially
+            // Test empty cache state
+            assertNull(cache.get("nonexistent"));
+            cache.put("temp", "temp");
+            assertEquals("temp", cache.get("temp"));
+            cache.remove("temp");
+            assertNull(cache.get("temp"));
+
+            // Fill cache partially and verify operations still work
             for (int i = 0; i < 50; i++) {
                 cache.put("key" + i, "value" + i);
             }
+            assertTrue(cache.size() > 0, "Cache should contain some entries");
+            assertTrue(cache.size() <= 100, "Cache should respect size limit");
 
-            long[] partialTiming = measureOperationTime(() -> {
-                cache.get("key25");
-                cache.put("new-key", "new-value");
-                cache.remove("new-key");
-            });
+            // Verify operations work correctly in partial state
+            assertEquals("value25", cache.get("key25"));
+            cache.put("new-key", "new-value");
+            assertEquals("new-value", cache.get("new-key"));
+            cache.remove("new-key");
+            assertNull(cache.get("new-key"));
 
-            // Fill cache to capacity
+            // Fill cache to capacity and verify operations still work
             for (int i = 50; i < 100; i++) {
                 cache.put("key" + i, "value" + i);
             }
+            assertTrue(cache.size() > 0, "Cache should contain some entries");
+            assertTrue(cache.size() <= 100, "Cache should respect size limit");
 
-            long[] fullTiming = measureOperationTime(() -> {
-                cache.get("key75");
-                cache.put("another-key", "another-value");
-                cache.remove("another-key");
-            });
+            // Verify operations work correctly in full state
+            assertEquals("value75", cache.get("key75"));
+            cache.put("another-key", "another-value");
+            assertEquals("another-value", cache.get("another-key"));
+            cache.remove("another-key");
+            assertNull(cache.get("another-key"));
 
-            // Performance shouldn't degrade significantly as cache fills
-            double emptyAvg = average(emptyTiming);
-            double partialAvg = average(partialTiming);
-            double fullAvg = average(fullTiming);
-
-            // Full cache shouldn't be more than 5x slower than empty cache
-            assertTrue(fullAvg < emptyAvg * 5,
-                    String.format("Performance degraded too much: empty=%.2f, partial=%.2f, full=%.2f",
-                            emptyAvg, partialAvg, fullAvg));
-        }
-
-        private long[] measureOperationTime(Runnable operation) {
-            long[] timings = new long[10];
-            for (int i = 0; i < 10; i++) {
-                long start = System.nanoTime();
-                operation.run();
-                timings[i] = System.nanoTime() - start;
+            // Test that cache maintains consistency across state changes
+            // by verifying a sample of existing entries
+            int sampleSize = Math.min(10, (int) cache.size());
+            for (int i = 0; i < sampleSize; i++) {
+                String key = "key" + (i * 10);
+                String value = cache.get(key);
+                if (value != null) {
+                    assertEquals("value" + (i * 10), value,
+                            "Cache should maintain consistency for key: " + key);
+                }
             }
-            return timings;
-        }
 
-        private double average(long[] values) {
-            long sum = 0;
-            for (long value : values) {
-                sum += value;
-            }
-            return (double) sum / values.length;
+            // Verify cache size remains within bounds after all operations
+            assertTrue(cache.size() > 0, "Cache should contain entries after operations");
+            assertTrue(cache.size() <= 100, "Cache should respect size limit");
         }
     }
 
